@@ -69,6 +69,23 @@ export default function App() {
     }
   }, [])
 
+  // Load data when user changes or view changes
+  useEffect(() => {
+    if (user) {
+      if (currentView === 'documents') {
+        loadDocuments()
+        loadUsers()
+      } else if (currentView === 'calendar') {
+        loadEvents()
+        loadTasks()
+        loadNotifications()
+      } else if (currentView === 'analytics') {
+        loadAnalytics()
+        loadDocumentStats()
+      }
+    }
+  }, [user, currentView, documentFilter])
+
   // Load analytics data
   const loadAnalytics = async () => {
     try {
