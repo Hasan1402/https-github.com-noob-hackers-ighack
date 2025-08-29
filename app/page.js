@@ -2840,4 +2840,3 @@ function TimesheetTable({ timesheetData, workCodes, onUpdateEntry }) {
     </div>
   )
 }
-}
