@@ -254,6 +254,21 @@ export default function App() {
     }
   }
 
+  const handleLogout = () => {
+    localStorage.removeItem('token')
+    setUser(null)
+    setCurrentView('auth')
+    toast.success('Ви вийшли з системи')
+  }
+
+  // Load data when user changes or view changes to documents
+  useEffect(() => {
+    if (user && currentView === 'documents') {
+      loadDocuments()
+      loadUsers()
+    }
+  }, [user, currentView, documentFilter])
+
   // Auth Screen
   if (currentView === 'auth') {
     return (
