@@ -40,9 +40,15 @@ class TISKISBackendTester:
             "authentication": {},
             "user_management": {},
             "document_management": {},
+            "enhanced_document_workflow": {},
+            "file_upload_system": {},
+            "workflow_history": {},
             "dashboard_stats": {},
             "summary": {"passed": 0, "failed": 0, "errors": []}
         }
+        self.test_document_id = None
+        self.manager_token = None
+        self.user_token = None
 
     def log_result(self, category, test_name, success, message, response_data=None):
         """Log test result"""
