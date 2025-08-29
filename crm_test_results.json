@@ -1,0 +1,23 @@
+[
+  {
+    "test": "Authentication Setup - admin",
+    "success": false,
+    "message": "Failed to authenticate admin user",
+    "timestamp": "2025-08-29T13:18:19.446824",
+    "details": ""
+  },
+  {
+    "test": "Authentication Setup - manager",
+    "success": false,
+    "message": "Failed to authenticate manager user",
+    "timestamp": "2025-08-29T13:18:19.463805",
+    "details": ""
+  },
+  {
+    "test": "Authentication Setup - user",
+    "success": false,
+    "message": "Failed to authenticate user user",
+    "timestamp": "2025-08-29T13:18:19.476809",
+    "details": ""
+  }
+]
