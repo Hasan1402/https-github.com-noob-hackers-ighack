@@ -2155,3 +2155,69 @@ function NotificationsList({ notifications }) {
     </div>
   )
 }
+
+// Report Generator Component
+function ReportGenerator({ onGenerateReport }) {
+  const [reportType, setReportType] = useState('documents')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    if (!dateFrom || !dateTo) {
+      toast.error('Будь ласка, оберіть діапазон дат')
+      return
+    }
+
+    onGenerateReport({
+      reportType,
+      dateFrom,
+      dateTo,
+      filters: {}
+    })
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <Label htmlFor="report-type">Тип звіту</Label>
+        <select
+          id="report-type"
+          className="w-full p-2 border rounded-md"
+          value={reportType}
+          onChange={(e) => setReportType(e.target.value)}
+        >
+          <option value="documents">Документи</option>
+          <option value="tasks">Завдання</option>
+          <option value="users">Користувачі</option>
+        </select>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="date-from">Дата від</Label>
+          <Input
+            id="date-from"
+            type="date"
+            value={dateFrom}
+            onChange={(e) => setDateFrom(e.target.value)}
+          />
+        </div>
+        <div>
+          <Label htmlFor="date-to">Дата до</Label>
+          <Input
+            id="date-to"
+            type="date"
+            value={dateTo}
+            onChange={(e) => setDateTo(e.target.value)}
+          />
+        </div>
+      </div>
+
+      <Button type="submit" className="w-full">
+        <BarChart3 className="w-4 h-4 mr-2" />
+        Згенерувати звіт
+      </Button>
+    </form>
+  )
+}
