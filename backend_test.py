@@ -54,6 +54,13 @@ class TISKISBackendTester:
             "analytics_dashboard": {},
             "analytics_documents": {},
             "analytics_reports": {},
+            "hr_departments": {},
+            "hr_employees": {},
+            "hr_timesheet": {},
+            "hr_business_trips": {},
+            "hr_workflow": {},
+            "hr_validation": {},
+            "hr_auth": {},
             "summary": {"passed": 0, "failed": 0, "errors": []}
         }
         self.test_document_id = None
