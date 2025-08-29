@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 import uuid
 
 # Configuration
-BASE_URL = "https://tys-edu-system.preview.emergentagent.com/api"
+BASE_URL = "http://localhost:3000/api"
 HEADERS = {"Content-Type": "application/json"}
 
 class TimesheetTester:
