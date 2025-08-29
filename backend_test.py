@@ -9,8 +9,8 @@ import json
 import os
 from datetime import datetime
 
-# Get base URL from environment - test locally first
-BASE_URL = "http://localhost:3000/api"
+# Get base URL from environment - use production URL
+BASE_URL = "https://tys-edu-system.preview.emergentagent.com/api"
 
 class TISKISBackendTester:
     def __init__(self):
