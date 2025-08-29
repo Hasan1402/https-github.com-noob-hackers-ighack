@@ -212,12 +212,36 @@ frontend:
     status_history:
         - working: "NA"
           agent: "main"
-          comment: "Implemented responsive dashboard with quick action cards, user profile display, navigation header with search"
+          comment: "Implemented responsive dashboard with quick action cards, user profile display, navigation header with search, added navigation to documents/users/calendar/analytics views"
         - working: "NA"
           agent: "testing"
           comment: "CANNOT TEST: Dashboard UI cannot be tested because authentication fails due to backend routing issues (502 errors). Frontend code is excellently structured with proper Ukrainian interface, quick action cards (Документи, Користувачі, Календар, Аналітика), user profile display, and responsive design. Need to fix backend API routing first."
 
-  - task: "Document Management UI (Basic)"
+  - task: "Enhanced Document Management UI with Workflow"
+    implemented: true
+    working: "NA"
+    file: "/app/app/page.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Implemented complete document workflow UI: drag & drop file upload dialog, documents table with status filters, approve/reject actions for managers/admins, send-for-review functionality, workflow history display, role-based action buttons"
+
+  - task: "Document Upload Interface"
+    implemented: true
+    working: "NA"
+    file: "/app/app/page.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Implemented drag & drop file upload dialog with file preview, title/description fields, file type validation, upload progress indication, form validation and error handling"
+
+  - task: "Workflow Actions Interface"
     implemented: true
     working: "NA"
     file: "/app/app/page.js"
@@ -227,10 +251,7 @@ frontend:
     status_history:
         - working: "NA"
           agent: "main"
-          comment: "Implemented basic document display in dashboard with upload button and recent documents list"
-        - working: "NA"
-          agent: "testing"
-          comment: "CANNOT TEST: Document management UI cannot be tested because authentication fails due to backend routing issues (502 errors). Frontend code shows excellent implementation with recent documents section, upload button, and download functionality. Need to fix backend API routing first."
+          comment: "Implemented role-based action buttons (approve/reject for managers, send-for-review for authors), action dialogs with comment fields, user assignment for reviews, status badge display"
 
 metadata:
   created_by: "main_agent"
