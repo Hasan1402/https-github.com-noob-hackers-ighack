@@ -6,6 +6,15 @@ import jwt from 'jsonwebtoken'
 import { writeFile, mkdir } from 'fs/promises'
 import path from 'path'
 
+// Helper function to get month name in Ukrainian
+function getMonthName(monthNum) {
+  const months = [
+    '', 'Січень', 'Лютий', 'Березень', 'Квітень', 'Травень', 'Червень',
+    'Липень', 'Серпень', 'Вересень', 'Жовтень', 'Листопад', 'Грудень'
+  ]
+  return months[monthNum] || ''
+}
+
 // MongoDB connection
 let client
 let db
