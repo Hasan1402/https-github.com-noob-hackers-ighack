@@ -1743,6 +1743,21 @@ class TISKISBackendTester:
         # Complete Workflow Integration Test
         self.test_complete_workflow_integration()
         
+        # ANALYTICS AND REPORTS API TESTS (HIGH PRIORITY)
+        print("\n📊 ANALYTICS AND REPORTS API TESTS")
+        
+        # Dashboard Analytics API Tests
+        self.test_analytics_dashboard_api()
+        
+        # Document Statistics API Tests  
+        self.test_analytics_documents_api()
+        
+        # Reports Generation API Tests
+        self.test_analytics_reports_api()
+        
+        # Analytics Data Accuracy Tests
+        self.test_analytics_data_accuracy()
+        
         # ENHANCED DOCUMENT WORKFLOW TESTS (HIGH PRIORITY)
         print("\n📄 ENHANCED DOCUMENT WORKFLOW TESTS")
         
