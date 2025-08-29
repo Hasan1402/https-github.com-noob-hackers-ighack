@@ -1636,7 +1636,6 @@ export default function App() {
       </div>
     )
   }
-}
 
 // Document Upload Dialog Component
 function DocumentUploadDialog({ onUpload, isUploading }) {
