@@ -45,6 +45,8 @@ export default function App() {
   const [tasks, setTasks] = useState([])
   const [notifications, setNotifications] = useState([])
   const [selectedDate, setSelectedDate] = useState(new Date())
+  const [analytics, setAnalytics] = useState(null)
+  const [documentStats, setDocumentStats] = useState(null)
 
   // Check if user is logged in on load
   useEffect(() => {
