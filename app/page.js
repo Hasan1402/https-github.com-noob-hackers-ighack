@@ -41,6 +41,10 @@ export default function App() {
   const [users, setUsers] = useState([])
   const [documentFilter, setDocumentFilter] = useState('all')
   const [isUploading, setIsUploading] = useState(false)
+  const [events, setEvents] = useState([])
+  const [tasks, setTasks] = useState([])
+  const [notifications, setNotifications] = useState([])
+  const [selectedDate, setSelectedDate] = useState(new Date())
 
   // Check if user is logged in on load
   useEffect(() => {
