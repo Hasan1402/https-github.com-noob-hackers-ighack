@@ -929,20 +929,18 @@ export default function App() {
           </div>
 
           {/* Quick Actions */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-8 gap-4 mb-8">
             <Card 
               className="hover:shadow-lg transition-shadow cursor-pointer"
               onClick={() => setCurrentView('documents')}
             >
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <div className="p-2 bg-blue-100 rounded-lg">
+              <CardContent className="p-4">
+                <div className="flex flex-col items-center text-center">
+                  <div className="p-2 bg-blue-100 rounded-lg mb-2">
                     <FileText className="w-6 h-6 text-blue-600" />
                   </div>
-                  <div className="ml-4">
-                    <h3 className="font-medium text-gray-900">Документи</h3>
-                    <p className="text-sm text-gray-500">Управління файлами</p>
-                  </div>
+                  <h3 className="font-medium text-gray-900 text-sm">Документи</h3>
+                  <p className="text-xs text-gray-500">Управління файлами</p>
                 </div>
               </CardContent>
             </Card>
@@ -951,15 +949,13 @@ export default function App() {
               className="hover:shadow-lg transition-shadow cursor-pointer"
               onClick={() => setCurrentView('hr')}
             >
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <div className="p-2 bg-green-100 rounded-lg">
+              <CardContent className="p-4">
+                <div className="flex flex-col items-center text-center">
+                  <div className="p-2 bg-green-100 rounded-lg mb-2">
                     <Users className="w-6 h-6 text-green-600" />
                   </div>
-                  <div className="ml-4">
-                    <h3 className="font-medium text-gray-900">Кадри</h3>
-                    <p className="text-sm text-gray-500">HR та персонал</p>
-                  </div>
+                  <h3 className="font-medium text-gray-900 text-sm">Кадри</h3>
+                  <p className="text-xs text-gray-500">HR та персонал</p>
                 </div>
               </CardContent>
             </Card>
@@ -968,15 +964,43 @@ export default function App() {
               className="hover:shadow-lg transition-shadow cursor-pointer"
               onClick={() => setCurrentView('timesheet')}
             >
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <div className="p-2 bg-purple-100 rounded-lg">
+              <CardContent className="p-4">
+                <div className="flex flex-col items-center text-center">
+                  <div className="p-2 bg-purple-100 rounded-lg mb-2">
                     <Calendar className="w-6 h-6 text-purple-600" />
                   </div>
-                  <div className="ml-4">
-                    <h3 className="font-medium text-gray-900">Табелювання</h3>
-                    <p className="text-sm text-gray-500">Облік робочого часу</p>
+                  <h3 className="font-medium text-gray-900 text-sm">Табелювання</h3>
+                  <p className="text-xs text-gray-500">Облік робочого часу</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card 
+              className="hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => setCurrentView('finance')}
+            >
+              <CardContent className="p-4">
+                <div className="flex flex-col items-center text-center">
+                  <div className="p-2 bg-yellow-100 rounded-lg mb-2">
+                    <BarChart3 className="w-6 h-6 text-yellow-600" />
                   </div>
+                  <h3 className="font-medium text-gray-900 text-sm">Фінанси</h3>
+                  <p className="text-xs text-gray-500">Бухгалтерія та облік</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card 
+              className="hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => setCurrentView('crm')}
+            >
+              <CardContent className="p-4">
+                <div className="flex flex-col items-center text-center">
+                  <div className="p-2 bg-red-100 rounded-lg mb-2">
+                    <Users className="w-6 h-6 text-red-600" />
+                  </div>
+                  <h3 className="font-medium text-gray-900 text-sm">CRM</h3>
+                  <p className="text-xs text-gray-500">Продажі та клієнти</p>
                 </div>
               </CardContent>
             </Card>
@@ -985,15 +1009,13 @@ export default function App() {
               className="hover:shadow-lg transition-shadow cursor-pointer"
               onClick={() => setCurrentView('business-trips')}
             >
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <div className="p-2 bg-orange-100 rounded-lg">
+              <CardContent className="p-4">
+                <div className="flex flex-col items-center text-center">
+                  <div className="p-2 bg-orange-100 rounded-lg mb-2">
                     <Settings className="w-6 h-6 text-orange-600" />
                   </div>
-                  <div className="ml-4">
-                    <h3 className="font-medium text-gray-900">Відрядження</h3>
-                    <p className="text-sm text-gray-500">Бізнес поїздки</p>
-                  </div>
+                  <h3 className="font-medium text-gray-900 text-sm">Відрядження</h3>
+                  <p className="text-xs text-gray-500">Бізнес поїздки</p>
                 </div>
               </CardContent>
             </Card>
@@ -1002,15 +1024,13 @@ export default function App() {
               className="hover:shadow-lg transition-shadow cursor-pointer"
               onClick={() => setCurrentView('calendar')}
             >
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <div className="p-2 bg-indigo-100 rounded-lg">
+              <CardContent className="p-4">
+                <div className="flex flex-col items-center text-center">
+                  <div className="p-2 bg-indigo-100 rounded-lg mb-2">
                     <Calendar className="w-6 h-6 text-indigo-600" />
                   </div>
-                  <div className="ml-4">
-                    <h3 className="font-medium text-gray-900">Календар</h3>
-                    <p className="text-sm text-gray-500">Події та завдання</p>
-                  </div>
+                  <h3 className="font-medium text-gray-900 text-sm">Календар</h3>
+                  <p className="text-xs text-gray-500">Події та завдання</p>
                 </div>
               </CardContent>
             </Card>
@@ -1019,15 +1039,13 @@ export default function App() {
               className="hover:shadow-lg transition-shadow cursor-pointer"
               onClick={() => setCurrentView('analytics')}
             >
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <div className="p-2 bg-pink-100 rounded-lg">
+              <CardContent className="p-4">
+                <div className="flex flex-col items-center text-center">
+                  <div className="p-2 bg-pink-100 rounded-lg mb-2">
                     <BarChart3 className="w-6 h-6 text-pink-600" />
                   </div>
-                  <div className="ml-4">
-                    <h3 className="font-medium text-gray-900">Аналітика</h3>
-                    <p className="text-sm text-gray-500">Звіти та статистика</p>
-                  </div>
+                  <h3 className="font-medium text-gray-900 text-sm">Аналітика</h3>
+                  <p className="text-xs text-gray-500">Звіти та статистика</p>
                 </div>
               </CardContent>
             </Card>
