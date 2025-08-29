@@ -897,6 +897,474 @@ class TISKISBackendTester:
             
         return False
 
+    def test_calendar_events_api(self):
+        """Test Calendar Events API functionality"""
+        print("\n=== Testing Calendar Events API ===")
+        
+        if not self.auth_token:
+            self.log_result("calendar_events_api", "no_token", False, "No auth token available")
+            return False
+
+        # Test 1: Create calendar event (POST /api/calendar/events)
+        print("Creating calendar events with different types...")
+        
+        # Test events with different types
+        test_events_data = [
+            {
+                "title": "Нарада керівництва",
+                "description": "Щотижнева нарада керівного складу компанії",
+                "startDate": (datetime.now() + timedelta(days=1)).isoformat(),
+                "endDate": (datetime.now() + timedelta(days=1, hours=2)).isoformat(),
+                "type": "meeting",
+                "location": "Конференц-зал А",
+                "attendees": []
+            },
+            {
+                "title": "Дедлайн подачі звітів",
+                "description": "Останній день подачі місячних звітів",
+                "startDate": (datetime.now() + timedelta(days=7)).isoformat(),
+                "type": "deadline",
+                "location": ""
+            },
+            {
+                "title": "Нагадування про презентацію",
+                "description": "Підготувати презентацію для клієнта",
+                "startDate": (datetime.now() + timedelta(days=3)).isoformat(),
+                "type": "reminder"
+            },
+            {
+                "title": "День Незалежності України",
+                "description": "Державне свято",
+                "startDate": "2024-08-24T00:00:00.000Z",
+                "type": "holiday"
+            }
+        ]
+        
+        created_events = 0
+        for event_data in test_events_data:
+            response = self.make_request("POST", "/calendar/events", event_data)
+            if response and response.status_code == 200:
+                event = response.json().get("event")
+                if event:
+                    self.test_events.append(event)
+                    created_events += 1
+                    self.log_result("calendar_events_api", f"create_event_{event_data['type']}", True, 
+                                  f"Created {event_data['type']} event: {event_data['title']}")
+                else:
+                    self.log_result("calendar_events_api", f"create_event_{event_data['type']}", False, 
+                                  f"Event created but no event data returned")
+            else:
+                status = response.status_code if response else "No response"
+                error_msg = response.json().get("error", "Unknown error") if response and response.headers.get('content-type', '').startswith('application/json') else "No error details"
+                self.log_result("calendar_events_api", f"create_event_{event_data['type']}", False, 
+                              f"Failed to create event: {status} - {error_msg}")
+                
+        # Test 2: Get all events (GET /api/calendar/events)
+        response = self.make_request("GET", "/calendar/events")
+        if response and response.status_code == 200:
+            events = response.json()
+            if isinstance(events, list):
+                self.log_result("calendar_events_api", "get_all_events", True, 
+                              f"Retrieved {len(events)} events successfully")
+                
+                # Verify event structure
+                if events:
+                    event = events[0]
+                    required_fields = ["id", "title", "startDate", "type", "createdBy", "createdAt"]
+                    missing_fields = [field for field in required_fields if field not in event]
+                    if not missing_fields:
+                        self.log_result("calendar_events_api", "event_structure", True, "Event structure validation passed")
+                    else:
+                        self.log_result("calendar_events_api", "event_structure", False, f"Missing fields: {missing_fields}")
+            else:
+                self.log_result("calendar_events_api", "get_all_events", False, f"Invalid events response: {events}")
+        else:
+            status = response.status_code if response else "No response"
+            self.log_result("calendar_events_api", "get_all_events", False, f"Failed to retrieve events: {status}")
+            
+        # Test 3: Get events with date filtering
+        start_date = datetime.now().isoformat()
+        end_date = (datetime.now() + timedelta(days=30)).isoformat()
+        
+        response = self.make_request("GET", f"/calendar/events?startDate={start_date}&endDate={end_date}")
+        if response and response.status_code == 200:
+            filtered_events = response.json()
+            if isinstance(filtered_events, list):
+                self.log_result("calendar_events_api", "date_filtering", True, 
+                              f"Date filtering working: {len(filtered_events)} events in range")
+            else:
+                self.log_result("calendar_events_api", "date_filtering", False, f"Invalid filtered response: {filtered_events}")
+        else:
+            status = response.status_code if response else "No response"
+            self.log_result("calendar_events_api", "date_filtering", False, f"Date filtering failed: {status}")
+            
+        # Test 4: Test different event types
+        event_types = ["meeting", "deadline", "reminder", "holiday"]
+        for event_type in event_types:
+            matching_events = [e for e in self.test_events if e.get("type") == event_type]
+            if matching_events:
+                self.log_result("calendar_events_api", f"event_type_{event_type}", True, f"Event type '{event_type}' created successfully")
+            else:
+                self.log_result("calendar_events_api", f"event_type_{event_type}", False, f"No events found for type '{event_type}'")
+                
+        return created_events > 0
+
+    def test_tasks_management_api(self):
+        """Test Tasks Management API functionality"""
+        print("\n=== Testing Tasks Management API ===")
+        
+        if not self.auth_token or not self.user_token:
+            self.log_result("tasks_management_api", "no_tokens", False, "Missing auth tokens")
+            return False
+
+        # Test 1: Create tasks (POST /api/tasks)
+        print("Creating tasks with different priorities and statuses...")
+        
+        test_tasks_data = [
+            {
+                "title": "Розробка нового модуля системи",
+                "description": "Створити модуль управління користувачами з повним функціоналом",
+                "dueDate": (datetime.now() + timedelta(days=14)).isoformat(),
+                "priority": "high",
+                "status": "todo",
+                "category": "development"
+            },
+            {
+                "title": "Перевірка документації",
+                "description": "Перевірити та оновити технічну документацію проекту",
+                "dueDate": (datetime.now() + timedelta(days=7)).isoformat(),
+                "priority": "medium",
+                "status": "in_progress",
+                "category": "documentation"
+            },
+            {
+                "title": "ТЕРМІНОВЕ: Виправлення критичної помилки",
+                "description": "Виправити помилку в системі авторизації",
+                "dueDate": (datetime.now() + timedelta(days=1)).isoformat(),
+                "priority": "urgent",
+                "status": "todo",
+                "category": "bugfix"
+            },
+            {
+                "title": "Планування наступного спринту",
+                "description": "Підготувати план завдань на наступний спринт",
+                "dueDate": (datetime.now() + timedelta(days=21)).isoformat(),
+                "priority": "low",
+                "status": "todo",
+                "category": "planning"
+            }
+        ]
+        
+        created_tasks = 0
+        for task_data in test_tasks_data:
+            response = self.make_request("POST", "/tasks", task_data)
+            if response and response.status_code == 200:
+                task = response.json().get("task")
+                if task:
+                    self.test_tasks.append(task)
+                    created_tasks += 1
+                    self.log_result("tasks_management_api", f"create_task_{task_data['priority']}", True, 
+                                  f"Created {task_data['priority']} priority task: {task_data['title']}")
+                else:
+                    self.log_result("tasks_management_api", f"create_task_{task_data['priority']}", False, 
+                                  f"Task created but no task data returned")
+            else:
+                status = response.status_code if response else "No response"
+                error_msg = response.json().get("error", "Unknown error") if response and response.headers.get('content-type', '').startswith('application/json') else "No error details"
+                self.log_result("tasks_management_api", f"create_task_{task_data['priority']}", False, 
+                              f"Failed to create task: {status} - {error_msg}")
+                
+        # Test 2: Get all tasks (GET /api/tasks)
+        response = self.make_request("GET", "/tasks")
+        if response and response.status_code == 200:
+            tasks = response.json()
+            if isinstance(tasks, list):
+                self.log_result("tasks_management_api", "get_all_tasks", True, 
+                              f"Retrieved {len(tasks)} tasks successfully")
+                
+                # Verify task structure
+                if tasks:
+                    task = tasks[0]
+                    required_fields = ["id", "title", "priority", "status", "createdBy", "assignedTo", "createdAt"]
+                    missing_fields = [field for field in required_fields if field not in task]
+                    if not missing_fields:
+                        self.log_result("tasks_management_api", "task_structure", True, "Task structure validation passed")
+                    else:
+                        self.log_result("tasks_management_api", "task_structure", False, f"Missing fields: {missing_fields}")
+            else:
+                self.log_result("tasks_management_api", "get_all_tasks", False, f"Invalid tasks response: {tasks}")
+        else:
+            status = response.status_code if response else "No response"
+            self.log_result("tasks_management_api", "get_all_tasks", False, f"Failed to retrieve tasks: {status}")
+            
+        # Test 3: Test task filtering
+        # Filter by status
+        response = self.make_request("GET", "/tasks?status=todo")
+        if response and response.status_code == 200:
+            todo_tasks = response.json()
+            if isinstance(todo_tasks, list):
+                self.log_result("tasks_management_api", "status_filtering", True, 
+                              f"Status filtering working: {len(todo_tasks)} todo tasks")
+            else:
+                self.log_result("tasks_management_api", "status_filtering", False, f"Invalid filtered response: {todo_tasks}")
+        else:
+            status = response.status_code if response else "No response"
+            self.log_result("tasks_management_api", "status_filtering", False, f"Status filtering failed: {status}")
+            
+        # Test 4: Update task status (PUT /api/tasks/:id/status)
+        if self.test_tasks:
+            task_id = self.test_tasks[0]["id"]
+            status_updates = [
+                {"status": "in_progress", "comment": "Розпочато роботу над завданням"},
+                {"status": "review", "comment": "Завдання готове до перевірки"},
+                {"status": "completed", "comment": "Завдання успішно завершено"}
+            ]
+            
+            for update_data in status_updates:
+                response = self.make_request("PUT", f"/tasks/{task_id}/status", update_data)
+                if response and response.status_code == 200:
+                    self.log_result("tasks_management_api", f"update_status_{update_data['status']}", True, 
+                                  f"Status updated to '{update_data['status']}'")
+                else:
+                    status = response.status_code if response else "No response"
+                    error_msg = response.json().get("error", "Unknown error") if response and response.headers.get('content-type', '').startswith('application/json') else "No error details"
+                    self.log_result("tasks_management_api", f"update_status_{update_data['status']}", False, 
+                                  f"Failed to update status: {status} - {error_msg}")
+                    
+        return created_tasks > 0
+
+    def test_notifications_api(self):
+        """Test Notifications API functionality"""
+        print("\n=== Testing Notifications API ===")
+        
+        if not self.auth_token or not self.user_token:
+            self.log_result("notifications_api", "no_tokens", False, "Missing auth tokens")
+            return False
+
+        # Test 1: Create task with assignment to generate notification
+        print("Creating task assignment to generate notification...")
+        
+        # Get user ID from user token by decoding or making a request
+        old_token = self.auth_token
+        self.auth_token = self.user_token
+        
+        # Get current user to get user ID
+        response = self.make_request("GET", "/users/me")
+        if not (response and response.status_code == 200):
+            self.log_result("notifications_api", "get_user_id", False, "Failed to get user ID")
+            self.auth_token = old_token
+            return False
+            
+        user_id = response.json().get("id")
+        self.auth_token = old_token
+        
+        task_data = {
+            "title": "Тестове завдання для перевірки сповіщень",
+            "description": "Це завдання створено для тестування системи сповіщень",
+            "dueDate": (datetime.now() + timedelta(days=5)).isoformat(),
+            "priority": "medium",
+            "assignedTo": user_id
+        }
+        
+        response = self.make_request("POST", "/tasks", task_data)
+        if response and response.status_code == 200:
+            task = response.json().get("task")
+            self.log_result("notifications_api", "create_assigned_task", True, 
+                          f"Task created with assignment: {task_data['title']}")
+            
+            # Wait a moment for notification to be created
+            time.sleep(2)
+            
+            # Test 2: Get notifications (GET /api/notifications)
+            old_token = self.auth_token
+            self.auth_token = self.user_token
+            
+            response = self.make_request("GET", "/notifications")
+            if response and response.status_code == 200:
+                notifications = response.json()
+                if isinstance(notifications, list):
+                    self.log_result("notifications_api", "get_notifications", True, 
+                                  f"Retrieved {len(notifications)} notifications")
+                    
+                    # Find the notification for our task
+                    task_notifications = [n for n in notifications if n.get("relatedId") == task["id"]]
+                    if task_notifications:
+                        notification = task_notifications[0]
+                        self.test_notifications.append(notification)
+                        self.log_result("notifications_api", "task_notification_created", True, 
+                                      "Task assignment notification found")
+                        
+                        # Verify notification structure
+                        required_fields = ["id", "userId", "type", "title", "message", "read", "createdAt"]
+                        missing_fields = [field for field in required_fields if field not in notification]
+                        if not missing_fields:
+                            self.log_result("notifications_api", "notification_structure", True, 
+                                          "Notification structure validation passed")
+                        else:
+                            self.log_result("notifications_api", "notification_structure", False, 
+                                          f"Missing fields: {missing_fields}")
+                            
+                        # Test 3: Mark notification as read (PUT /api/notifications/:id/read)
+                        notification_id = notification["id"]
+                        response = self.make_request("PUT", f"/notifications/{notification_id}/read", {})
+                        if response and response.status_code == 200:
+                            self.log_result("notifications_api", "mark_as_read", True, 
+                                          "Notification marked as read successfully")
+                            
+                            # Verify notification is marked as read
+                            response = self.make_request("GET", "/notifications")
+                            if response and response.status_code == 200:
+                                updated_notifications = response.json()
+                                updated_notification = next((n for n in updated_notifications if n["id"] == notification_id), None)
+                                if updated_notification and updated_notification.get("read"):
+                                    self.log_result("notifications_api", "read_status_verified", True, 
+                                                  "Notification read status verified")
+                                else:
+                                    self.log_result("notifications_api", "read_status_verified", False, 
+                                                  "Notification read status not updated")
+                        else:
+                            status = response.status_code if response else "No response"
+                            self.log_result("notifications_api", "mark_as_read", False, f"Failed to mark as read: {status}")
+                    else:
+                        self.log_result("notifications_api", "task_notification_created", False, 
+                                      "Task assignment notification not found")
+                else:
+                    self.log_result("notifications_api", "get_notifications", False, 
+                                  f"Invalid notifications response: {notifications}")
+            else:
+                status = response.status_code if response else "No response"
+                self.log_result("notifications_api", "get_notifications", False, f"Failed to get notifications: {status}")
+                
+            self.auth_token = old_token
+            return True
+        else:
+            status = response.status_code if response else "No response"
+            error_msg = response.json().get("error", "Unknown error") if response and response.headers.get('content-type', '').startswith('application/json') else "No error details"
+            self.log_result("notifications_api", "create_assigned_task", False, f"Failed to create task: {status} - {error_msg}")
+            return False
+
+    def test_complete_workflow_integration(self):
+        """Test complete task workflow integration"""
+        print("\n=== Testing Complete Task Workflow Integration ===")
+        
+        if not self.auth_token or not self.manager_token or not self.user_token:
+            self.log_result("complete_workflow", "missing_tokens", False, "Missing required tokens")
+            return False
+
+        # Get user ID for assignment
+        old_token = self.auth_token
+        self.auth_token = self.user_token
+        
+        response = self.make_request("GET", "/users/me")
+        if not (response and response.status_code == 200):
+            self.log_result("complete_workflow", "get_user_id", False, "Failed to get user ID")
+            self.auth_token = old_token
+            return False
+            
+        user_id = response.json().get("id")
+        self.auth_token = self.manager_token
+        
+        # Step 1: Manager creates task and assigns to user
+        task_data = {
+            "title": "Інтеграційний тест робочого процесу",
+            "description": "Повний тест робочого процесу від створення до завершення завдання",
+            "dueDate": (datetime.now() + timedelta(days=10)).isoformat(),
+            "priority": "high",
+            "assignedTo": user_id
+        }
+        
+        response = self.make_request("POST", "/tasks", task_data)
+        if response and response.status_code == 200:
+            workflow_task = response.json().get("task")
+            self.log_result("complete_workflow", "manager_create_task", True, "Manager created and assigned task")
+            
+            # Step 2: Check notification was created for assigned user
+            time.sleep(2)
+            self.auth_token = self.user_token
+            
+            response = self.make_request("GET", "/notifications")
+            if response and response.status_code == 200:
+                notifications = response.json()
+                task_notification = next((n for n in notifications if n.get("relatedId") == workflow_task["id"]), None)
+                if task_notification:
+                    self.log_result("complete_workflow", "notification_created", True, "Notification created for assigned user")
+                    
+                    # Step 3: User accepts task (updates status)
+                    response = self.make_request("PUT", f"/tasks/{workflow_task['id']}/status", 
+                                               {"status": "in_progress", "comment": "Розпочинаю роботу"})
+                    if response and response.status_code == 200:
+                        self.log_result("complete_workflow", "user_start_task", True, "User updated task status to in_progress")
+                        
+                        # Step 4: User completes task
+                        response = self.make_request("PUT", f"/tasks/{workflow_task['id']}/status", 
+                                                   {"status": "completed", "comment": "Завдання виконано"})
+                        if response and response.status_code == 200:
+                            self.log_result("complete_workflow", "user_complete_task", True, "User completed task")
+                            
+                            # Step 5: Verify final task state
+                            self.auth_token = self.manager_token
+                            response = self.make_request("GET", "/tasks")
+                            if response and response.status_code == 200:
+                                tasks = response.json()
+                                completed_task = next((t for t in tasks if t["id"] == workflow_task["id"]), None)
+                                if completed_task and completed_task.get("status") == "completed":
+                                    self.log_result("complete_workflow", "verify_completion", True, 
+                                                  "Complete workflow verified - task marked as completed")
+                                    self.log_result("complete_workflow", "full_workflow_test", True, 
+                                                  "🎉 COMPLETE WORKFLOW TEST PASSED")
+                                    self.auth_token = old_token
+                                    return True
+                                else:
+                                    self.log_result("complete_workflow", "verify_completion", False, 
+                                                  "Task status not properly updated")
+                            else:
+                                self.log_result("complete_workflow", "verify_completion", False, 
+                                              "Failed to verify final task state")
+                        else:
+                            self.log_result("complete_workflow", "user_complete_task", False, "Failed to complete task")
+                    else:
+                        self.log_result("complete_workflow", "user_start_task", False, "Failed to update task status")
+                else:
+                    self.log_result("complete_workflow", "notification_created", False, "Notification not created")
+            else:
+                self.log_result("complete_workflow", "notification_created", False, "Failed to check notifications")
+        else:
+            status = response.status_code if response else "No response"
+            self.log_result("complete_workflow", "manager_create_task", False, f"Failed to create workflow task: {status}")
+            
+        self.auth_token = old_token
+        return False
+
+    def test_authentication_requirements_new_apis(self):
+        """Test that new Calendar and Tasks APIs require proper authentication"""
+        print("\n=== Testing Authentication Requirements for New APIs ===")
+        
+        endpoints_to_test = [
+            ("GET", "/calendar/events"),
+            ("POST", "/calendar/events"),
+            ("GET", "/tasks"),
+            ("POST", "/tasks"),
+            ("GET", "/notifications")
+        ]
+        
+        for method, endpoint in endpoints_to_test:
+            # Test without token
+            old_token = self.auth_token
+            self.auth_token = None
+            
+            test_data = {} if method == "POST" else None
+            response = self.make_request(method, endpoint, test_data)
+            
+            if response and response.status_code == 401:
+                self.log_result("authentication", f"auth_required_{method.lower()}_{endpoint.replace('/', '_')}", True, 
+                              f"{method} {endpoint}: Properly requires authentication")
+            else:
+                status = response.status_code if response else "No response"
+                self.log_result("authentication", f"auth_required_{method.lower()}_{endpoint.replace('/', '_')}", False, 
+                              f"{method} {endpoint}: Authentication not enforced - {status}")
+                
+            self.auth_token = old_token
+
     def run_all_tests(self):
         """Run all backend tests in priority order"""
         print(f"\n🚀 Starting ТИС КІС Enhanced Backend API Tests")
