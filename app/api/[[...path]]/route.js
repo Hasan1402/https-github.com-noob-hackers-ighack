@@ -55,6 +55,42 @@ function verifyToken(request) {
   }
 }
 
+// Helper functions for financial accounting
+async function getNextJournalNumber(db) {
+  const lastEntry = await db.collection('journal_entries')
+    .findOne({}, { sort: { number: -1 } })
+  
+  return lastEntry ? (lastEntry.number || 0) + 1 : 1
+}
+
+async function updateAccountBalances(db, lines) {
+  for (const line of lines) {
+    const account = await db.collection('chart_of_accounts')
+      .findOne({ id: line.accountId })
+    
+    if (account) {
+      let balanceChange = 0
+      
+      // For asset and expense accounts: debit increases, credit decreases
+      if (['asset', 'expense'].includes(account.type)) {
+        balanceChange = (line.debit || 0) - (line.credit || 0)
+      }
+      // For liability, equity, and revenue accounts: credit increases, debit decreases
+      else if (['liability', 'equity', 'revenue'].includes(account.type)) {
+        balanceChange = (line.credit || 0) - (line.debit || 0)
+      }
+      
+      await db.collection('chart_of_accounts').updateOne(
+        { id: line.accountId },
+        { 
+          $inc: { balance: balanceChange },
+          $set: { updatedAt: new Date() }
+        }
+      )
+    }
+  }
+}
+
 // OPTIONS handler for CORS
 export async function OPTIONS() {
   return handleCORS(new NextResponse(null, { status: 200 }))
