@@ -51,6 +51,9 @@ class TISKISBackendTester:
             "tasks_management_api": {},
             "notifications_api": {},
             "complete_workflow": {},
+            "analytics_dashboard": {},
+            "analytics_documents": {},
+            "analytics_reports": {},
             "summary": {"passed": 0, "failed": 0, "errors": []}
         }
         self.test_document_id = None
