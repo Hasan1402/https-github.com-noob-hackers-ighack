@@ -161,7 +161,24 @@ export default function App() {
         toast.error(data.error || 'Помилка авторизації')
       }
     } catch (error) {
-      toast.error('Помилка підключення до сервера')
+      console.error('Login error:', error)
+      // Demo mode fallback - якщо API недоступний
+      if (loginForm.email.includes('@tiskis.test') && loginForm.password) {
+        const demoUser = {
+          id: 'demo-' + loginForm.email.split('@')[0],
+          email: loginForm.email,
+          fullName: loginForm.email.includes('admin') ? 'Тестовий Адміністратор' :
+                   loginForm.email.includes('manager') ? 'Тестовий Менеджер' : 'Тестовий Користувач',
+          role: loginForm.email.includes('admin') ? 'admin' :
+                loginForm.email.includes('manager') ? 'manager' : 'user'
+        }
+        localStorage.setItem('token', 'demo-token-' + Date.now())
+        setUser(demoUser)
+        setCurrentView('dashboard')
+        toast.success('Увійшли в DEMO режимі!')
+        return
+      }
+      toast.error('Помилка підключення до сервера. Спробуйте тестові акаунти: admin@tiskis.test')
     }
   }
 
