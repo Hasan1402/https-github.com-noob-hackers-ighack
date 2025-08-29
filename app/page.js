@@ -22,7 +22,13 @@ import {
   Bell,
   LogOut,
   User,
-  Lock
+  Lock,
+  BookOpen,
+  CreditCard,
+  Calculator,
+  Target,
+  TrendingUp,
+  Package
 } from 'lucide-react'
 import { toast } from 'sonner'
 
