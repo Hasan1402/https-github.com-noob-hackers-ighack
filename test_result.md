@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Створити MVP ТИС КІС з authentication system (Admin/Manager/User ролі), main dashboard з навігацією та basic document management"
+user_problem_statement: "Створити MVP ТИС КІС з authentication system (Admin/Manager/User ролі), main dashboard з навігацією, basic document management та розширити документообіг з workflow (draft → review → approved/rejected) + версійність та історія дій"
 
 backend:
   - task: "User Authentication API"
@@ -118,7 +118,7 @@ backend:
           comment: "Implemented registration, login, JWT token verification endpoints with bcrypt password hashing and role-based access"
         - working: true
           agent: "testing"
-          comment: "✅ TESTED: All authentication endpoints working correctly. Registration (POST /api/auth/register) works for all roles (admin/manager/user), login (POST /api/auth/login) returns JWT tokens, JWT verification (GET /api/auth/verify) works, passwords properly hashed with bcrypt, error handling works for invalid credentials and duplicate registrations. CORS headers present."
+          comment: "✅ Complete authentication flow working (registration, login, JWT verification, password hashing, role assignment)"
 
   - task: "User Management API"
     implemented: true
@@ -133,22 +133,43 @@ backend:
           comment: "Implemented get users list (admin/manager only) and get current user profile endpoints"
         - working: true
           agent: "testing"
-          comment: "✅ TESTED: User management endpoints working correctly. GET /api/users returns user list for admin/manager roles (passwords excluded), GET /api/users/me returns current user profile, role-based access control working (403 for regular users trying to access admin endpoints)."
+          comment: "✅ Role-based access control working (admin/manager can access user lists, regular users properly denied)"
 
-  - task: "Document Management API (Basic)"
+  - task: "Enhanced Document Management API with Workflow"
     implemented: true
-    working: true
+    working: "NA"
     file: "/app/app/api/[[...path]]/route.js"
     stuck_count: 0
-    priority: "medium"
-    needs_retesting: false
+    priority: "high"
+    needs_retesting: true
     status_history:
         - working: "NA"
           agent: "main"
-          comment: "Implemented basic get documents endpoint with mock data, returns documents list with auth check"
-        - working: true
-          agent: "testing"
-          comment: "✅ TESTED: Document management endpoint working correctly. GET /api/documents returns mock document data with proper structure (id, name, type, size, uploadedBy, uploadedAt, folder), requires authentication (401 without token)."
+          comment: "Implemented complete document workflow: upload with file handling, status management (draft/review/approved/rejected), approve/reject endpoints, send-for-review functionality, document history tracking, role-based permissions for workflow actions"
+
+  - task: "File Upload System"
+    implemented: true
+    working: "NA"
+    file: "/app/app/api/[[...path]]/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Implemented multer file upload system with proper file handling, unique filename generation, uploads directory creation, file metadata storage in MongoDB"
+
+  - task: "Workflow History Tracking"
+    implemented: true
+    working: "NA"
+    file: "/app/app/api/[[...path]]/route.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Implemented workflow_history collection to track all document actions (created, sent for review, approved, rejected) with timestamps, user info, and comments"
 
   - task: "Dashboard Stats API"
     implemented: true
@@ -163,7 +184,7 @@ backend:
           comment: "Implemented dashboard stats endpoint that returns user counts and system metrics"
         - working: true
           agent: "testing"
-          comment: "✅ TESTED: Dashboard stats endpoint working correctly. GET /api/dashboard/stats returns proper statistics (totalUsers, totalDocuments, activeProjects, pendingTasks), user count reflects actual database state, requires authentication (401 without token)."
+          comment: "✅ Real user statistics from database with authentication requirements"
 
 frontend:
   - task: "Authentication UI"
