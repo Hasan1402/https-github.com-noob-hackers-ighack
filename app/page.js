@@ -868,7 +868,7 @@ export default function App() {
           </div>
 
           {/* Quick Actions */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 mb-8">
             <Card 
               className="hover:shadow-lg transition-shadow cursor-pointer"
               onClick={() => setCurrentView('documents')}
@@ -888,7 +888,7 @@ export default function App() {
 
             <Card 
               className="hover:shadow-lg transition-shadow cursor-pointer"
-              onClick={() => setCurrentView('users')}
+              onClick={() => setCurrentView('hr')}
             >
               <CardContent className="p-6">
                 <div className="flex items-center">
@@ -896,8 +896,42 @@ export default function App() {
                     <Users className="w-6 h-6 text-green-600" />
                   </div>
                   <div className="ml-4">
-                    <h3 className="font-medium text-gray-900">Користувачі</h3>
-                    <p className="text-sm text-gray-500">Керування профілями</p>
+                    <h3 className="font-medium text-gray-900">Кадри</h3>
+                    <p className="text-sm text-gray-500">HR та персонал</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card 
+              className="hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => setCurrentView('timesheet')}
+            >
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-purple-100 rounded-lg">
+                    <Calendar className="w-6 h-6 text-purple-600" />
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="font-medium text-gray-900">Табелювання</h3>
+                    <p className="text-sm text-gray-500">Облік робочого часу</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card 
+              className="hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => setCurrentView('business-trips')}
+            >
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-orange-100 rounded-lg">
+                    <Settings className="w-6 h-6 text-orange-600" />
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="font-medium text-gray-900">Відрядження</h3>
+                    <p className="text-sm text-gray-500">Бізнес поїздки</p>
                   </div>
                 </div>
               </CardContent>
@@ -909,8 +943,8 @@ export default function App() {
             >
               <CardContent className="p-6">
                 <div className="flex items-center">
-                  <div className="p-2 bg-purple-100 rounded-lg">
-                    <Calendar className="w-6 h-6 text-purple-600" />
+                  <div className="p-2 bg-indigo-100 rounded-lg">
+                    <Calendar className="w-6 h-6 text-indigo-600" />
                   </div>
                   <div className="ml-4">
                     <h3 className="font-medium text-gray-900">Календар</h3>
@@ -926,8 +960,8 @@ export default function App() {
             >
               <CardContent className="p-6">
                 <div className="flex items-center">
-                  <div className="p-2 bg-orange-100 rounded-lg">
-                    <BarChart3 className="w-6 h-6 text-orange-600" />
+                  <div className="p-2 bg-pink-100 rounded-lg">
+                    <BarChart3 className="w-6 h-6 text-pink-600" />
                   </div>
                   <div className="ml-4">
                     <h3 className="font-medium text-gray-900">Аналітика</h3>
