@@ -321,7 +321,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Document Upload Interface"
+    - "Calendar Events API"
+    - "Tasks Management API"
+    - "Notifications API"
   stuck_tasks:
     - "Document Upload Interface"
   test_all: false
