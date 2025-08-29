@@ -1329,3 +1329,548 @@ function DocumentsTable({ documents, user, users, onApprove, onReject, onSendFor
     </>
   )
 }
+
+// Create Event Dialog Component
+function CreateEventDialog({ onCreateEvent, users }) {
+  const [isOpen, setIsOpen] = useState(false)
+  const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
+  const [type, setType] = useState('meeting')
+  const [location, setLocation] = useState('')
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    if (!title || !startDate) {
+      toast.error('Назва та дата початку обов\'язкові')
+      return
+    }
+
+    await onCreateEvent({
+      title,
+      description,
+      startDate,
+      endDate: endDate || startDate,
+      type,
+      location
+    })
+    
+    // Reset form
+    setTitle('')
+    setDescription('')
+    setStartDate('')
+    setEndDate('')
+    setType('meeting')
+    setLocation('')
+    setIsOpen(false)
+  }
+
+  return (
+    <>
+      <Button onClick={() => setIsOpen(true)}>
+        <Calendar className="w-4 h-4 mr-2" />
+        Додати подію
+      </Button>
+
+      {isOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <Card className="max-w-md w-full mx-4">
+            <CardHeader>
+              <CardTitle>Створити подію</CardTitle>
+              <CardDescription>
+                Додайте нову подію до календаря
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <Label htmlFor="event-title">Назва події *</Label>
+                  <Input
+                    id="event-title"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Назва події"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="event-description">Опис</Label>
+                  <Input
+                    id="event-description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Опис події"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="start-date">Дата початку *</Label>
+                    <Input
+                      id="start-date"
+                      type="datetime-local"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="end-date">Дата кінця</Label>
+                    <Input
+                      id="end-date"
+                      type="datetime-local"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="event-type">Тип події</Label>
+                  <select
+                    id="event-type"
+                    className="w-full p-2 border rounded-md"
+                    value={type}
+                    onChange={(e) => setType(e.target.value)}
+                  >
+                    <option value="meeting">Зустріч</option>
+                    <option value="deadline">Дедлайн</option>
+                    <option value="reminder">Нагадування</option>
+                    <option value="holiday">Свято</option>
+                  </select>
+                </div>
+
+                <div>
+                  <Label htmlFor="event-location">Місце проведення</Label>
+                  <Input
+                    id="event-location"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    placeholder="Місце проведення"
+                  />
+                </div>
+
+                <div className="flex space-x-2 pt-4">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setIsOpen(false)}
+                    className="flex-1"
+                  >
+                    Скасувати
+                  </Button>
+                  <Button 
+                    type="submit"
+                    className="flex-1"
+                  >
+                    Створити подію
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+    </>
+  )
+}
+
+// Create Task Dialog Component
+function CreateTaskDialog({ onCreateTask, users }) {
+  const [isOpen, setIsOpen] = useState(false)
+  const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
+  const [dueDate, setDueDate] = useState('')
+  const [priority, setPriority] = useState('medium')
+  const [assignedTo, setAssignedTo] = useState('')
+  const [category, setCategory] = useState('general')
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    if (!title) {
+      toast.error('Назва завдання обов\'язкова')
+      return
+    }
+
+    await onCreateTask({
+      title,
+      description,
+      dueDate,
+      priority,
+      assignedTo,
+      category
+    })
+    
+    // Reset form
+    setTitle('')
+    setDescription('')
+    setDueDate('')
+    setPriority('medium')
+    setAssignedTo('')
+    setCategory('general')
+    setIsOpen(false)
+  }
+
+  return (
+    <>
+      <Button onClick={() => setIsOpen(true)} variant="outline">
+        <FileText className="w-4 h-4 mr-2" />
+        Додати завдання
+      </Button>
+
+      {isOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <Card className="max-w-md w-full mx-4">
+            <CardHeader>
+              <CardTitle>Створити завдання</CardTitle>
+              <CardDescription>
+                Додайте нове завдання та призначте відповідального
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <Label htmlFor="task-title">Назва завдання *</Label>
+                  <Input
+                    id="task-title"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Назва завдання"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="task-description">Опис</Label>
+                  <Input
+                    id="task-description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Опис завдання"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="due-date">Дедлайн</Label>
+                  <Input
+                    id="due-date"
+                    type="datetime-local"
+                    value={dueDate}
+                    onChange={(e) => setDueDate(e.target.value)}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="task-priority">Пріоритет</Label>
+                    <select
+                      id="task-priority"
+                      className="w-full p-2 border rounded-md"
+                      value={priority}
+                      onChange={(e) => setPriority(e.target.value)}
+                    >
+                      <option value="low">Низький</option>
+                      <option value="medium">Середній</option>
+                      <option value="high">Високий</option>
+                      <option value="urgent">Терміновий</option>
+                    </select>
+                  </div>
+                  <div>
+                    <Label htmlFor="task-category">Категорія</Label>
+                    <select
+                      id="task-category"
+                      className="w-full p-2 border rounded-md"
+                      value={category}
+                      onChange={(e) => setCategory(e.target.value)}
+                    >
+                      <option value="general">Загальне</option>
+                      <option value="documents">Документи</option>
+                      <option value="meeting">Зустрічі</option>
+                      <option value="review">Перевірка</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="assigned-to">Призначити користувачу</Label>
+                  <select
+                    id="assigned-to"
+                    className="w-full p-2 border rounded-md"
+                    value={assignedTo}
+                    onChange={(e) => setAssignedTo(e.target.value)}
+                  >
+                    <option value="">Призначити собі</option>
+                    {users.map(user => (
+                      <option key={user.id} value={user.id}>
+                        {user.fullName} ({user.role})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="flex space-x-2 pt-4">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setIsOpen(false)}
+                    className="flex-1"
+                  >
+                    Скасувати
+                  </Button>
+                  <Button 
+                    type="submit"
+                    className="flex-1"
+                  >
+                    Створити завдання
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+    </>
+  )
+}
+
+// Simple Calendar Component
+function CalendarComponent({ events, selectedDate, onDateSelect }) {
+  const today = new Date()
+  const year = selectedDate.getFullYear()
+  const month = selectedDate.getMonth()
+
+  const firstDay = new Date(year, month, 1)
+  const lastDay = new Date(year, month + 1, 0)
+  const startDate = new Date(firstDay)
+  startDate.setDate(startDate.getDate() - firstDay.getDay())
+
+  const days = []
+  const currentDate = new Date(startDate)
+
+  for (let i = 0; i < 42; i++) {
+    days.push(new Date(currentDate))
+    currentDate.setDate(currentDate.getDate() + 1)
+  }
+
+  const monthNames = [
+    'Січень', 'Лютий', 'Березень', 'Квітень', 'Травень', 'Червень',
+    'Липень', 'Серпень', 'Вересень', 'Жовтень', 'Листопад', 'Грудень'
+  ]
+
+  const getDayEvents = (date) => {
+    return events.filter(event => {
+      const eventDate = new Date(event.startDate)
+      return eventDate.toDateString() === date.toDateString()
+    })
+  }
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <Button
+          variant="outline"
+          onClick={() => onDateSelect(new Date(year, month - 1, 1))}
+        >
+          ←
+        </Button>
+        <h3 className="text-lg font-semibold">
+          {monthNames[month]} {year}
+        </h3>
+        <Button
+          variant="outline"
+          onClick={() => onDateSelect(new Date(year, month + 1, 1))}
+        >
+          →
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-7 gap-1 mb-2">
+        {['Нд', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'].map(day => (
+          <div key={day} className="p-2 text-center text-sm font-medium text-gray-500">
+            {day}
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-7 gap-1">
+        {days.map((date, index) => {
+          const isToday = date.toDateString() === today.toDateString()
+          const isCurrentMonth = date.getMonth() === month
+          const dayEvents = getDayEvents(date)
+
+          return (
+            <div
+              key={index}
+              onClick={() => onDateSelect(date)}
+              className={`p-2 min-h-[80px] border cursor-pointer transition-colors ${
+                isToday ? 'bg-blue-100 border-blue-300' : 
+                isCurrentMonth ? 'bg-white hover:bg-gray-50' : 
+                'bg-gray-50 text-gray-400'
+              }`}
+            >
+              <div className={`text-sm ${isToday ? 'font-bold text-blue-900' : ''}`}>
+                {date.getDate()}
+              </div>
+              {dayEvents.map(event => (
+                <div
+                  key={event.id}
+                  className="text-xs p-1 mt-1 bg-blue-500 text-white rounded truncate"
+                  title={event.title}
+                >
+                  {event.title}
+                </div>
+              ))}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+// Tasks List Component
+function TasksList({ tasks, onUpdateStatus }) {
+  const getPriorityColor = (priority) => {
+    const colors = {
+      low: 'text-gray-500',
+      medium: 'text-blue-500', 
+      high: 'text-orange-500',
+      urgent: 'text-red-500'
+    }
+    return colors[priority] || 'text-gray-500'
+  }
+
+  const getStatusColor = (status) => {
+    const colors = {
+      todo: 'bg-gray-100 text-gray-800',
+      in_progress: 'bg-blue-100 text-blue-800',
+      review: 'bg-yellow-100 text-yellow-800', 
+      completed: 'bg-green-100 text-green-800',
+      cancelled: 'bg-red-100 text-red-800'
+    }
+    return colors[status] || 'bg-gray-100 text-gray-800'
+  }
+
+  const getStatusText = (status) => {
+    const texts = {
+      todo: 'До виконання',
+      in_progress: 'В роботі',
+      review: 'На перевірці',
+      completed: 'Завершено',
+      cancelled: 'Скасовано'
+    }
+    return texts[status] || status
+  }
+
+  if (tasks.length === 0) {
+    return (
+      <div className="text-center py-8 text-gray-500">
+        <FileText className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+        <p>Завдань немає</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-3">
+      {tasks.slice(0, 5).map(task => (
+        <div key={task.id} className="p-3 border rounded-lg">
+          <div className="flex items-start justify-between mb-2">
+            <div className="flex-1">
+              <h4 className="font-medium text-sm">{task.title}</h4>
+              <p className="text-xs text-gray-500 mt-1">{task.description}</p>
+            </div>
+            <Badge className={getStatusColor(task.status)}>
+              {getStatusText(task.status)}
+            </Badge>
+          </div>
+          
+          <div className="flex items-center justify-between text-xs text-gray-500">
+            <span className={getPriorityColor(task.priority)}>
+              {task.priority === 'low' && 'Низький'}
+              {task.priority === 'medium' && 'Середній'}
+              {task.priority === 'high' && 'Високий'}
+              {task.priority === 'urgent' && 'Терміновий'}
+            </span>
+            
+            {task.dueDate && (
+              <span>
+                до {new Date(task.dueDate).toLocaleDateString('uk-UA')}
+              </span>
+            )}
+          </div>
+
+          {task.status !== 'completed' && task.status !== 'cancelled' && (
+            <div className="flex gap-1 mt-2">
+              {task.status === 'todo' && (
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  onClick={() => onUpdateStatus(task.id, 'in_progress', 'Взято в роботу')}
+                  className="text-xs"
+                >
+                  Почати
+                </Button>
+              )}
+              {task.status === 'in_progress' && (
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  onClick={() => onUpdateStatus(task.id, 'completed', 'Завдання завершено')}
+                  className="text-xs"
+                >
+                  Завершити
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
+      ))}
+      
+      {tasks.length > 5 && (
+        <p className="text-center text-sm text-gray-500">
+          ... та ще {tasks.length - 5} завдань
+        </p>
+      )}
+    </div>
+  )
+}
+
+// Notifications List Component
+function NotificationsList({ notifications }) {
+  if (notifications.length === 0) {
+    return (
+      <div className="text-center py-8 text-gray-500">
+        <Bell className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+        <p>Повідомлень немає</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-3">
+      {notifications.slice(0, 5).map(notification => (
+        <div 
+          key={notification.id} 
+          className={`p-3 border-l-4 rounded-r ${
+            notification.read ? 'border-gray-300 bg-gray-50' : 'border-blue-400 bg-blue-50'
+          }`}
+        >
+          <h4 className="font-medium text-sm">{notification.title}</h4>
+          <p className="text-xs text-gray-600 mt-1">{notification.message}</p>
+          <p className="text-xs text-gray-500 mt-2">
+            {new Date(notification.createdAt).toLocaleDateString('uk-UA')}
+          </p>
+        </div>
+      ))}
+      
+      {notifications.length > 5 && (
+        <p className="text-center text-sm text-gray-500">
+          ... та ще {notifications.length - 5} повідомлень
+        </p>
+      )}
+    </div>
+  )
+}
