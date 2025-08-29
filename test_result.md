@@ -270,9 +270,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Authentication UI"
-  stuck_tasks:
-    - "Authentication UI"
+    - "Enhanced Document Management UI with Workflow"
+    - "Document Upload Interface"
+    - "Workflow Actions Interface"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
