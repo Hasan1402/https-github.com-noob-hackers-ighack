@@ -1230,6 +1230,382 @@ async function handleRoute(request, { params }) {
       }
     }
 
+    // HR AND PERSONNEL MANAGEMENT ROUTES
+
+    // Create Employee - POST /api/hr/employees
+    if (route === '/hr/employees' && method === 'POST') {
+      const decoded = verifyToken(request)
+      if (!decoded) {
+        return handleCORS(NextResponse.json(
+          { error: "Авторизація потрібна" }, 
+          { status: 401 }
+        ))
+      }
+
+      if (!['admin', 'manager'].includes(decoded.role)) {
+        return handleCORS(NextResponse.json(
+          { error: "Недостатньо прав доступу" }, 
+          { status: 403 }
+        ))
+      }
+
+      const { 
+        fullName, 
+        position, 
+        department, 
+        employeeId, 
+        phoneNumber, 
+        email, 
+        hireDate,
+        salary,
+        workSchedule,
+        contractType 
+      } = await request.json()
+
+      if (!fullName || !position || !department) {
+        return handleCORS(NextResponse.json(
+          { error: "Обов'язкові поля: ПІБ, посада, підрозділ" }, 
+          { status: 400 }
+        ))
+      }
+
+      const employee = {
+        id: uuidv4(),
+        fullName,
+        position,
+        department,
+        employeeId: employeeId || `EMP-${Date.now()}`,
+        phoneNumber: phoneNumber || '',
+        email: email || '',
+        hireDate: hireDate ? new Date(hireDate) : new Date(),
+        salary: salary || 0,
+        workSchedule: workSchedule || '8:00-17:00',
+        contractType: contractType || 'permanent', // permanent, temporary, contract
+        status: 'active', // active, inactive, fired
+        createdBy: decoded.userId,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+
+      await db.collection('employees').insertOne(employee)
+      return handleCORS(NextResponse.json({ 
+        message: "Співробітника додано успішно",
+        employee
+      }))
+    }
+
+    // Get Employees - GET /api/hr/employees
+    if (route === '/hr/employees' && method === 'GET') {
+      const decoded = verifyToken(request)
+      if (!decoded) {
+        return handleCORS(NextResponse.json(
+          { error: "Авторизація потрібна" }, 
+          { status: 401 }
+        ))
+      }
+
+      const url = new URL(request.url)
+      const department = url.searchParams.get('department')
+      const status = url.searchParams.get('status')
+
+      let filter = {}
+      if (department && department !== 'all') {
+        filter.department = department
+      }
+      if (status && status !== 'all') {
+        filter.status = status
+      }
+
+      const employees = await db.collection('employees')
+        .find(filter)
+        .sort({ fullName: 1 })
+        .toArray()
+
+      return handleCORS(NextResponse.json(employees))
+    }
+
+    // TIMESHEET ROUTES
+
+    // Create Timesheet Entry - POST /api/timesheet/entries
+    if (route === '/timesheet/entries' && method === 'POST') {
+      const decoded = verifyToken(request)
+      if (!decoded) {
+        return handleCORS(NextResponse.json(
+          { error: "Авторизація потрібна" }, 
+          { status: 401 }
+        ))
+      }
+
+      const { 
+        employeeId, 
+        date, 
+        startTime, 
+        endTime, 
+        breakTime, 
+        workHours,
+        overtime,
+        absenceType,
+        comments 
+      } = await request.json()
+
+      if (!employeeId || !date) {
+        return handleCORS(NextResponse.json(
+          { error: "Обов'язкові поля: ID співробітника, дата" }, 
+          { status: 400 }
+        ))
+      }
+
+      const entry = {
+        id: uuidv4(),
+        employeeId,
+        date: new Date(date),
+        startTime: startTime || null,
+        endTime: endTime || null,
+        breakTime: breakTime || 0,
+        workHours: workHours || 0,
+        overtime: overtime || 0,
+        absenceType: absenceType || null, // sick, vacation, business_trip, personal
+        comments: comments || '',
+        status: 'submitted', // submitted, approved, rejected
+        createdBy: decoded.userId,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+
+      await db.collection('timesheet_entries').insertOne(entry)
+      return handleCORS(NextResponse.json({ 
+        message: "Запис табеля додано успішно",
+        entry
+      }))
+    }
+
+    // Get Timesheet Entries - GET /api/timesheet/entries
+    if (route === '/timesheet/entries' && method === 'GET') {
+      const decoded = verifyToken(request)
+      if (!decoded) {
+        return handleCORS(NextResponse.json(
+          { error: "Авторизація потрібна" }, 
+          { status: 401 }
+        ))
+      }
+
+      const url = new URL(request.url)
+      const employeeId = url.searchParams.get('employeeId')
+      const dateFrom = url.searchParams.get('dateFrom')
+      const dateTo = url.searchParams.get('dateTo')
+      const month = url.searchParams.get('month')
+
+      let filter = {}
+      
+      if (employeeId) {
+        filter.employeeId = employeeId
+      }
+
+      if (dateFrom && dateTo) {
+        filter.date = {
+          $gte: new Date(dateFrom),
+          $lte: new Date(dateTo)
+        }
+      } else if (month) {
+        const monthDate = new Date(month)
+        const startOfMonth = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1)
+        const endOfMonth = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0)
+        filter.date = {
+          $gte: startOfMonth,
+          $lte: endOfMonth
+        }
+      }
+
+      const entries = await db.collection('timesheet_entries')
+        .find(filter)
+        .sort({ date: -1 })
+        .toArray()
+
+      // Get employee details
+      const employeeIds = [...new Set(entries.map(entry => entry.employeeId))]
+      const employees = await db.collection('employees')
+        .find({ id: { $in: employeeIds } })
+        .toArray()
+      
+      const employeeMap = {}
+      employees.forEach(emp => {
+        employeeMap[emp.id] = emp
+      })
+
+      // Enrich entries with employee info
+      const enrichedEntries = entries.map(entry => ({
+        ...entry,
+        employee: employeeMap[entry.employeeId] || null
+      }))
+
+      return handleCORS(NextResponse.json(enrichedEntries))
+    }
+
+    // BUSINESS TRIP ROUTES
+
+    // Create Business Trip - POST /api/hr/business-trips
+    if (route === '/hr/business-trips' && method === 'POST') {
+      const decoded = verifyToken(request)
+      if (!decoded) {
+        return handleCORS(NextResponse.json(
+          { error: "Авторизація потрібна" }, 
+          { status: 401 }
+        ))
+      }
+
+      const { 
+        employeeId, 
+        destination, 
+        purpose, 
+        startDate, 
+        endDate, 
+        transportType,
+        estimatedCost,
+        comments 
+      } = await request.json()
+
+      if (!employeeId || !destination || !purpose || !startDate || !endDate) {
+        return handleCORS(NextResponse.json(
+          { error: "Всі основні поля обов'язкові" }, 
+          { status: 400 }
+        ))
+      }
+
+      const businessTrip = {
+        id: uuidv4(),
+        employeeId,
+        destination,
+        purpose,
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
+        transportType: transportType || 'car',
+        estimatedCost: estimatedCost || 0,
+        actualCost: 0,
+        comments: comments || '',
+        status: 'pending', // pending, approved, rejected, completed
+        createdBy: decoded.userId,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+
+      await db.collection('business_trips').insertOne(businessTrip)
+      return handleCORS(NextResponse.json({ 
+        message: "Заяву на відрядження створено",
+        businessTrip
+      }))
+    }
+
+    // Get Business Trips - GET /api/hr/business-trips
+    if (route === '/hr/business-trips' && method === 'GET') {
+      const decoded = verifyToken(request)
+      if (!decoded) {
+        return handleCORS(NextResponse.json(
+          { error: "Авторизація потрібна" }, 
+          { status: 401 }
+        ))
+      }
+
+      const url = new URL(request.url)
+      const status = url.searchParams.get('status')
+      const employeeId = url.searchParams.get('employeeId')
+
+      let filter = {}
+      if (status && status !== 'all') {
+        filter.status = status
+      }
+      if (employeeId) {
+        filter.employeeId = employeeId
+      }
+
+      const trips = await db.collection('business_trips')
+        .find(filter)
+        .sort({ createdAt: -1 })
+        .toArray()
+
+      // Get employee details
+      const employeeIds = [...new Set(trips.map(trip => trip.employeeId))]
+      const employees = await db.collection('employees')
+        .find({ id: { $in: employeeIds } })
+        .toArray()
+      
+      const employeeMap = {}
+      employees.forEach(emp => {
+        employeeMap[emp.id] = emp
+      })
+
+      // Enrich trips with employee info
+      const enrichedTrips = trips.map(trip => ({
+        ...trip,
+        employee: employeeMap[trip.employeeId] || null
+      }))
+
+      return handleCORS(NextResponse.json(enrichedTrips))
+    }
+
+    // DEPARTMENTS ROUTES
+
+    // Create Department - POST /api/hr/departments
+    if (route === '/hr/departments' && method === 'POST') {
+      const decoded = verifyToken(request)
+      if (!decoded) {
+        return handleCORS(NextResponse.json(
+          { error: "Авторизація потрібна" }, 
+          { status: 401 }
+        ))
+      }
+
+      if (!['admin'].includes(decoded.role)) {
+        return handleCORS(NextResponse.json(
+          { error: "Тільки адміністратор може створювати підрозділи" }, 
+          { status: 403 }
+        ))
+      }
+
+      const { name, description, managerId, parentDepartmentId } = await request.json()
+
+      if (!name) {
+        return handleCORS(NextResponse.json(
+          { error: "Назва підрозділу обов'язкова" }, 
+          { status: 400 }
+        ))
+      }
+
+      const department = {
+        id: uuidv4(),
+        name,
+        description: description || '',
+        managerId: managerId || null,
+        parentDepartmentId: parentDepartmentId || null,
+        createdBy: decoded.userId,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+
+      await db.collection('departments').insertOne(department)
+      return handleCORS(NextResponse.json({ 
+        message: "Підрозділ створено успішно",
+        department
+      }))
+    }
+
+    // Get Departments - GET /api/hr/departments
+    if (route === '/hr/departments' && method === 'GET') {
+      const decoded = verifyToken(request)
+      if (!decoded) {
+        return handleCORS(NextResponse.json(
+          { error: "Авторизація потрібна" }, 
+          { status: 401 }
+        ))
+      }
+
+      const departments = await db.collection('departments')
+        .find({})
+        .sort({ name: 1 })
+        .toArray()
+
+      return handleCORS(NextResponse.json(departments))
+    }
+
     // Route not found
     return handleCORS(NextResponse.json(
       { error: `Route ${route} not found` }, 
