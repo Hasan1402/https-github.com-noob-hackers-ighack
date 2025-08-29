@@ -60,11 +60,29 @@ async function handleRoute(request, { params }) {
   try {
     const db = await connectToMongo()
 
+    // Health check endpoint - GET /api/health
+    if (route === '/health' && method === 'GET') {
+      return handleCORS(NextResponse.json({ 
+        status: "healthy",
+        timestamp: new Date().toISOString(),
+        service: "ТИС КІС API",
+        version: "1.0.0"
+      }))
+    }
+
     // Root endpoint - GET /api/
     if (route === '/' && method === 'GET') {
       return handleCORS(NextResponse.json({ 
         message: "ТИС КІС API v1.0",
-        status: "working"
+        status: "working",
+        endpoints: [
+          "POST /api/auth/register",
+          "POST /api/auth/login", 
+          "GET /api/auth/verify",
+          "GET /api/users",
+          "POST /api/documents/upload",
+          "GET /api/documents"
+        ]
       }))
     }
 
