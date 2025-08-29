@@ -7,6 +7,7 @@ Tests all authentication, user management, document management, and dashboard en
 import requests
 import json
 import os
+import tempfile
 from datetime import datetime
 
 # Get base URL from environment - use production URL
