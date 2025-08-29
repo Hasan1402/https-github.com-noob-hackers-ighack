@@ -1237,8 +1237,148 @@ export default function App() {
     )
   }
 
-  // Analytics View
-  if (currentView === 'analytics') {
+  // Timesheet View
+  if (currentView === 'timesheet') {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        {/* Top Navigation */}
+        <header className="bg-white shadow-sm border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center h-16">
+              <div className="flex items-center space-x-4">
+                <Button 
+                  variant="ghost" 
+                  onClick={() => setCurrentView('dashboard')}
+                  className="text-gray-600 hover:text-gray-900"
+                >
+                  <Home className="w-4 h-4 mr-2" />
+                  Головна
+                </Button>
+                <h1 className="text-xl font-bold text-gray-900">Табель обліку робочого часу</h1>
+              </div>
+              
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-3">
+                  <Avatar>
+                    <AvatarFallback>
+                      {user?.fullName?.charAt(0) || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="hidden md:block">
+                    <div className="text-sm font-medium text-gray-900">{user?.fullName}</div>
+                    <Badge variant="secondary" className="text-xs">
+                      {user?.role === 'admin' ? 'Адміністратор' : 
+                       user?.role === 'manager' ? 'Менеджер' : 'Користувач'}
+                    </Badge>
+                  </div>
+                </div>
+                
+                <Button variant="ghost" size="sm" onClick={handleLogout}>
+                  <LogOut className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Filters and Controls */}
+          <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div>
+                  <Label htmlFor="month-select">Місяць</Label>
+                  <Input
+                    id="month-select"
+                    type="month"
+                    value={selectedMonth}
+                    onChange={(e) => setSelectedMonth(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="department-select">Підрозділ</Label>
+                  <select
+                    id="department-select"
+                    className="mt-1 w-48 p-2 border rounded-md"
+                    value={selectedDepartment}
+                    onChange={(e) => setSelectedDepartment(e.target.value)}
+                  >
+                    <option value="all">Всі підрозділи</option>
+                    {departments.map(dept => (
+                      <option key={dept.id} value={dept.name}>
+                        {dept.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button onClick={loadMonthlyTimesheet}>
+                  <Search className="w-4 h-4 mr-2" />
+                  Оновити
+                </Button>
+                <Button variant="outline">
+                  Зберегти зміни
+                </Button>
+                <Button variant="outline">
+                  Експорт
+                </Button>
+              </div>
+            </div>
+
+            {monthlyTimesheet && (
+              <div className="mt-4 flex items-center gap-6 text-sm">
+                <div>
+                  <strong>Період:</strong> {monthlyTimesheet.monthName} {monthlyTimesheet.year}
+                </div>
+                <div>
+                  <strong>Днів у місяці:</strong> {monthlyTimesheet.daysInMonth}
+                </div>
+                <div>
+                  <strong>Співробітників:</strong> {monthlyTimesheet.employees?.length || 0}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Work codes legend */}
+          <div className="bg-white rounded-lg shadow-sm border p-4 mb-6">
+            <h3 className="font-medium mb-3">Позначення робочого часу:</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+              {Object.entries(workCodes).map(([code, info]) => (
+                <div key={code} className="flex items-center gap-2">
+                  <div 
+                    className="w-6 h-6 rounded flex items-center justify-center text-white text-xs font-bold"
+                    style={{ backgroundColor: info.color }}
+                  >
+                    {code}
+                  </div>
+                  <span className="text-sm">{info.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Timesheet Table */}
+          {monthlyTimesheet ? (
+            <TimesheetTable 
+              timesheetData={monthlyTimesheet}
+              workCodes={workCodes}
+              onUpdateEntry={handleUpdateDailyEntry}
+            />
+          ) : (
+            <div className="bg-white rounded-lg shadow-sm border p-8 text-center">
+              <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+              <p className="text-gray-500">Оберіть місяць для перегляду табеля</p>
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
     return (
       <div className="min-h-screen bg-gray-50">
         {/* Top Navigation */}
