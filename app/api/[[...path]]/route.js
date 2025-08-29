@@ -643,11 +643,309 @@ async function handleRoute(request, { params }) {
       return handleCORS(NextResponse.json(stats))
     }
 
-    // Route not found
-    return handleCORS(NextResponse.json(
-      { error: `Route ${route} not found` }, 
-      { status: 404 }
-    ))
+    // CALENDAR AND TASKS ROUTES
+
+    // Create Event - POST /api/calendar/events
+    if (route === '/calendar/events' && method === 'POST') {
+      const decoded = verifyToken(request)
+      if (!decoded) {
+        return handleCORS(NextResponse.json(
+          { error: "Авторизація потрібна" }, 
+          { status: 401 }
+        ))
+      }
+
+      const { title, description, startDate, endDate, type, attendees, location } = await request.json()
+
+      if (!title || !startDate) {
+        return handleCORS(NextResponse.json(
+          { error: "Назва та дата початку обов'язкові" }, 
+          { status: 400 }
+        ))
+      }
+
+      const event = {
+        id: uuidv4(),
+        title,
+        description: description || '',
+        startDate: new Date(startDate),
+        endDate: endDate ? new Date(endDate) : new Date(startDate),
+        type: type || 'meeting', // meeting, deadline, reminder, holiday
+        location: location || '',
+        createdBy: decoded.userId,
+        attendees: attendees || [],
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+
+      await db.collection('calendar_events').insertOne(event)
+      return handleCORS(NextResponse.json({ 
+        message: "Подію створено успішно",
+        event
+      }))
+    }
+
+    // Get Events - GET /api/calendar/events
+    if (route === '/calendar/events' && method === 'GET') {
+      const decoded = verifyToken(request)
+      if (!decoded) {
+        return handleCORS(NextResponse.json(
+          { error: "Авторизація потрібна" }, 
+          { status: 401 }
+        ))
+      }
+
+      const url = new URL(request.url)
+      const startDate = url.searchParams.get('startDate')
+      const endDate = url.searchParams.get('endDate')
+
+      let filter = {}
+      
+      // Filter by date range if provided
+      if (startDate && endDate) {
+        filter.startDate = {
+          $gte: new Date(startDate),
+          $lte: new Date(endDate)
+        }
+      }
+
+      // Show user's events and events where user is attendee
+      filter.$or = [
+        { createdBy: decoded.userId },
+        { attendees: { $in: [decoded.userId] } }
+      ]
+
+      const events = await db.collection('calendar_events')
+        .find(filter)
+        .sort({ startDate: 1 })
+        .toArray()
+
+      return handleCORS(NextResponse.json(events))
+    }
+
+    // Create Task - POST /api/tasks
+    if (route === '/tasks' && method === 'POST') {
+      const decoded = verifyToken(request)
+      if (!decoded) {
+        return handleCORS(NextResponse.json(
+          { error: "Авторизація потрібна" }, 
+          { status: 401 }
+        ))
+      }
+
+      const { title, description, dueDate, priority, assignedTo, status, category } = await request.json()
+
+      if (!title) {
+        return handleCORS(NextResponse.json(
+          { error: "Назва завдання обов'язкова" }, 
+          { status: 400 }
+        ))
+      }
+
+      const task = {
+        id: uuidv4(),
+        title,
+        description: description || '',
+        dueDate: dueDate ? new Date(dueDate) : null,
+        priority: priority || 'medium', // low, medium, high, urgent
+        status: status || 'todo', // todo, in_progress, review, completed, cancelled
+        category: category || 'general',
+        createdBy: decoded.userId,
+        assignedTo: assignedTo || decoded.userId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        completedAt: null
+      }
+
+      await db.collection('tasks').insertOne(task)
+
+      // Create notification for assigned user
+      if (assignedTo && assignedTo !== decoded.userId) {
+        const notification = {
+          id: uuidv4(),
+          userId: assignedTo,
+          type: 'task_assigned',
+          title: 'Нове завдання призначено',
+          message: `Вам призначено завдання: ${title}`,
+          relatedId: task.id,
+          relatedType: 'task',
+          read: false,
+          createdAt: new Date()
+        }
+        await db.collection('notifications').insertOne(notification)
+      }
+
+      return handleCORS(NextResponse.json({ 
+        message: "Завдання створено успішно",
+        task
+      }))
+    }
+
+    // Get Tasks - GET /api/tasks
+    if (route === '/tasks' && method === 'GET') {
+      const decoded = verifyToken(request)
+      if (!decoded) {
+        return handleCORS(NextResponse.json(
+          { error: "Авторизація потрібна" }, 
+          { status: 401 }
+        ))
+      }
+
+      const url = new URL(request.url)
+      const status = url.searchParams.get('status')
+      const assignedToMe = url.searchParams.get('assignedToMe') === 'true'
+      const myTasks = url.searchParams.get('myTasks') === 'true'
+
+      let filter = {}
+
+      if (status && status !== 'all') {
+        filter.status = status
+      }
+
+      if (assignedToMe) {
+        filter.assignedTo = decoded.userId
+      } else if (myTasks) {
+        filter.createdBy = decoded.userId
+      } else {
+        // Show tasks assigned to user or created by user
+        filter.$or = [
+          { assignedTo: decoded.userId },
+          { createdBy: decoded.userId }
+        ]
+      }
+
+      const tasks = await db.collection('tasks')
+        .find(filter)
+        .sort({ dueDate: 1, createdAt: -1 })
+        .toArray()
+
+      // Get user info for assigned to and created by
+      const userIds = [...new Set([
+        ...tasks.map(task => task.assignedTo).filter(Boolean),
+        ...tasks.map(task => task.createdBy).filter(Boolean)
+      ])]
+      
+      const users = await db.collection('users')
+        .find({ id: { $in: userIds } }, { projection: { password: 0 } })
+        .toArray()
+      
+      const userMap = {}
+      users.forEach(user => {
+        userMap[user.id] = user
+      })
+
+      // Enrich tasks with user info
+      const enrichedTasks = tasks.map(task => ({
+        ...task,
+        assignedToUser: userMap[task.assignedTo] || null,
+        createdByUser: userMap[task.createdBy] || null
+      }))
+
+      return handleCORS(NextResponse.json(enrichedTasks))
+    }
+
+    // Update Task Status - PUT /api/tasks/:id/status
+    if (route.match(/^\/tasks\/(.+)\/status$/) && method === 'PUT') {
+      const decoded = verifyToken(request)
+      if (!decoded) {
+        return handleCORS(NextResponse.json(
+          { error: "Авторизація потрібна" }, 
+          { status: 401 }
+        ))
+      }
+
+      const taskId = route.match(/^\/tasks\/(.+)\/status$/)[1]
+      const { status, comment } = await request.json()
+
+      const task = await db.collection('tasks').findOne({ id: taskId })
+      if (!task) {
+        return handleCORS(NextResponse.json(
+          { error: "Завдання не знайдено" }, 
+          { status: 404 }
+        ))
+      }
+
+      // Check permissions
+      if (task.assignedTo !== decoded.userId && task.createdBy !== decoded.userId) {
+        return handleCORS(NextResponse.json(
+          { error: "Недостатньо прав для зміни статусу завдання" }, 
+          { status: 403 }
+        ))
+      }
+
+      const updateData = {
+        status,
+        updatedAt: new Date()
+      }
+
+      if (status === 'completed') {
+        updateData.completedAt = new Date()
+      }
+
+      await db.collection('tasks').updateOne(
+        { id: taskId },
+        { $set: updateData }
+      )
+
+      // Create activity log
+      const activity = {
+        id: uuidv4(),
+        taskId,
+        action: 'status_changed',
+        oldValue: task.status,
+        newValue: status,
+        performedBy: decoded.userId,
+        comment: comment || '',
+        timestamp: new Date()
+      }
+
+      await db.collection('task_activities').insertOne(activity)
+
+      return handleCORS(NextResponse.json({ 
+        message: "Статус завдання оновлено"
+      }))
+    }
+
+    // Get Notifications - GET /api/notifications
+    if (route === '/notifications' && method === 'GET') {
+      const decoded = verifyToken(request)
+      if (!decoded) {
+        return handleCORS(NextResponse.json(
+          { error: "Авторизація потрібна" }, 
+          { status: 401 }
+        ))
+      }
+
+      const notifications = await db.collection('notifications')
+        .find({ userId: decoded.userId })
+        .sort({ createdAt: -1 })
+        .limit(50)
+        .toArray()
+
+      return handleCORS(NextResponse.json(notifications))
+    }
+
+    // Mark Notification as Read - PUT /api/notifications/:id/read
+    if (route.match(/^\/notifications\/(.+)\/read$/) && method === 'PUT') {
+      const decoded = verifyToken(request)
+      if (!decoded) {
+        return handleCORS(NextResponse.json(
+          { error: "Авторизація потрібна" }, 
+          { status: 401 }
+        ))
+      }
+
+      const notificationId = route.match(/^\/notifications\/(.+)\/read$/)[1]
+
+      await db.collection('notifications').updateOne(
+        { id: notificationId, userId: decoded.userId },
+        { $set: { read: true, readAt: new Date() } }
+      )
+
+      return handleCORS(NextResponse.json({ 
+        message: "Повідомлення позначено як прочитане"
+      }))
+    }
 
   } catch (error) {
     console.error('API Error:', error)
