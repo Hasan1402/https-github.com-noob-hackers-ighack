@@ -236,9 +236,98 @@ async function handleRoute(request, { params }) {
       return handleCORS(NextResponse.json(user))
     }
 
-    // DOCUMENT ROUTES (Basic)
+    // ENHANCED DOCUMENT ROUTES
 
-    // Get Documents - GET /api/documents
+    // Upload Document - POST /api/documents/upload
+    if (route === '/documents/upload' && method === 'POST') {
+      const decoded = verifyToken(request)
+      if (!decoded) {
+        return handleCORS(NextResponse.json(
+          { error: "Авторизація потрібна" }, 
+          { status: 401 }
+        ))
+      }
+
+      try {
+        const formData = await request.formData()
+        const file = formData.get('file')
+        const title = formData.get('title')
+        const description = formData.get('description')
+
+        if (!file || !title) {
+          return handleCORS(NextResponse.json(
+            { error: "Файл та назва обов'язкові" }, 
+            { status: 400 }
+          ))
+        }
+
+        // Create uploads directory if it doesn't exist
+        const uploadsDir = path.join(process.cwd(), 'uploads')
+        try {
+          await mkdir(uploadsDir, { recursive: true })
+        } catch (e) {
+          // Directory might already exist
+        }
+
+        // Generate unique filename
+        const fileExtension = path.extname(file.name)
+        const uniqueFilename = `${uuidv4()}${fileExtension}`
+        const filePath = path.join(uploadsDir, uniqueFilename)
+
+        // Save file
+        const bytes = await file.arrayBuffer()
+        const buffer = Buffer.from(bytes)
+        await writeFile(filePath, buffer)
+
+        // Create document record
+        const document = {
+          id: uuidv4(),
+          title,
+          description: description || '',
+          filename: file.name,
+          fileSize: file.size,
+          filePath: uniqueFilename,
+          mimeType: file.type,
+          status: 'draft', // draft, review, approved, rejected
+          version: 1,
+          createdBy: decoded.userId,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          assignedTo: null,
+          comments: []
+        }
+
+        await db.collection('documents').insertOne(document)
+
+        // Add to workflow history
+        const workflowEntry = {
+          id: uuidv4(),
+          documentId: document.id,
+          action: 'created',
+          status: 'draft',
+          performedBy: decoded.userId,
+          comment: 'Документ створено',
+          timestamp: new Date()
+        }
+
+        await db.collection('workflow_history').insertOne(workflowEntry)
+
+        const { filePath: _, ...documentResponse } = document
+        return handleCORS(NextResponse.json({ 
+          message: "Документ успішно завантажено",
+          document: documentResponse
+        }))
+
+      } catch (error) {
+        console.error('File upload error:', error)
+        return handleCORS(NextResponse.json(
+          { error: "Помилка завантаження файлу" }, 
+          { status: 500 }
+        ))
+      }
+    }
+
+    // Get Documents with filters - GET /api/documents
     if (route === '/documents' && method === 'GET') {
       const decoded = verifyToken(request)
       if (!decoded) {
@@ -248,29 +337,270 @@ async function handleRoute(request, { params }) {
         ))
       }
 
-      // For now, return mock documents
-      const documents = [
-        {
-          id: uuidv4(),
-          name: "Звіт за грудень",
-          type: "PDF",
-          size: "2.3 MB",
-          uploadedBy: decoded.userId,
-          uploadedAt: new Date(),
-          folder: "Звіти"
-        },
-        {
-          id: uuidv4(),
-          name: "Навчальний план",
-          type: "DOCX", 
-          size: "1.2 MB",
-          uploadedBy: decoded.userId,
-          uploadedAt: new Date(),
-          folder: "Планування"
-        }
-      ]
+      const url = new URL(request.url)
+      const status = url.searchParams.get('status')
+      const assignedToMe = url.searchParams.get('assignedToMe') === 'true'
+      const myDocuments = url.searchParams.get('myDocuments') === 'true'
 
-      return handleCORS(NextResponse.json(documents))
+      let filter = {}
+      
+      if (status && status !== 'all') {
+        filter.status = status
+      }
+
+      if (assignedToMe) {
+        filter.assignedTo = decoded.userId
+      }
+
+      if (myDocuments) {
+        filter.createdBy = decoded.userId
+      }
+
+      // Regular users can only see their own documents or assigned documents
+      if (decoded.role === 'user') {
+        filter.$or = [
+          { createdBy: decoded.userId },
+          { assignedTo: decoded.userId }
+        ]
+      }
+
+      const documents = await db.collection('documents')
+        .find(filter, { projection: { filePath: 0 } })
+        .sort({ createdAt: -1 })
+        .toArray()
+
+      // Get user info for created by field
+      const userIds = [...new Set(documents.map(doc => doc.createdBy).filter(Boolean))]
+      const users = await db.collection('users')
+        .find({ id: { $in: userIds } }, { projection: { password: 0 } })
+        .toArray()
+      
+      const userMap = {}
+      users.forEach(user => {
+        userMap[user.id] = user
+      })
+
+      // Enrich documents with user info
+      const enrichedDocuments = documents.map(doc => ({
+        ...doc,
+        createdByUser: userMap[doc.createdBy] || null
+      }))
+
+      return handleCORS(NextResponse.json(enrichedDocuments))
+    }
+
+    // Approve Document - PUT /api/documents/:id/approve
+    if (route.match(/^\/documents\/(.+)\/approve$/) && method === 'PUT') {
+      const decoded = verifyToken(request)
+      if (!decoded) {
+        return handleCORS(NextResponse.json(
+          { error: "Авторизація потрібна" }, 
+          { status: 401 }
+        ))
+      }
+
+      if (!['admin', 'manager'].includes(decoded.role)) {
+        return handleCORS(NextResponse.json(
+          { error: "Недостатньо прав для погодження документів" }, 
+          { status: 403 }
+        ))
+      }
+
+      const documentId = route.match(/^\/documents\/(.+)\/approve$/)[1]
+      const { comment } = await request.json()
+
+      const document = await db.collection('documents').findOne({ id: documentId })
+      if (!document) {
+        return handleCORS(NextResponse.json(
+          { error: "Документ не знайдено" }, 
+          { status: 404 }
+        ))
+      }
+
+      // Update document status
+      await db.collection('documents').updateOne(
+        { id: documentId },
+        { 
+          $set: { 
+            status: 'approved',
+            updatedAt: new Date(),
+            approvedBy: decoded.userId,
+            approvedAt: new Date()
+          }
+        }
+      )
+
+      // Add to workflow history
+      const workflowEntry = {
+        id: uuidv4(),
+        documentId,
+        action: 'approved',
+        status: 'approved',
+        performedBy: decoded.userId,
+        comment: comment || 'Документ затверджено',
+        timestamp: new Date()
+      }
+
+      await db.collection('workflow_history').insertOne(workflowEntry)
+
+      return handleCORS(NextResponse.json({ 
+        message: "Документ успішно затверджено"
+      }))
+    }
+
+    // Reject Document - PUT /api/documents/:id/reject
+    if (route.match(/^\/documents\/(.+)\/reject$/) && method === 'PUT') {
+      const decoded = verifyToken(request)
+      if (!decoded) {
+        return handleCORS(NextResponse.json(
+          { error: "Авторизація потрібна" }, 
+          { status: 401 }
+        ))
+      }
+
+      if (!['admin', 'manager'].includes(decoded.role)) {
+        return handleCORS(NextResponse.json(
+          { error: "Недостатньо прав для відхилення документів" }, 
+          { status: 403 }
+        ))
+      }
+
+      const documentId = route.match(/^\/documents\/(.+)\/reject$/)[1]
+      const { comment } = await request.json()
+
+      const document = await db.collection('documents').findOne({ id: documentId })
+      if (!document) {
+        return handleCORS(NextResponse.json(
+          { error: "Документ не знайдено" }, 
+          { status: 404 }
+        ))
+      }
+
+      // Update document status
+      await db.collection('documents').updateOne(
+        { id: documentId },
+        { 
+          $set: { 
+            status: 'rejected',
+            updatedAt: new Date(),
+            rejectedBy: decoded.userId,
+            rejectedAt: new Date()
+          }
+        }
+      )
+
+      // Add to workflow history
+      const workflowEntry = {
+        id: uuidv4(),
+        documentId,
+        action: 'rejected',
+        status: 'rejected',
+        performedBy: decoded.userId,
+        comment: comment || 'Документ відхилено',
+        timestamp: new Date()
+      }
+
+      await db.collection('workflow_history').insertOne(workflowEntry)
+
+      return handleCORS(NextResponse.json({ 
+        message: "Документ відхилено"
+      }))
+    }
+
+    // Send for Review - PUT /api/documents/:id/send-for-review
+    if (route.match(/^\/documents\/(.+)\/send-for-review$/) && method === 'PUT') {
+      const decoded = verifyToken(request)
+      if (!decoded) {
+        return handleCORS(NextResponse.json(
+          { error: "Авторизація потрібна" }, 
+          { status: 401 }
+        ))
+      }
+
+      const documentId = route.match(/^\/documents\/(.+)\/send-for-review$/)[1]
+      const { assignTo, comment } = await request.json()
+
+      const document = await db.collection('documents').findOne({ id: documentId })
+      if (!document) {
+        return handleCORS(NextResponse.json(
+          { error: "Документ не знайдено" }, 
+          { status: 404 }
+        ))
+      }
+
+      // Only document creator can send for review
+      if (document.createdBy !== decoded.userId) {
+        return handleCORS(NextResponse.json(
+          { error: "Тільки автор документа може відправити на перевірку" }, 
+          { status: 403 }
+        ))
+      }
+
+      // Update document status
+      await db.collection('documents').updateOne(
+        { id: documentId },
+        { 
+          $set: { 
+            status: 'review',
+            updatedAt: new Date(),
+            assignedTo: assignTo || null
+          }
+        }
+      )
+
+      // Add to workflow history
+      const workflowEntry = {
+        id: uuidv4(),
+        documentId,
+        action: 'sent_for_review',
+        status: 'review',
+        performedBy: decoded.userId,
+        comment: comment || 'Документ відправлено на перевірку',
+        timestamp: new Date()
+      }
+
+      await db.collection('workflow_history').insertOne(workflowEntry)
+
+      return handleCORS(NextResponse.json({ 
+        message: "Документ відправлено на перевірку"
+      }))
+    }
+
+    // Get Document History - GET /api/documents/:id/history
+    if (route.match(/^\/documents\/(.+)\/history$/) && method === 'GET') {
+      const decoded = verifyToken(request)
+      if (!decoded) {
+        return handleCORS(NextResponse.json(
+          { error: "Авторизація потрібна" }, 
+          { status: 401 }
+        ))
+      }
+
+      const documentId = route.match(/^\/documents\/(.+)\/history$/)[1]
+
+      const history = await db.collection('workflow_history')
+        .find({ documentId })
+        .sort({ timestamp: -1 })
+        .toArray()
+
+      // Get user info for performed by field
+      const userIds = [...new Set(history.map(h => h.performedBy).filter(Boolean))]
+      const users = await db.collection('users')
+        .find({ id: { $in: userIds } }, { projection: { password: 0 } })
+        .toArray()
+      
+      const userMap = {}
+      users.forEach(user => {
+        userMap[user.id] = user
+      })
+
+      // Enrich history with user info
+      const enrichedHistory = history.map(h => ({
+        ...h,
+        performedByUser: userMap[h.performedBy] || null
+      }))
+
+      return handleCORS(NextResponse.json(enrichedHistory))
     }
 
     // DASHBOARD STATS
