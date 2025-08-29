@@ -62,6 +62,14 @@ class TISKISBackendTester:
             "hr_workflow": {},
             "hr_validation": {},
             "hr_auth": {},
+            "finance_accounts": {},
+            "finance_counterparties": {},
+            "finance_journal_entries": {},
+            "finance_bank_accounts": {},
+            "crm_leads": {},
+            "crm_opportunities": {},
+            "crm_products": {},
+            "finance_crm_integration": {},
             "summary": {"passed": 0, "failed": 0, "errors": []}
         }
         self.test_document_id = None
