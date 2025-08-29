@@ -69,19 +69,59 @@ export default function App() {
     }
   }, [])
 
-  // Load data when user changes or view changes
-  useEffect(() => {
-    if (user) {
-      if (currentView === 'documents') {
-        loadDocuments()
-        loadUsers()
-      } else if (currentView === 'calendar') {
-        loadEvents()
-        loadTasks()
-        loadNotifications()
+  // Load analytics data
+  const loadAnalytics = async () => {
+    try {
+      const response = await fetch('/api/analytics/dashboard', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      })
+      const data = await response.json()
+      if (response.ok) {
+        setAnalytics(data)
+      }
+    } catch (error) {
+      console.error('Error loading analytics:', error)
+    }
+  }
+
+  const loadDocumentStats = async () => {
+    if (['admin', 'manager'].includes(user?.role)) {
+      try {
+        const response = await fetch('/api/analytics/documents', {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        })
+        const data = await response.json()
+        if (response.ok) {
+          setDocumentStats(data)
+        }
+      } catch (error) {
+        console.error('Error loading document stats:', error)
       }
     }
-  }, [user, currentView, documentFilter])
+  }
+
+  // Generate report
+  const handleGenerateReport = async (reportData) => {
+    try {
+      const response = await fetch('/api/analytics/reports', {
+        method: 'POST',
+        headers: { 
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(reportData)
+      })
+
+      const data = await response.json()
+      if (response.ok) {
+        toast.success('Звіт згенеровано успішно!')
+      } else {
+        toast.error(data.error || 'Помилка генерації звіту')
+      }
+    } catch (error) {
+      toast.error('Помилка підключення до сервера')
+    }
+  }
 
   const handleLogin = async (e) => {
     e.preventDefault()
