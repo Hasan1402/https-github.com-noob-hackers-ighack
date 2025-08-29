@@ -3366,6 +3366,30 @@ class TISKISBackendTester:
         # HR Data Validation Tests
         self.test_hr_data_validation()
         
+        # FINANCIAL ACCOUNTING AND CRM MODULES TESTS (HIGH PRIORITY)
+        print("\n" + "="*60)
+        print("💰 FINANCIAL ACCOUNTING MODULE TESTS")
+        print("="*60)
+        
+        # Financial Accounting API Tests
+        self.test_finance_accounts_api()
+        self.test_finance_counterparties_api()
+        self.test_finance_journal_entries_api()
+        self.test_finance_bank_accounts_api()
+        
+        print("\n" + "="*60)
+        print("🤝 CRM AND SALES MODULE TESTS")
+        print("="*60)
+        
+        # CRM API Tests
+        self.test_crm_leads_api()
+        self.test_crm_opportunities_api()
+        self.test_crm_products_api()
+        
+        # Integration Tests
+        print("\n🔗 FINANCE-CRM INTEGRATION TESTS")
+        self.test_finance_crm_integration()
+        
         # ENHANCED DOCUMENT WORKFLOW TESTS (HIGH PRIORITY)
         print("\n📄 ENHANCED DOCUMENT WORKFLOW TESTS")
         
