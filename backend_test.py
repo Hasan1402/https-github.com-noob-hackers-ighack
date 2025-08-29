@@ -47,11 +47,18 @@ class TISKISBackendTester:
             "file_upload_system": {},
             "workflow_history": {},
             "dashboard_stats": {},
+            "calendar_events_api": {},
+            "tasks_management_api": {},
+            "notifications_api": {},
+            "complete_workflow": {},
             "summary": {"passed": 0, "failed": 0, "errors": []}
         }
         self.test_document_id = None
         self.manager_token = None
         self.user_token = None
+        self.test_events = []
+        self.test_tasks = []
+        self.test_notifications = []
 
     def log_result(self, category, test_name, success, message, response_data=None):
         """Log test result"""
