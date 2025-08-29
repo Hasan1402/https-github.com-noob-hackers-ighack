@@ -3,6 +3,8 @@ import { v4 as uuidv4 } from 'uuid'
 import { NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
+import { writeFile, mkdir } from 'fs/promises'
+import path from 'path'
 
 // MongoDB connection
 let client
