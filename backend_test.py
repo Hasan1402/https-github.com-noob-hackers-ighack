@@ -889,7 +889,7 @@ class TISKISBackendTester:
 
     def run_all_tests(self):
         """Run all backend tests in priority order"""
-        print(f"\n🚀 Starting ТИС КІС Backend API Tests")
+        print(f"\n🚀 Starting ТИС КІС Enhanced Backend API Tests")
         print(f"Base URL: {self.base_url}")
         print("=" * 60)
         
@@ -907,10 +907,32 @@ class TISKISBackendTester:
         self.test_user_management()
         self.test_role_based_access()
         
+        # Login additional users for workflow testing
+        self.login_additional_users()
+        
+        # ENHANCED DOCUMENT WORKFLOW TESTS (HIGH PRIORITY)
+        print("\n📄 ENHANCED DOCUMENT WORKFLOW TESTS")
+        
+        # File Upload System Tests
+        self.test_document_upload()
+        self.test_file_validation()
+        
+        # Document Management with Workflow
+        self.test_document_filters()
+        self.test_send_for_review()
+        self.test_approve_document()
+        self.test_reject_document()
+        
+        # Workflow History Tests
+        self.test_workflow_history()
+        
+        # Permission Tests
+        self.test_permission_restrictions()
+        
         # MEDIUM PRIORITY TESTS
         print("\n📊 MEDIUM PRIORITY TESTS")
         
-        # Document Management Tests
+        # Original Document Management Tests (for compatibility)
         self.test_document_management()
         
         # Dashboard Stats Tests
