@@ -2611,3 +2611,212 @@ function ReportGenerator({ onGenerateReport }) {
     </form>
   )
 }
+
+// Timesheet Table Component
+function TimesheetTable({ timesheetData, workCodes, onUpdateEntry }) {
+  const [editingCell, setEditingCell] = useState(null) // {employeeId, day}
+  const [editValue, setEditValue] = useState('')
+
+  const handleCellClick = (employeeId, day, currentValue) => {
+    setEditingCell({ employeeId, day })
+    setEditValue(currentValue || '8')
+  }
+
+  const handleCellSubmit = async (employeeId, dayData) => {
+    if (!editingCell) return
+
+    const workCode = workCodes[editValue] || workCodes['8']
+    const date = `${timesheetData.year}-${String(timesheetData.monthNum).padStart(2, '0')}-${String(dayData.day).padStart(2, '0')}`
+    
+    const entryData = {
+      hours: workCode.hours,
+      overtime: 0,
+      dayType: workCode.type,
+      status: workCode.type,
+      comments: `${editValue} - ${workCode.label}`
+    }
+
+    await onUpdateEntry(employeeId, date, entryData)
+    setEditingCell(null)
+    setEditValue('')
+  }
+
+  const handleKeyPress = (e, employeeId, dayData) => {
+    if (e.key === 'Enter') {
+      handleCellSubmit(employeeId, dayData)
+    } else if (e.key === 'Escape') {
+      setEditingCell(null)
+      setEditValue('')
+    }
+  }
+
+  const getDisplayValue = (dayData) => {
+    if (dayData.dayType === 'weekend') return 'В'
+    if (dayData.dayType === 'sick') return 'Л'
+    if (dayData.dayType === 'vacation') return 'ВП'
+    if (dayData.dayType === 'business_trip') return 'ВК'
+    if (dayData.dayType === 'night') return 'НТ'
+    if (dayData.hours === 0) return 'НН'
+    return dayData.hours.toString()
+  }
+
+  const getCellColor = (dayData) => {
+    if (dayData.dayType === 'weekend') return 'bg-red-100 text-red-800'
+    if (dayData.dayType === 'sick') return 'bg-yellow-100 text-yellow-800'
+    if (dayData.dayType === 'vacation') return 'bg-purple-100 text-purple-800'
+    if (dayData.dayType === 'business_trip') return 'bg-blue-100 text-blue-800'
+    if (dayData.dayType === 'night') return 'bg-indigo-100 text-indigo-800'
+    if (dayData.hours === 0) return 'bg-gray-100 text-gray-500'
+    if (dayData.hours === 8) return 'bg-green-100 text-green-800'
+    return 'bg-orange-100 text-orange-800'
+  }
+
+  const getDayOfWeekName = (dayOfWeek) => {
+    const days = ['Нд', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
+    return days[dayOfWeek]
+  }
+
+  if (!timesheetData?.employees) {
+    return <div>Немає даних для відображення</div>
+  }
+
+  return (
+    <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="min-w-full">
+          {/* Header with calendar */}
+          <thead className="bg-gray-50 border-b">
+            <tr>
+              <th className="sticky left-0 bg-gray-50 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
+                № п/п
+              </th>
+              <th className="sticky left-16 bg-gray-50 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r min-w-[200px]">
+                Співробітник
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r">
+                Посада
+              </th>
+              
+              {/* Calendar header */}
+              {Array.from({ length: timesheetData.daysInMonth }, (_, i) => {
+                const day = i + 1
+                const date = new Date(timesheetData.year, timesheetData.monthNum - 1, day)
+                const dayOfWeek = date.getDay()
+                const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
+                
+                return (
+                  <th key={day} className={`px-1 py-3 text-center text-xs font-medium uppercase tracking-wider border-r ${isWeekend ? 'bg-red-50 text-red-700' : 'text-gray-500'}`}>
+                    <div className="flex flex-col">
+                      <span>{day}</span>
+                      <span className="text-xs">{getDayOfWeekName(dayOfWeek)}</span>
+                    </div>
+                  </th>
+                )
+              })}
+              
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Всього годин
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Робочих днів
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Ефективність
+              </th>
+            </tr>
+          </thead>
+          
+          <tbody className="bg-white divide-y divide-gray-200">
+            {timesheetData.employees.map((employeeData, index) => (
+              <tr key={employeeData.employee.id} className="hover:bg-gray-50">
+                <td className="sticky left-0 bg-white px-4 py-4 text-sm text-gray-900 border-r">
+                  {index + 1}
+                </td>
+                <td className="sticky left-16 bg-white px-4 py-4 border-r min-w-[200px]">
+                  <div>
+                    <div className="text-sm font-medium text-gray-900">
+                      {employeeData.employee.fullName}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      ID: {employeeData.employee.employeeId}
+                    </div>
+                  </div>
+                </td>
+                <td className="px-4 py-4 text-sm text-gray-900 border-r">
+                  {employeeData.employee.position}
+                </td>
+                
+                {/* Daily entries */}
+                {employeeData.dailyEntries.map((dayData) => {
+                  const isEditing = editingCell?.employeeId === employeeData.employee.id && editingCell?.day === dayData.day
+                  
+                  return (
+                    <td 
+                      key={dayData.day} 
+                      className={`px-1 py-2 text-center text-sm border-r cursor-pointer ${getCellColor(dayData)}`}
+                      onClick={() => handleCellClick(employeeData.employee.id, dayData.day, getDisplayValue(dayData))}
+                    >
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          value={editValue}
+                          onChange={(e) => setEditValue(e.target.value)}
+                          onBlur={() => handleCellSubmit(employeeData.employee.id, dayData)}
+                          onKeyPress={(e) => handleKeyPress(e, employeeData.employee.id, dayData)}
+                          className="w-8 h-6 text-center text-xs border rounded"
+                          autoFocus
+                        />
+                      ) : (
+                        <span className="font-bold">
+                          {getDisplayValue(dayData)}
+                        </span>
+                      )}
+                    </td>
+                  )
+                })}
+                
+                {/* Summary columns */}
+                <td className="px-4 py-4 text-sm font-medium text-gray-900">
+                  {employeeData.summary.totalWorkHours}
+                </td>
+                <td className="px-4 py-4 text-sm text-gray-900">
+                  {employeeData.summary.workDays}
+                </td>
+                <td className="px-4 py-4 text-sm text-gray-900">
+                  {employeeData.summary.efficiency}%
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Summary Footer */}
+      <div className="bg-gray-50 px-6 py-4 border-t">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <div>
+            <span className="font-medium">Всього співробітників:</span> {timesheetData.employees.length}
+          </div>
+          <div>
+            <span className="font-medium">Всього годин:</span> {' '}
+            {timesheetData.employees.reduce((sum, emp) => sum + emp.summary.totalWorkHours, 0)}
+          </div>
+          <div>
+            <span className="font-medium">Середня ефективність:</span> {' '}
+            {timesheetData.employees.length > 0 
+              ? (timesheetData.employees.reduce((sum, emp) => sum + parseFloat(emp.summary.efficiency), 0) / timesheetData.employees.length).toFixed(1)
+              : 0
+            }%
+          </div>
+          <div>
+            <span className="font-medium">Робочих днів у місяці:</span> {' '}
+            {timesheetData.employees.length > 0 
+              ? Math.max(...timesheetData.employees.map(emp => emp.summary.workDays))
+              : 0
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
