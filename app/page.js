@@ -265,13 +265,120 @@ export default function App() {
     toast.success('Ви вийшли з системи')
   }
 
-  // Load data when user changes or view changes to documents
-  useEffect(() => {
-    if (user && currentView === 'documents') {
-      loadDocuments()
-      loadUsers()
+  // Load events and tasks for calendar
+  const loadEvents = async () => {
+    try {
+      const response = await fetch('/api/calendar/events', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      })
+      const data = await response.json()
+      if (response.ok) {
+        setEvents(data)
+      }
+    } catch (error) {
+      console.error('Error loading events:', error)
     }
-  }, [user, currentView, documentFilter])
+  }
+
+  const loadTasks = async () => {
+    try {
+      const response = await fetch('/api/tasks', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      })
+      const data = await response.json()
+      if (response.ok) {
+        setTasks(data)
+      }
+    } catch (error) {
+      console.error('Error loading tasks:', error)
+    }
+  }
+
+  const loadNotifications = async () => {
+    try {
+      const response = await fetch('/api/notifications', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      })
+      const data = await response.json()
+      if (response.ok) {
+        setNotifications(data)
+      }
+    } catch (error) {
+      console.error('Error loading notifications:', error)
+    }
+  }
+
+  // Create new event
+  const handleCreateEvent = async (eventData) => {
+    try {
+      const response = await fetch('/api/calendar/events', {
+        method: 'POST',
+        headers: { 
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(eventData)
+      })
+
+      const data = await response.json()
+      if (response.ok) {
+        toast.success('Подію створено!')
+        loadEvents()
+      } else {
+        toast.error(data.error || 'Помилка створення події')
+      }
+    } catch (error) {
+      toast.error('Помилка підключення до сервера')
+    }
+  }
+
+  // Create new task
+  const handleCreateTask = async (taskData) => {
+    try {
+      const response = await fetch('/api/tasks', {
+        method: 'POST',
+        headers: { 
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(taskData)
+      })
+
+      const data = await response.json()
+      if (response.ok) {
+        toast.success('Завдання створено!')
+        loadTasks()
+      } else {
+        toast.error(data.error || 'Помилка створення завдання')
+      }
+    } catch (error) {
+      toast.error('Помилка підключення до сервера')
+    }
+  }
+
+  // Update task status
+  const handleUpdateTaskStatus = async (taskId, status, comment) => {
+    try {
+      const response = await fetch(`/api/tasks/${taskId}/status`, {
+        method: 'PUT',
+        headers: { 
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status, comment })
+      })
+
+      const data = await response.json()
+      if (response.ok) {
+        toast.success('Статус завдання оновлено!')
+        loadTasks()
+      } else {
+        toast.error(data.error || 'Помилка оновлення статусу')
+      }
+    } catch (error) {
+      toast.error('Помилка підключення до сервера')
+    }
+  }
 
   // Auth Screen
   if (currentView === 'auth') {
