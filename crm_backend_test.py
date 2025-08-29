@@ -10,8 +10,8 @@ import time
 import os
 from datetime import datetime, timedelta
 
-# Configuration
-BASE_URL = os.getenv('NEXT_PUBLIC_BASE_URL', 'https://tys-kis-erp.preview.emergentagent.com')
+# Configuration - Use localhost for testing due to external URL connectivity issues
+BASE_URL = "http://localhost:3000"
 API_BASE = f"{BASE_URL}/api"
 
 class CRMAPITester:
