@@ -251,6 +251,8 @@ class TISKISBackendTester:
         response = self.make_request("GET", "/auth/verify")
         if response and response.status_code == 401:
             self.log_result("authentication", "jwt_verify_invalid", True, "Invalid JWT properly rejected")
+        elif response is None:
+            self.log_result("authentication", "jwt_verify_invalid", False, "No response received")
         else:
             status = response.status_code if response else "No response"
             self.log_result("authentication", "jwt_verify_invalid", False, f"Invalid JWT not handled: {status}")
@@ -263,6 +265,8 @@ class TISKISBackendTester:
         response = self.make_request("GET", "/auth/verify")
         if response and response.status_code == 401:
             self.log_result("authentication", "jwt_verify_no_token", True, "Missing JWT properly rejected")
+        elif response is None:
+            self.log_result("authentication", "jwt_verify_no_token", False, "No response received")
         else:
             status = response.status_code if response else "No response"
             self.log_result("authentication", "jwt_verify_no_token", False, f"Missing JWT not handled: {status}")
