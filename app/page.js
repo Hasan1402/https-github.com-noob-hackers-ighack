@@ -77,6 +77,32 @@ export default function App() {
     }
   }, [])
 
+  // Load data when user changes or view changes
+  useEffect(() => {
+    if (user) {
+      if (currentView === 'documents') {
+        loadDocuments()
+        loadUsers()
+      } else if (currentView === 'calendar') {
+        loadEvents()
+        loadTasks()
+        loadNotifications()
+      } else if (currentView === 'analytics') {
+        loadAnalytics()
+        loadDocumentStats()
+      } else if (currentView === 'hr') {
+        loadEmployees()
+        loadDepartments()
+        loadTimesheetEntries()
+        loadBusinessTrips()
+      } else if (currentView === 'timesheet') {
+        loadMonthlyTimesheet()
+        loadWorkCodes()
+        loadDepartments()
+      }
+    }
+  }, [user, currentView, documentFilter, selectedMonth, selectedDepartment])
+
   // Load monthly timesheet
   const loadMonthlyTimesheet = async () => {
     try {
