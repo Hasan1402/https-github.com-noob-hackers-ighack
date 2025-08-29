@@ -73,22 +73,134 @@ export default function App() {
     }
   }, [])
 
-  // Load data when user changes or view changes
-  useEffect(() => {
-    if (user) {
-      if (currentView === 'documents') {
-        loadDocuments()
-        loadUsers()
-      } else if (currentView === 'calendar') {
-        loadEvents()
-        loadTasks()
-        loadNotifications()
-      } else if (currentView === 'analytics') {
-        loadAnalytics()
-        loadDocumentStats()
+  // Load HR data
+  const loadEmployees = async () => {
+    try {
+      const response = await fetch('/api/hr/employees', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      })
+      const data = await response.json()
+      if (response.ok) {
+        setEmployees(data)
       }
+    } catch (error) {
+      console.error('Error loading employees:', error)
     }
-  }, [user, currentView, documentFilter])
+  }
+
+  const loadDepartments = async () => {
+    try {
+      const response = await fetch('/api/hr/departments', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      })
+      const data = await response.json()
+      if (response.ok) {
+        setDepartments(data)
+      }
+    } catch (error) {
+      console.error('Error loading departments:', error)
+    }
+  }
+
+  const loadTimesheetEntries = async () => {
+    try {
+      const response = await fetch('/api/timesheet/entries', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      })
+      const data = await response.json()
+      if (response.ok) {
+        setTimesheetEntries(data)
+      }
+    } catch (error) {
+      console.error('Error loading timesheet:', error)
+    }
+  }
+
+  const loadBusinessTrips = async () => {
+    try {
+      const response = await fetch('/api/hr/business-trips', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      })
+      const data = await response.json()
+      if (response.ok) {
+        setBusinessTrips(data)
+      }
+    } catch (error) {
+      console.error('Error loading business trips:', error)
+    }
+  }
+
+  // Create employee
+  const handleCreateEmployee = async (employeeData) => {
+    try {
+      const response = await fetch('/api/hr/employees', {
+        method: 'POST',
+        headers: { 
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(employeeData)
+      })
+
+      const data = await response.json()
+      if (response.ok) {
+        toast.success('Співробітника додано!')
+        loadEmployees()
+      } else {
+        toast.error(data.error || 'Помилка додавання співробітника')
+      }
+    } catch (error) {
+      toast.error('Помилка підключення до сервера')
+    }
+  }
+
+  // Create timesheet entry
+  const handleCreateTimesheetEntry = async (entryData) => {
+    try {
+      const response = await fetch('/api/timesheet/entries', {
+        method: 'POST',
+        headers: { 
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(entryData)
+      })
+
+      const data = await response.json()
+      if (response.ok) {
+        toast.success('Запис табеля додано!')
+        loadTimesheetEntries()
+      } else {
+        toast.error(data.error || 'Помилка додавання запису')
+      }
+    } catch (error) {
+      toast.error('Помилка підключення до сервера')
+    }
+  }
+
+  // Create business trip
+  const handleCreateBusinessTrip = async (tripData) => {
+    try {
+      const response = await fetch('/api/hr/business-trips', {
+        method: 'POST',
+        headers: { 
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(tripData)
+      })
+
+      const data = await response.json()
+      if (response.ok) {
+        toast.success('Заяву на відрядження створено!')
+        loadBusinessTrips()
+      } else {
+        toast.error(data.error || 'Помилка створення заяви')
+      }
+    } catch (error) {
+      toast.error('Помилка підключення до сервера')
+    }
+  }
 
   // Load analytics data
   const loadAnalytics = async () => {
