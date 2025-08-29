@@ -66,6 +66,8 @@ class TISKISBackendTester:
 
     def make_request(self, method, endpoint, data=None, headers=None):
         """Make HTTP request with error handling"""
+        # Handle trailing slash issue - remove trailing slash from endpoint if present
+        endpoint = endpoint.rstrip('/')
         url = f"{self.base_url}{endpoint}"
         
         default_headers = {"Content-Type": "application/json"}
