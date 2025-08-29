@@ -218,4 +218,8 @@ agent_communication:
     - agent: "main"
       message: "Implemented complete MVP backend with authentication (register/login/JWT), user management, basic document management, and dashboard stats. All endpoints include role-based access control. Frontend has Ukrainian interface with auth forms and responsive dashboard. Ready for backend testing - need to verify all API endpoints work correctly with MongoDB connection and JWT authentication flow."
     - agent: "testing"
+      message: "Backend testing completed successfully. All authentication, user management, document management, and dashboard APIs working perfectly. JWT authentication, role-based access control, password hashing all functioning correctly."
+    - agent: "main" 
+      message: "Updated frontend tasks for testing. Ready to test Authentication UI (login/register forms), Main Dashboard UI (navigation, quick actions), and basic Document Management UI. Need to verify complete user flow from registration to dashboard usage."
+    - agent: "testing"
       message: "✅ BACKEND TESTING COMPLETE: All 4 backend API tasks are working correctly. Authentication flow (registration/login/JWT verification) works with proper password hashing and role assignment. User management has proper RBAC (admin/manager can access user lists, regular users get 403). Document management returns mock data with authentication. Dashboard stats work with real user counts from database. All endpoints have proper CORS headers and error handling. MongoDB connection working. All high and medium priority backend tasks are functional."
