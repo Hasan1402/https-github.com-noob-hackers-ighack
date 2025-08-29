@@ -333,6 +333,8 @@ class TISKISBackendTester:
             response = self.make_request("GET", "/users")
             if response and response.status_code == 403:
                 self.log_result("user_management", "rbac_user_denied", True, "Regular user properly denied admin access")
+            elif response is None:
+                self.log_result("user_management", "rbac_user_denied", False, "No response received")
             else:
                 status = response.status_code if response else "No response"
                 self.log_result("user_management", "rbac_user_denied", False, f"RBAC not working: {status}")
