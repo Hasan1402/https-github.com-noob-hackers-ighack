@@ -947,6 +947,289 @@ async function handleRoute(request, { params }) {
       }))
     }
 
+    // ANALYTICS AND REPORTS ROUTES
+
+    // Get Dashboard Analytics - GET /api/analytics/dashboard
+    if (route === '/analytics/dashboard' && method === 'GET') {
+      const decoded = verifyToken(request)
+      if (!decoded) {
+        return handleCORS(NextResponse.json(
+          { error: "Авторизація потрібна" }, 
+          { status: 401 }
+        ))
+      }
+
+      try {
+        // Get various statistics
+        const [
+          totalUsers,
+          totalDocuments,
+          totalTasks,
+          totalEvents,
+          pendingDocuments,
+          completedTasks,
+          upcomingEvents,
+          recentActivities
+        ] = await Promise.all([
+          db.collection('users').countDocuments(),
+          db.collection('documents').countDocuments(),
+          db.collection('tasks').countDocuments(),
+          db.collection('calendar_events').countDocuments(),
+          db.collection('documents').countDocuments({ status: 'review' }),
+          db.collection('tasks').countDocuments({ status: 'completed' }),
+          db.collection('calendar_events').countDocuments({
+            startDate: { $gte: new Date() }
+          }),
+          db.collection('workflow_history')
+            .find({})
+            .sort({ timestamp: -1 })
+            .limit(10)
+            .toArray()
+        ])
+
+        // Calculate completion rates
+        const documentCompletionRate = totalDocuments > 0 ? 
+          ((await db.collection('documents').countDocuments({ status: 'approved' })) / totalDocuments * 100).toFixed(1) : 0
+
+        const taskCompletionRate = totalTasks > 0 ? 
+          (completedTasks / totalTasks * 100).toFixed(1) : 0
+
+        // Get user activity stats (last 30 days)
+        const thirtyDaysAgo = new Date()
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+
+        const userActivity = await db.collection('workflow_history')
+          .aggregate([
+            { $match: { timestamp: { $gte: thirtyDaysAgo } } },
+            { $group: { _id: '$performedBy', count: { $sum: 1 } } },
+            { $sort: { count: -1 } },
+            { $limit: 5 }
+          ])
+          .toArray()
+
+        const analytics = {
+          overview: {
+            totalUsers,
+            totalDocuments,
+            totalTasks,
+            totalEvents,
+            pendingDocuments,
+            completedTasks,
+            upcomingEvents
+          },
+          performance: {
+            documentCompletionRate: parseFloat(documentCompletionRate),
+            taskCompletionRate: parseFloat(taskCompletionRate),
+            averageProcessingTime: '2.3 дні' // Mock data
+          },
+          activity: {
+            recentActivities: recentActivities.slice(0, 5),
+            topUsers: userActivity
+          },
+          trends: {
+            documentsLastWeek: await db.collection('documents')
+              .countDocuments({
+                createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
+              }),
+            tasksLastWeek: await db.collection('tasks')
+              .countDocuments({
+                createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
+              })
+          }
+        }
+
+        return handleCORS(NextResponse.json(analytics))
+
+      } catch (error) {
+        console.error('Analytics error:', error)
+        return handleCORS(NextResponse.json(
+          { error: "Помилка отримання аналітики" }, 
+          { status: 500 }
+        ))
+      }
+    }
+
+    // Get Document Statistics - GET /api/analytics/documents
+    if (route === '/analytics/documents' && method === 'GET') {
+      const decoded = verifyToken(request)
+      if (!decoded) {
+        return handleCORS(NextResponse.json(
+          { error: "Авторизація потрібна" }, 
+          { status: 401 }
+        ))
+      }
+
+      if (!['admin', 'manager'].includes(decoded.role)) {
+        return handleCORS(NextResponse.json(
+          { error: "Недостатньо прав доступу" }, 
+          { status: 403 }
+        ))
+      }
+
+      try {
+        // Document status distribution
+        const statusStats = await db.collection('documents')
+          .aggregate([
+            { $group: { _id: '$status', count: { $sum: 1 } } }
+          ])
+          .toArray()
+
+        // Documents by month (last 6 months)
+        const monthlyStats = await db.collection('documents')
+          .aggregate([
+            {
+              $match: {
+                createdAt: { $gte: new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000) }
+              }
+            },
+            {
+              $group: {
+                _id: {
+                  year: { $year: '$createdAt' },
+                  month: { $month: '$createdAt' }
+                },
+                count: { $sum: 1 }
+              }
+            },
+            { $sort: { '_id.year': 1, '_id.month': 1 } }
+          ])
+          .toArray()
+
+        // Top document creators
+        const topCreators = await db.collection('documents')
+          .aggregate([
+            { $group: { _id: '$createdBy', count: { $sum: 1 } } },
+            { $sort: { count: -1 } },
+            { $limit: 10 }
+          ])
+          .toArray()
+
+        const documentAnalytics = {
+          statusDistribution: statusStats,
+          monthlyTrends: monthlyStats,
+          topCreators: topCreators,
+          averageProcessingTime: {
+            draft: '1.2 дні',
+            review: '2.1 дні',
+            approved: '0.8 дні'
+          }
+        }
+
+        return handleCORS(NextResponse.json(documentAnalytics))
+
+      } catch (error) {
+        console.error('Document analytics error:', error)
+        return handleCORS(NextResponse.json(
+          { error: "Помилка отримання статистики документів" }, 
+          { status: 500 }
+        ))
+      }
+    }
+
+    // Generate Report - POST /api/analytics/reports
+    if (route === '/analytics/reports' && method === 'POST') {
+      const decoded = verifyToken(request)
+      if (!decoded) {
+        return handleCORS(NextResponse.json(
+          { error: "Авторизація потрібна" }, 
+          { status: 401 }
+        ))
+      }
+
+      if (!['admin', 'manager'].includes(decoded.role)) {
+        return handleCORS(NextResponse.json(
+          { error: "Недостатньо прав доступу" }, 
+          { status: 403 }
+        ))
+      }
+
+      const { reportType, dateFrom, dateTo, filters } = await request.json()
+
+      if (!reportType || !dateFrom || !dateTo) {
+        return handleCORS(NextResponse.json(
+          { error: "Тип звіту та діапазон дат обов'язкові" }, 
+          { status: 400 }
+        ))
+      }
+
+      try {
+        const report = {
+          id: uuidv4(),
+          type: reportType,
+          dateFrom: new Date(dateFrom),
+          dateTo: new Date(dateTo),
+          filters: filters || {},
+          generatedBy: decoded.userId,
+          generatedAt: new Date(),
+          status: 'completed',
+          data: {}
+        }
+
+        // Generate report data based on type
+        if (reportType === 'documents') {
+          const documents = await db.collection('documents')
+            .find({
+              createdAt: {
+                $gte: new Date(dateFrom),
+                $lte: new Date(dateTo)
+              }
+            })
+            .toArray()
+
+          report.data = {
+            totalDocuments: documents.length,
+            byStatus: documents.reduce((acc, doc) => {
+              acc[doc.status] = (acc[doc.status] || 0) + 1
+              return acc
+            }, {}),
+            documents: documents.map(doc => ({
+              title: doc.title,
+              status: doc.status,
+              createdAt: doc.createdAt,
+              createdBy: doc.createdBy
+            }))
+          }
+        } else if (reportType === 'tasks') {
+          const tasks = await db.collection('tasks')
+            .find({
+              createdAt: {
+                $gte: new Date(dateFrom),
+                $lte: new Date(dateTo)
+              }
+            })
+            .toArray()
+
+          report.data = {
+            totalTasks: tasks.length,
+            byStatus: tasks.reduce((acc, task) => {
+              acc[task.status] = (acc[task.status] || 0) + 1
+              return acc
+            }, {}),
+            byPriority: tasks.reduce((acc, task) => {
+              acc[task.priority] = (acc[task.priority] || 0) + 1
+              return acc
+            }, {})
+          }
+        }
+
+        // Save report
+        await db.collection('reports').insertOne(report)
+
+        return handleCORS(NextResponse.json({
+          message: "Звіт сформовано успішно",
+          report: { ...report, data: undefined }, // Don't send data in response
+          downloadUrl: `/api/analytics/reports/${report.id}/download`
+        }))
+
+      } catch (error) {
+        console.error('Report generation error:', error)
+        return handleCORS(NextResponse.json(
+          { error: "Помилка генерації звіту" }, 
+          { status: 500 }
+        ))
+      }
+    }
+
     // Route not found
     return handleCORS(NextResponse.json(
       { error: `Route ${route} not found` }, 
