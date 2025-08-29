@@ -2406,6 +2406,32 @@ class TISKISBackendTester:
         # Analytics Data Accuracy Tests
         self.test_analytics_data_accuracy()
         
+        # HR AND PERSONNEL MANAGEMENT TESTS (HIGH PRIORITY)
+        print("\n" + "="*60)
+        print("🏢 HR AND PERSONNEL MANAGEMENT API TESTS")
+        print("="*60)
+        
+        # HR Authentication Requirements
+        self.test_hr_authentication_requirements()
+        
+        # HR Departments API Tests
+        self.test_hr_departments_api()
+        
+        # HR Employees API Tests  
+        self.test_hr_employees_api()
+        
+        # HR Timesheet API Tests
+        self.test_hr_timesheet_api()
+        
+        # HR Business Trips API Tests
+        self.test_hr_business_trips_api()
+        
+        # Complete HR Workflow Integration
+        self.test_complete_hr_workflow()
+        
+        # HR Data Validation Tests
+        self.test_hr_data_validation()
+        
         # ENHANCED DOCUMENT WORKFLOW TESTS (HIGH PRIORITY)
         print("\n📄 ENHANCED DOCUMENT WORKFLOW TESTS")
         
