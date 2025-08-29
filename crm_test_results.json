@@ -1,23 +1,226 @@
 [
   {
     "test": "Authentication Setup - admin",
-    "success": false,
-    "message": "Failed to authenticate admin user",
-    "timestamp": "2025-08-29T13:18:19.446824",
-    "details": ""
+    "success": true,
+    "message": "Successfully authenticated admin user",
+    "timestamp": "2025-08-29T13:18:55.116247",
+    "details": null
   },
   {
     "test": "Authentication Setup - manager",
-    "success": false,
-    "message": "Failed to authenticate manager user",
-    "timestamp": "2025-08-29T13:18:19.463805",
-    "details": ""
+    "success": true,
+    "message": "Successfully authenticated manager user",
+    "timestamp": "2025-08-29T13:18:55.782874",
+    "details": null
   },
   {
     "test": "Authentication Setup - user",
-    "success": false,
-    "message": "Failed to authenticate user user",
-    "timestamp": "2025-08-29T13:18:19.476809",
-    "details": ""
+    "success": true,
+    "message": "Successfully authenticated user user",
+    "timestamp": "2025-08-29T13:18:56.341754",
+    "details": null
+  },
+  {
+    "test": "Create Counterparty - ТОВ \"Перспективний Клієнт\"",
+    "success": true,
+    "message": "Counterparty created successfully",
+    "timestamp": "2025-08-29T13:18:56.514411",
+    "details": null
+  },
+  {
+    "test": "Create Counterparty - ПП \"Великий Замовник\"",
+    "success": true,
+    "message": "Counterparty created successfully",
+    "timestamp": "2025-08-29T13:18:56.621255",
+    "details": null
+  },
+  {
+    "test": "Create Counterparty - АТ \"Стратегічний Партнер\"",
+    "success": true,
+    "message": "Counterparty created successfully",
+    "timestamp": "2025-08-29T13:18:56.727541",
+    "details": null
+  },
+  {
+    "test": "Create Opportunity 1",
+    "success": true,
+    "message": "Opportunity 'Продаж ERP системи - Великий проект' created successfully",
+    "timestamp": "2025-08-29T13:18:56.914192",
+    "details": null
+  },
+  {
+    "test": "Opportunity 1 Structure Validation",
+    "success": true,
+    "message": "All required fields present",
+    "timestamp": "2025-08-29T13:18:56.914237",
+    "details": null
+  },
+  {
+    "test": "Create Opportunity 2",
+    "success": true,
+    "message": "Opportunity 'Консалтингові послуги - Оптимізація процесів' created successfully",
+    "timestamp": "2025-08-29T13:18:57.084064",
+    "details": null
+  },
+  {
+    "test": "Opportunity 2 Structure Validation",
+    "success": true,
+    "message": "All required fields present",
+    "timestamp": "2025-08-29T13:18:57.084104",
+    "details": null
+  },
+  {
+    "test": "Create Opportunity 3",
+    "success": true,
+    "message": "Opportunity 'Технічна підтримка - Річний контракт' created successfully",
+    "timestamp": "2025-08-29T13:18:57.189291",
+    "details": null
+  },
+  {
+    "test": "Opportunity 3 Structure Validation",
+    "success": true,
+    "message": "All required fields present",
+    "timestamp": "2025-08-29T13:18:57.189330",
+    "details": null
+  },
+  {
+    "test": "Get All Opportunities",
+    "success": true,
+    "message": "Retrieved 3 opportunities successfully",
+    "timestamp": "2025-08-29T13:18:57.290152",
+    "details": null
+  },
+  {
+    "test": "Counterparty Integration",
+    "success": true,
+    "message": "Opportunities properly enriched with counterparty data",
+    "timestamp": "2025-08-29T13:18:57.309832",
+    "details": null
+  },
+  {
+    "test": "Filter Opportunities by Stage",
+    "success": true,
+    "message": "Stage filtering working - 1 qualification opportunities",
+    "timestamp": "2025-08-29T13:18:57.399142",
+    "details": null
+  },
+  {
+    "test": "Opportunities RBAC - User Access",
+    "success": true,
+    "message": "Regular users can access opportunities (read-only)",
+    "timestamp": "2025-08-29T13:18:57.512481",
+    "details": null
+  },
+  {
+    "test": "Create Product 1",
+    "success": true,
+    "message": "Product 'ERP Система \"ТИС КІС\"' created successfully",
+    "timestamp": "2025-08-29T13:18:57.621601",
+    "details": null
+  },
+  {
+    "test": "Product 1 Structure Validation",
+    "success": true,
+    "message": "All required fields present",
+    "timestamp": "2025-08-29T13:18:57.621640",
+    "details": null
+  },
+  {
+    "test": "Create Product 2",
+    "success": true,
+    "message": "Product 'Консалтингові послуги' created successfully",
+    "timestamp": "2025-08-29T13:18:57.724164",
+    "details": null
+  },
+  {
+    "test": "Product 2 Structure Validation",
+    "success": true,
+    "message": "All required fields present",
+    "timestamp": "2025-08-29T13:18:57.724215",
+    "details": null
+  },
+  {
+    "test": "Create Product 3",
+    "success": true,
+    "message": "Product 'Технічна підтримка' created successfully",
+    "timestamp": "2025-08-29T13:18:57.818393",
+    "details": null
+  },
+  {
+    "test": "Product 3 Structure Validation",
+    "success": true,
+    "message": "All required fields present",
+    "timestamp": "2025-08-29T13:18:57.818437",
+    "details": null
+  },
+  {
+    "test": "Create Product 4",
+    "success": true,
+    "message": "Product 'Навчання користувачів' created successfully",
+    "timestamp": "2025-08-29T13:18:57.914602",
+    "details": null
+  },
+  {
+    "test": "Product 4 Structure Validation",
+    "success": true,
+    "message": "All required fields present",
+    "timestamp": "2025-08-29T13:18:57.914646",
+    "details": null
+  },
+  {
+    "test": "Get All Products",
+    "success": true,
+    "message": "Retrieved 4 products successfully",
+    "timestamp": "2025-08-29T13:18:57.990692",
+    "details": null
+  },
+  {
+    "test": "Filter Products by Category",
+    "success": true,
+    "message": "Category filtering working - 1 software products",
+    "timestamp": "2025-08-29T13:18:58.113196",
+    "details": null
+  },
+  {
+    "test": "Products RBAC - Manager Create",
+    "success": true,
+    "message": "Manager can create products",
+    "timestamp": "2025-08-29T13:18:58.211845",
+    "details": null
+  },
+  {
+    "test": "Products RBAC - User Create Denied",
+    "success": true,
+    "message": "Regular users properly denied product creation",
+    "timestamp": "2025-08-29T13:18:58.314415",
+    "details": null
+  },
+  {
+    "test": "Products RBAC - User Read Access",
+    "success": true,
+    "message": "Regular users can read products",
+    "timestamp": "2025-08-29T13:18:58.393980",
+    "details": null
+  },
+  {
+    "test": "Database Connectivity - Rapid Requests",
+    "success": true,
+    "message": "All 5 requests successful in 0.52s - No timeout issues",
+    "timestamp": "2025-08-29T13:18:58.919058",
+    "details": null
+  },
+  {
+    "test": "Finance-CRM Integration - Counterparty References",
+    "success": true,
+    "message": "3 opportunities have valid counterparty references",
+    "timestamp": "2025-08-29T13:18:59.019863",
+    "details": null
+  },
+  {
+    "test": "Finance-CRM Integration - Data Enrichment",
+    "success": true,
+    "message": "3 opportunities properly enriched with counterparty data",
+    "timestamp": "2025-08-29T13:18:59.117096",
+    "details": null
   }
 ]
