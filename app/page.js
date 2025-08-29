@@ -121,11 +121,137 @@ export default function App() {
     }
   }
 
-  const handleLogout = () => {
-    localStorage.removeItem('token')
-    setUser(null)
-    setCurrentView('auth')
-    toast.success('Ви вийшли з системи')
+  // Load documents
+  const loadDocuments = async () => {
+    try {
+      const response = await fetch(`/api/documents?status=${documentFilter}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      })
+      const data = await response.json()
+      if (response.ok) {
+        setDocuments(data)
+      }
+    } catch (error) {
+      console.error('Error loading documents:', error)
+    }
+  }
+
+  // Load users for assignment
+  const loadUsers = async () => {
+    if (['admin', 'manager'].includes(user?.role)) {
+      try {
+        const response = await fetch('/api/users', {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        })
+        const data = await response.json()
+        if (response.ok) {
+          setUsers(data)
+        }
+      } catch (error) {
+        console.error('Error loading users:', error)
+      }
+    }
+  }
+
+  // Upload document
+  const handleDocumentUpload = async (file, title, description) => {
+    setIsUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('title', title)
+      formData.append('description', description)
+
+      const response = await fetch('/api/documents/upload', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        body: formData
+      })
+
+      const data = await response.json()
+      if (response.ok) {
+        toast.success('Документ успішно завантажено!')
+        loadDocuments()
+      } else {
+        toast.error(data.error || 'Помилка завантаження')
+      }
+    } catch (error) {
+      toast.error('Помилка підключення до сервера')
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  // Approve document
+  const handleApproveDocument = async (documentId, comment) => {
+    try {
+      const response = await fetch(`/api/documents/${documentId}/approve`, {
+        method: 'PUT',
+        headers: { 
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ comment })
+      })
+
+      const data = await response.json()
+      if (response.ok) {
+        toast.success('Документ затверджено!')
+        loadDocuments()
+      } else {
+        toast.error(data.error || 'Помилка затвердження')
+      }
+    } catch (error) {
+      toast.error('Помилка підключення до сервера')
+    }
+  }
+
+  // Reject document
+  const handleRejectDocument = async (documentId, comment) => {
+    try {
+      const response = await fetch(`/api/documents/${documentId}/reject`, {
+        method: 'PUT',
+        headers: { 
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ comment })
+      })
+
+      const data = await response.json()
+      if (response.ok) {
+        toast.success('Документ відхилено!')
+        loadDocuments()
+      } else {
+        toast.error(data.error || 'Помилка відхилення')
+      }
+    } catch (error) {
+      toast.error('Помилка підключення до сервера')
+    }
+  }
+
+  // Send for review
+  const handleSendForReview = async (documentId, assignTo, comment) => {
+    try {
+      const response = await fetch(`/api/documents/${documentId}/send-for-review`, {
+        method: 'PUT',
+        headers: { 
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ assignTo, comment })
+      })
+
+      const data = await response.json()
+      if (response.ok) {
+        toast.success('Документ відправлено на перевірку!')
+        loadDocuments()
+      } else {
+        toast.error(data.error || 'Помилка відправлення')
+      }
+    } catch (error) {
+      toast.error('Помилка підключення до сервера')
+    }
   }
 
   // Auth Screen
