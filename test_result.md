@@ -195,6 +195,42 @@ backend:
           agent: "testing"
           comment: "✅ Real user statistics from database with authentication requirements"
 
+  - task: "Calendar Events API"
+    implemented: true
+    working: "NA"
+    file: "/app/app/api/[[...path]]/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Implemented Calendar Events API with POST /api/calendar/events (create event) and GET /api/calendar/events (get events with date filtering). Supports event types: meeting, deadline, reminder, holiday. Events include title, description, startDate, endDate, type, location, attendees."
+
+  - task: "Tasks Management API"
+    implemented: true
+    working: "NA"
+    file: "/app/app/api/[[...path]]/route.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Implemented Tasks Management API with POST /api/tasks (create task), GET /api/tasks (get tasks with filtering), PUT /api/tasks/:id/status (update task status). Supports task priorities: low, medium, high, urgent. Task statuses: todo, in_progress, review, completed, cancelled. Includes task assignment and activity logging."
+
+  - task: "Notifications API"
+    implemented: true
+    working: "NA"
+    file: "/app/app/api/[[...path]]/route.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Implemented Notifications API with GET /api/notifications (get user notifications) and PUT /api/notifications/:id/read (mark as read). Notifications automatically created when tasks are assigned to users. Supports notification types and read status tracking."
+
 frontend:
   - task: "Authentication UI"
     implemented: true
