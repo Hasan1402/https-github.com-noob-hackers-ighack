@@ -77,27 +77,58 @@ export default function App() {
     }
   }, [])
 
-  // Load data when user changes or view changes
-  useEffect(() => {
-    if (user) {
-      if (currentView === 'documents') {
-        loadDocuments()
-        loadUsers()
-      } else if (currentView === 'calendar') {
-        loadEvents()
-        loadTasks()
-        loadNotifications()
-      } else if (currentView === 'analytics') {
-        loadAnalytics()
-        loadDocumentStats()
-      } else if (currentView === 'hr') {
-        loadEmployees()
-        loadDepartments()
-        loadTimesheetEntries()
-        loadBusinessTrips()
+  // Load monthly timesheet
+  const loadMonthlyTimesheet = async () => {
+    try {
+      const response = await fetch(`/api/timesheet/monthly?month=${selectedMonth}&department=${selectedDepartment}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      })
+      const data = await response.json()
+      if (response.ok) {
+        setMonthlyTimesheet(data)
       }
+    } catch (error) {
+      console.error('Error loading monthly timesheet:', error)
     }
-  }, [user, currentView, documentFilter])
+  }
+
+  const loadWorkCodes = async () => {
+    try {
+      const response = await fetch('/api/timesheet/templates', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      })
+      const data = await response.json()
+      if (response.ok) {
+        setWorkCodes(data.workCodes)
+      }
+    } catch (error) {
+      console.error('Error loading work codes:', error)
+    }
+  }
+
+  // Update daily timesheet entry
+  const handleUpdateDailyEntry = async (employeeId, date, entryData) => {
+    try {
+      const response = await fetch(`/api/timesheet/daily/${employeeId}/${date}`, {
+        method: 'PUT',
+        headers: { 
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(entryData)
+      })
+
+      const data = await response.json()
+      if (response.ok) {
+        toast.success('Запис табеля оновлено!')
+        loadMonthlyTimesheet()
+      } else {
+        toast.error(data.error || 'Помилка оновлення запису')
+      }
+    } catch (error) {
+      toast.error('Помилка підключення до сервера')
+    }
+  }
 
   // Load HR data
   const loadEmployees = async () => {
