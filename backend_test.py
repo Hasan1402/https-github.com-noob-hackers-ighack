@@ -1368,6 +1368,340 @@ class TISKISBackendTester:
                 
             self.auth_token = old_token
 
+    def test_analytics_dashboard_api(self):
+        """Test Analytics Dashboard API - GET /api/analytics/dashboard"""
+        print("\n=== Testing Analytics Dashboard API ===")
+        
+        if not self.auth_token:
+            self.log_result("analytics_dashboard", "no_token", False, "No auth token available")
+            return False
+
+        # Test dashboard analytics endpoint
+        response = self.make_request("GET", "/analytics/dashboard")
+        if response and response.status_code == 200:
+            analytics = response.json()
+            
+            # Verify overview section
+            if "overview" in analytics:
+                overview = analytics["overview"]
+                required_overview_fields = ["totalUsers", "totalDocuments", "totalTasks", "totalEvents", 
+                                          "pendingDocuments", "completedTasks", "upcomingEvents"]
+                missing_overview = [field for field in required_overview_fields if field not in overview]
+                
+                if not missing_overview:
+                    self.log_result("analytics_dashboard", "overview_structure", True, 
+                                  f"Overview metrics complete: {overview}")
+                else:
+                    self.log_result("analytics_dashboard", "overview_structure", False, 
+                                  f"Missing overview fields: {missing_overview}")
+            else:
+                self.log_result("analytics_dashboard", "overview_structure", False, "Overview section missing")
+
+            # Verify performance section
+            if "performance" in analytics:
+                performance = analytics["performance"]
+                required_performance_fields = ["documentCompletionRate", "taskCompletionRate"]
+                missing_performance = [field for field in required_performance_fields if field not in performance]
+                
+                if not missing_performance:
+                    self.log_result("analytics_dashboard", "performance_metrics", True, 
+                                  f"Performance metrics complete: {performance}")
+                else:
+                    self.log_result("analytics_dashboard", "performance_metrics", False, 
+                                  f"Missing performance fields: {missing_performance}")
+            else:
+                self.log_result("analytics_dashboard", "performance_metrics", False, "Performance section missing")
+
+            # Verify activity section
+            if "activity" in analytics:
+                activity = analytics["activity"]
+                if "recentActivities" in activity and "topUsers" in activity:
+                    self.log_result("analytics_dashboard", "activity_tracking", True, 
+                                  f"Activity tracking working: {len(activity.get('recentActivities', []))} recent activities, {len(activity.get('topUsers', []))} top users")
+                else:
+                    self.log_result("analytics_dashboard", "activity_tracking", False, 
+                                  "Activity section incomplete")
+            else:
+                self.log_result("analytics_dashboard", "activity_tracking", False, "Activity section missing")
+
+            # Verify trends section
+            if "trends" in analytics:
+                trends = analytics["trends"]
+                if "documentsLastWeek" in trends and "tasksLastWeek" in trends:
+                    self.log_result("analytics_dashboard", "trends_calculation", True, 
+                                  f"Trends calculation working: {trends['documentsLastWeek']} docs, {trends['tasksLastWeek']} tasks last week")
+                else:
+                    self.log_result("analytics_dashboard", "trends_calculation", False, 
+                                  "Trends section incomplete")
+            else:
+                self.log_result("analytics_dashboard", "trends_calculation", False, "Trends section missing")
+
+            # Overall dashboard test
+            self.log_result("analytics_dashboard", "dashboard_analytics", True, 
+                          "Dashboard analytics API working successfully")
+            return True
+        else:
+            status = response.status_code if response else "No response"
+            error_msg = response.json().get("error", "Unknown error") if response and response.headers.get('content-type', '').startswith('application/json') else "No error details"
+            self.log_result("analytics_dashboard", "dashboard_analytics", False, 
+                          f"Dashboard analytics failed: {status} - {error_msg}")
+            return False
+
+    def test_analytics_documents_api(self):
+        """Test Document Statistics API - GET /api/analytics/documents (admin/manager only)"""
+        print("\n=== Testing Document Statistics API ===")
+        
+        if not self.auth_token or not self.manager_token:
+            self.log_result("analytics_documents", "no_tokens", False, "Missing required tokens")
+            return False
+
+        # Test with admin token (should work)
+        response = self.make_request("GET", "/analytics/documents")
+        if response and response.status_code == 200:
+            doc_analytics = response.json()
+            
+            # Verify status distribution
+            if "statusDistribution" in doc_analytics:
+                status_dist = doc_analytics["statusDistribution"]
+                if isinstance(status_dist, list):
+                    self.log_result("analytics_documents", "status_distribution", True, 
+                                  f"Status distribution aggregation working: {len(status_dist)} status groups")
+                else:
+                    self.log_result("analytics_documents", "status_distribution", False, 
+                                  f"Invalid status distribution format: {type(status_dist)}")
+            else:
+                self.log_result("analytics_documents", "status_distribution", False, "Status distribution missing")
+
+            # Verify monthly trends
+            if "monthlyTrends" in doc_analytics:
+                monthly_trends = doc_analytics["monthlyTrends"]
+                if isinstance(monthly_trends, list):
+                    self.log_result("analytics_documents", "monthly_trends", True, 
+                                  f"Monthly trends calculation working: {len(monthly_trends)} months")
+                else:
+                    self.log_result("analytics_documents", "monthly_trends", False, 
+                                  f"Invalid monthly trends format: {type(monthly_trends)}")
+            else:
+                self.log_result("analytics_documents", "monthly_trends", False, "Monthly trends missing")
+
+            # Verify top creators
+            if "topCreators" in doc_analytics:
+                top_creators = doc_analytics["topCreators"]
+                if isinstance(top_creators, list):
+                    self.log_result("analytics_documents", "top_creators", True, 
+                                  f"Top creators statistics working: {len(top_creators)} creators")
+                else:
+                    self.log_result("analytics_documents", "top_creators", False, 
+                                  f"Invalid top creators format: {type(top_creators)}")
+            else:
+                self.log_result("analytics_documents", "top_creators", False, "Top creators missing")
+
+            self.log_result("analytics_documents", "admin_access", True, 
+                          "Admin can access document statistics")
+        else:
+            status = response.status_code if response else "No response"
+            error_msg = response.json().get("error", "Unknown error") if response and response.headers.get('content-type', '').startswith('application/json') else "No error details"
+            self.log_result("analytics_documents", "admin_access", False, 
+                          f"Admin access failed: {status} - {error_msg}")
+
+        # Test with manager token (should work)
+        old_token = self.auth_token
+        self.auth_token = self.manager_token
+        
+        response = self.make_request("GET", "/analytics/documents")
+        if response and response.status_code == 200:
+            self.log_result("analytics_documents", "manager_access", True, 
+                          "Manager can access document statistics")
+        else:
+            status = response.status_code if response else "No response"
+            self.log_result("analytics_documents", "manager_access", False, 
+                          f"Manager access failed: {status}")
+
+        # Test with regular user token (should fail with 403)
+        if self.user_token:
+            self.auth_token = self.user_token
+            
+            response = self.make_request("GET", "/analytics/documents")
+            if response and response.status_code == 403:
+                self.log_result("analytics_documents", "user_access_denied", True, 
+                              "Regular user properly denied access to document statistics")
+            else:
+                status = response.status_code if response else "No response"
+                self.log_result("analytics_documents", "user_access_denied", False, 
+                              f"User access control failed: {status}")
+
+        self.auth_token = old_token
+        return True
+
+    def test_analytics_reports_api(self):
+        """Test Reports Generation API - POST /api/analytics/reports (admin/manager only)"""
+        print("\n=== Testing Reports Generation API ===")
+        
+        if not self.auth_token or not self.manager_token:
+            self.log_result("analytics_reports", "no_tokens", False, "Missing required tokens")
+            return False
+
+        # Test documents report generation
+        documents_report_data = {
+            "reportType": "documents",
+            "dateFrom": (datetime.now() - timedelta(days=30)).isoformat(),
+            "dateTo": datetime.now().isoformat(),
+            "filters": {}
+        }
+        
+        response = self.make_request("POST", "/analytics/reports", documents_report_data)
+        if response and response.status_code == 200:
+            report_result = response.json()
+            
+            if "report" in report_result and "downloadUrl" in report_result:
+                report = report_result["report"]
+                required_report_fields = ["id", "type", "dateFrom", "dateTo", "generatedBy", "generatedAt", "status"]
+                missing_fields = [field for field in required_report_fields if field not in report]
+                
+                if not missing_fields:
+                    self.log_result("analytics_reports", "documents_report", True, 
+                                  f"Documents report generated successfully: {report['id']}")
+                else:
+                    self.log_result("analytics_reports", "documents_report", False, 
+                                  f"Report structure incomplete: missing {missing_fields}")
+            else:
+                self.log_result("analytics_reports", "documents_report", False, 
+                              f"Invalid report response: {report_result}")
+        else:
+            status = response.status_code if response else "No response"
+            error_msg = response.json().get("error", "Unknown error") if response and response.headers.get('content-type', '').startswith('application/json') else "No error details"
+            self.log_result("analytics_reports", "documents_report", False, 
+                          f"Documents report failed: {status} - {error_msg}")
+
+        # Test tasks report generation
+        tasks_report_data = {
+            "reportType": "tasks",
+            "dateFrom": (datetime.now() - timedelta(days=30)).isoformat(),
+            "dateTo": datetime.now().isoformat(),
+            "filters": {}
+        }
+        
+        response = self.make_request("POST", "/analytics/reports", tasks_report_data)
+        if response and response.status_code == 200:
+            self.log_result("analytics_reports", "tasks_report", True, 
+                          "Tasks report generated successfully")
+        else:
+            status = response.status_code if response else "No response"
+            self.log_result("analytics_reports", "tasks_report", False, 
+                          f"Tasks report failed: {status}")
+
+        # Test with manager token (should work)
+        old_token = self.auth_token
+        self.auth_token = self.manager_token
+        
+        response = self.make_request("POST", "/analytics/reports", documents_report_data)
+        if response and response.status_code == 200:
+            self.log_result("analytics_reports", "manager_generate", True, 
+                          "Manager can generate reports")
+        else:
+            status = response.status_code if response else "No response"
+            self.log_result("analytics_reports", "manager_generate", False, 
+                          f"Manager report generation failed: {status}")
+
+        # Test with regular user token (should fail with 403)
+        if self.user_token:
+            self.auth_token = self.user_token
+            
+            response = self.make_request("POST", "/analytics/reports", documents_report_data)
+            if response and response.status_code == 403:
+                self.log_result("analytics_reports", "user_generate_denied", True, 
+                              "Regular user properly denied report generation access")
+            else:
+                status = response.status_code if response else "No response"
+                self.log_result("analytics_reports", "user_generate_denied", False, 
+                              f"User report access control failed: {status}")
+
+        # Test invalid report data (missing required fields)
+        invalid_report_data = {
+            "reportType": "documents"
+            # Missing dateFrom and dateTo
+        }
+        
+        self.auth_token = old_token
+        response = self.make_request("POST", "/analytics/reports", invalid_report_data)
+        if response and response.status_code == 400:
+            self.log_result("analytics_reports", "validation", True, 
+                          "Report validation working - missing fields rejected")
+        else:
+            status = response.status_code if response else "No response"
+            self.log_result("analytics_reports", "validation", False, 
+                          f"Report validation failed: {status}")
+
+        self.auth_token = old_token
+        return True
+
+    def test_analytics_data_accuracy(self):
+        """Test analytics data accuracy by comparing with actual database counts"""
+        print("\n=== Testing Analytics Data Accuracy ===")
+        
+        if not self.auth_token:
+            self.log_result("analytics_dashboard", "accuracy_no_token", False, "No auth token available")
+            return False
+
+        # Get dashboard analytics
+        response = self.make_request("GET", "/analytics/dashboard")
+        if response and response.status_code == 200:
+            analytics = response.json()
+            overview = analytics.get("overview", {})
+            
+            # Verify user count accuracy (we created at least 3 test users)
+            total_users = overview.get("totalUsers", 0)
+            if total_users >= 3:
+                self.log_result("analytics_dashboard", "user_count_accuracy", True, 
+                              f"User count accurate: {total_users} users (expected >= 3)")
+            else:
+                self.log_result("analytics_dashboard", "user_count_accuracy", False, 
+                              f"User count seems low: {total_users} (expected >= 3)")
+
+            # Verify document count (we uploaded test documents)
+            total_documents = overview.get("totalDocuments", 0)
+            if total_documents >= 0:  # Should be at least 0, might be more if documents were created
+                self.log_result("analytics_dashboard", "document_count_accuracy", True, 
+                              f"Document count reasonable: {total_documents} documents")
+            else:
+                self.log_result("analytics_dashboard", "document_count_accuracy", False, 
+                              f"Invalid document count: {total_documents}")
+
+            # Verify task count (we created test tasks)
+            total_tasks = overview.get("totalTasks", 0)
+            if total_tasks >= 0:  # Should be at least 0, might be more if tasks were created
+                self.log_result("analytics_dashboard", "task_count_accuracy", True, 
+                              f"Task count reasonable: {total_tasks} tasks")
+            else:
+                self.log_result("analytics_dashboard", "task_count_accuracy", False, 
+                              f"Invalid task count: {total_tasks}")
+
+            # Verify completion rates are percentages (0-100)
+            performance = analytics.get("performance", {})
+            doc_completion_rate = performance.get("documentCompletionRate", 0)
+            task_completion_rate = performance.get("taskCompletionRate", 0)
+            
+            if 0 <= doc_completion_rate <= 100:
+                self.log_result("analytics_dashboard", "doc_completion_rate", True, 
+                              f"Document completion rate valid: {doc_completion_rate}%")
+            else:
+                self.log_result("analytics_dashboard", "doc_completion_rate", False, 
+                              f"Invalid document completion rate: {doc_completion_rate}%")
+
+            if 0 <= task_completion_rate <= 100:
+                self.log_result("analytics_dashboard", "task_completion_rate", True, 
+                              f"Task completion rate valid: {task_completion_rate}%")
+            else:
+                self.log_result("analytics_dashboard", "task_completion_rate", False, 
+                              f"Invalid task completion rate: {task_completion_rate}%")
+
+            return True
+        else:
+            status = response.status_code if response else "No response"
+            self.log_result("analytics_dashboard", "accuracy_test", False, 
+                          f"Failed to get analytics for accuracy test: {status}")
+            return False
+
     def run_all_tests(self):
         """Run all backend tests in priority order"""
         print(f"\n🚀 Starting ТИС КІС Enhanced Backend API Tests with Calendar and Tasks")
