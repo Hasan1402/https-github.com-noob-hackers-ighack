@@ -441,9 +441,12 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Document Upload Interface"
-  stuck_tasks:
-    - "Document Upload Interface"
+    - "HR Departments API"
+    - "HR Employee Management API"
+    - "HR Timesheet Management API"
+    - "HR Business Trips API"
+    - "Complete HR Workflow Integration"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
