@@ -10,8 +10,8 @@ import os
 import tempfile
 from datetime import datetime
 
-# Get base URL from environment - use production URL
-BASE_URL = "https://tys-edu-system.preview.emergentagent.com/api"
+# Get base URL from environment - use local URL for testing
+BASE_URL = "http://localhost:3000/api"
 
 class TISKISBackendTester:
     def __init__(self):
