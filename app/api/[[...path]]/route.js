@@ -947,6 +947,12 @@ async function handleRoute(request, { params }) {
       }))
     }
 
+    // Route not found
+    return handleCORS(NextResponse.json(
+      { error: `Route ${route} not found` }, 
+      { status: 404 }
+    ))
+
   } catch (error) {
     console.error('API Error:', error)
     return handleCORS(NextResponse.json(
