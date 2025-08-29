@@ -1702,6 +1702,654 @@ class TISKISBackendTester:
                           f"Failed to get analytics for accuracy test: {status}")
             return False
 
+    def test_hr_departments_api(self):
+        """Test HR Departments API functionality"""
+        print("\n=== Testing HR Departments API ===")
+        
+        if not self.auth_token:
+            self.log_result("hr_departments", "no_token", False, "No auth token available")
+            return False
+
+        # Test 1: Create Department (Admin only)
+        department_data = {
+            "name": "Відділ кадрів",
+            "description": "Управління персоналом та кадрова політика",
+            "managerId": None,
+            "parentDepartmentId": None
+        }
+        
+        response = self.make_request("POST", "/hr/departments", department_data)
+        if response and response.status_code == 200:
+            data = response.json()
+            self.test_department_id = data["department"]["id"]
+            self.log_result("hr_departments", "create_department_admin", True,
+                          f"Department created: {data['department']['name']}")
+        else:
+            status = response.status_code if response else "No response"
+            error_msg = response.json().get("error", "Unknown error") if response and response.headers.get('content-type', '').startswith('application/json') else "No error details"
+            self.log_result("hr_departments", "create_department_admin", False, f"Create department failed: {status} - {error_msg}")
+
+        # Test 2: Create Department (Manager - should fail)
+        if self.manager_token:
+            old_token = self.auth_token
+            self.auth_token = self.manager_token
+            
+            department_data = {
+                "name": "IT Відділ",
+                "description": "Інформаційні технології"
+            }
+            
+            response = self.make_request("POST", "/hr/departments", department_data)
+            if response and response.status_code == 403:
+                self.log_result("hr_departments", "create_department_manager_denied", True,
+                              "Manager correctly denied department creation")
+            else:
+                status = response.status_code if response else "No response"
+                self.log_result("hr_departments", "create_department_manager_denied", False,
+                              f"Manager access control failed: {status}")
+            
+            self.auth_token = old_token
+
+        # Test 3: Get All Departments
+        response = self.make_request("GET", "/hr/departments")
+        if response and response.status_code == 200:
+            departments = response.json()
+            if isinstance(departments, list):
+                self.log_result("hr_departments", "get_all_departments", True,
+                              f"Retrieved {len(departments)} departments")
+            else:
+                self.log_result("hr_departments", "get_all_departments", False,
+                              f"Invalid departments response: {departments}")
+        else:
+            status = response.status_code if response else "No response"
+            self.log_result("hr_departments", "get_all_departments", False, f"Get departments failed: {status}")
+
+        return True
+
+    def test_hr_employees_api(self):
+        """Test HR Employee Management API functionality"""
+        print("\n=== Testing HR Employee Management API ===")
+        
+        if not self.auth_token:
+            self.log_result("hr_employees", "no_token", False, "No auth token available")
+            return False
+
+        # Test 1: Create Employee (Admin)
+        employee_data = {
+            "fullName": "Іван Петренко",
+            "position": "Спеціаліст з кадрів",
+            "department": "Відділ кадрів",
+            "employeeId": f"EMP-{datetime.now().strftime('%Y%m%d%H%M%S')}",
+            "phoneNumber": "+380501234567",
+            "email": "ivan.petrenko@tiskis.com",
+            "hireDate": "2024-01-15",
+            "salary": 25000,
+            "workSchedule": "9:00-18:00",
+            "contractType": "permanent"
+        }
+        
+        response = self.make_request("POST", "/hr/employees", employee_data)
+        if response and response.status_code == 200:
+            data = response.json()
+            self.test_employee_id = data["employee"]["id"]
+            self.log_result("hr_employees", "create_employee_admin", True,
+                          f"Employee created: {data['employee']['fullName']}")
+        else:
+            status = response.status_code if response else "No response"
+            error_msg = response.json().get("error", "Unknown error") if response and response.headers.get('content-type', '').startswith('application/json') else "No error details"
+            self.log_result("hr_employees", "create_employee_admin", False, f"Create employee failed: {status} - {error_msg}")
+
+        # Test 2: Create Employee (Manager)
+        if self.manager_token:
+            old_token = self.auth_token
+            self.auth_token = self.manager_token
+            
+            employee_data = {
+                "fullName": "Марія Коваленко",
+                "position": "Менеджер проектів",
+                "department": "Відділ кадрів",
+                "phoneNumber": "+380507654321",
+                "email": "maria.kovalenko@tiskis.com"
+            }
+            
+            response = self.make_request("POST", "/hr/employees", employee_data)
+            if response and response.status_code == 200:
+                data = response.json()
+                self.log_result("hr_employees", "create_employee_manager", True,
+                              f"Manager created employee: {data['employee']['fullName']}")
+            else:
+                status = response.status_code if response else "No response"
+                error_msg = response.json().get("error", "Unknown error") if response and response.headers.get('content-type', '').startswith('application/json') else "No error details"
+                self.log_result("hr_employees", "create_employee_manager", False, f"Manager create employee failed: {status} - {error_msg}")
+            
+            self.auth_token = old_token
+
+        # Test 3: Create Employee (User - should fail)
+        if self.user_token:
+            old_token = self.auth_token
+            self.auth_token = self.user_token
+            
+            employee_data = {
+                "fullName": "Олексій Сидоренко",
+                "position": "Аналітик",
+                "department": "IT Відділ"
+            }
+            
+            response = self.make_request("POST", "/hr/employees", employee_data)
+            if response and response.status_code == 403:
+                self.log_result("hr_employees", "create_employee_user_denied", True,
+                              "User correctly denied employee creation")
+            else:
+                status = response.status_code if response else "No response"
+                self.log_result("hr_employees", "create_employee_user_denied", False,
+                              f"User access control failed: {status}")
+            
+            self.auth_token = old_token
+
+        # Test 4: Get All Employees
+        response = self.make_request("GET", "/hr/employees")
+        if response and response.status_code == 200:
+            employees = response.json()
+            if isinstance(employees, list):
+                self.log_result("hr_employees", "get_all_employees", True,
+                              f"Retrieved {len(employees)} employees")
+                
+                # Verify employee structure
+                if employees:
+                    emp = employees[0]
+                    required_fields = ['id', 'fullName', 'position', 'department', 'employeeId']
+                    missing_fields = [field for field in required_fields if field not in emp]
+                    
+                    if not missing_fields:
+                        self.log_result("hr_employees", "employee_structure", True,
+                                      "Employee data structure correct")
+                    else:
+                        self.log_result("hr_employees", "employee_structure", False,
+                                      f"Missing fields: {missing_fields}")
+            else:
+                self.log_result("hr_employees", "get_all_employees", False,
+                              f"Invalid employees response: {employees}")
+        else:
+            status = response.status_code if response else "No response"
+            self.log_result("hr_employees", "get_all_employees", False, f"Get employees failed: {status}")
+
+        # Test 5: Filter Employees by Department
+        response = self.make_request("GET", "/hr/employees?department=Відділ кадрів")
+        if response and response.status_code == 200:
+            employees = response.json()
+            hr_employees = [emp for emp in employees if emp.get('department') == 'Відділ кадрів']
+            self.log_result("hr_employees", "filter_by_department", True,
+                          f"Found {len(hr_employees)} HR department employees")
+        else:
+            status = response.status_code if response else "No response"
+            self.log_result("hr_employees", "filter_by_department", False, f"Department filter failed: {status}")
+
+        # Test 6: Filter Employees by Status
+        response = self.make_request("GET", "/hr/employees?status=active")
+        if response and response.status_code == 200:
+            employees = response.json()
+            active_employees = [emp for emp in employees if emp.get('status') == 'active']
+            self.log_result("hr_employees", "filter_by_status", True,
+                          f"Found {len(active_employees)} active employees")
+        else:
+            status = response.status_code if response else "No response"
+            self.log_result("hr_employees", "filter_by_status", False, f"Status filter failed: {status}")
+
+        return True
+
+    def test_hr_timesheet_api(self):
+        """Test HR Timesheet Management API functionality"""
+        print("\n=== Testing HR Timesheet Management API ===")
+        
+        if not self.auth_token:
+            self.log_result("hr_timesheet", "no_token", False, "No auth token available")
+            return False
+
+        if not hasattr(self, 'test_employee_id') or not self.test_employee_id:
+            self.log_result("hr_timesheet", "no_employee_id", False, "No test employee ID available")
+            return False
+
+        # Test 1: Create Timesheet Entry
+        today = datetime.now()
+        timesheet_data = {
+            "employeeId": self.test_employee_id,
+            "date": today.strftime("%Y-%m-%d"),
+            "startTime": "09:00",
+            "endTime": "18:00",
+            "breakTime": 60,
+            "workHours": 8,
+            "overtime": 0,
+            "comments": "Звичайний робочий день"
+        }
+        
+        response = self.make_request("POST", "/timesheet/entries", timesheet_data)
+        if response and response.status_code == 200:
+            data = response.json()
+            self.log_result("hr_timesheet", "create_timesheet_entry", True,
+                          f"Timesheet entry created for {timesheet_data['date']}")
+        else:
+            status = response.status_code if response else "No response"
+            error_msg = response.json().get("error", "Unknown error") if response and response.headers.get('content-type', '').startswith('application/json') else "No error details"
+            self.log_result("hr_timesheet", "create_timesheet_entry", False, f"Create timesheet failed: {status} - {error_msg}")
+
+        # Test 2: Create Overtime Entry
+        yesterday = datetime.now() - timedelta(days=1)
+        overtime_data = {
+            "employeeId": self.test_employee_id,
+            "date": yesterday.strftime("%Y-%m-%d"),
+            "startTime": "09:00",
+            "endTime": "20:00",
+            "breakTime": 60,
+            "workHours": 8,
+            "overtime": 3,
+            "comments": "Робота над терміновим проектом"
+        }
+        
+        response = self.make_request("POST", "/timesheet/entries", overtime_data)
+        if response and response.status_code == 200:
+            data = response.json()
+            self.log_result("hr_timesheet", "create_overtime_entry", True,
+                          f"Overtime entry created: {overtime_data['overtime']} hours")
+        else:
+            status = response.status_code if response else "No response"
+            error_msg = response.json().get("error", "Unknown error") if response and response.headers.get('content-type', '').startswith('application/json') else "No error details"
+            self.log_result("hr_timesheet", "create_overtime_entry", False, f"Create overtime failed: {status} - {error_msg}")
+
+        # Test 3: Create Absence Entry
+        two_days_ago = datetime.now() - timedelta(days=2)
+        absence_data = {
+            "employeeId": self.test_employee_id,
+            "date": two_days_ago.strftime("%Y-%m-%d"),
+            "absenceType": "sick",
+            "comments": "Лікарняний"
+        }
+        
+        response = self.make_request("POST", "/timesheet/entries", absence_data)
+        if response and response.status_code == 200:
+            data = response.json()
+            self.log_result("hr_timesheet", "create_absence_entry", True,
+                          f"Absence entry created: {absence_data['absenceType']}")
+        else:
+            status = response.status_code if response else "No response"
+            error_msg = response.json().get("error", "Unknown error") if response and response.headers.get('content-type', '').startswith('application/json') else "No error details"
+            self.log_result("hr_timesheet", "create_absence_entry", False, f"Create absence failed: {status} - {error_msg}")
+
+        # Test 4: Get All Timesheet Entries
+        response = self.make_request("GET", "/timesheet/entries")
+        if response and response.status_code == 200:
+            entries = response.json()
+            if isinstance(entries, list):
+                self.log_result("hr_timesheet", "get_all_entries", True,
+                              f"Retrieved {len(entries)} timesheet entries")
+                
+                # Verify entry structure and employee enrichment
+                if entries:
+                    entry = entries[0]
+                    required_fields = ['id', 'employeeId', 'date', 'status', 'createdAt']
+                    missing_fields = [field for field in required_fields if field not in entry]
+                    
+                    if not missing_fields:
+                        self.log_result("hr_timesheet", "entry_structure", True,
+                                      "Timesheet entry structure correct")
+                    else:
+                        self.log_result("hr_timesheet", "entry_structure", False,
+                                      f"Missing fields: {missing_fields}")
+                    
+                    # Check employee enrichment
+                    if 'employee' in entry and entry['employee']:
+                        self.log_result("hr_timesheet", "employee_enrichment", True,
+                                      f"Employee info enriched: {entry['employee'].get('fullName', 'N/A')}")
+                    else:
+                        self.log_result("hr_timesheet", "employee_enrichment", False,
+                                      "Employee information not enriched")
+            else:
+                self.log_result("hr_timesheet", "get_all_entries", False,
+                              f"Invalid entries response: {entries}")
+        else:
+            status = response.status_code if response else "No response"
+            self.log_result("hr_timesheet", "get_all_entries", False, f"Get entries failed: {status}")
+
+        # Test 5: Filter by Employee
+        response = self.make_request("GET", f"/timesheet/entries?employeeId={self.test_employee_id}")
+        if response and response.status_code == 200:
+            entries = response.json()
+            employee_entries = [e for e in entries if e.get('employeeId') == self.test_employee_id]
+            self.log_result("hr_timesheet", "filter_by_employee", True,
+                          f"Found {len(employee_entries)} entries for test employee")
+        else:
+            status = response.status_code if response else "No response"
+            self.log_result("hr_timesheet", "filter_by_employee", False, f"Employee filter failed: {status}")
+
+        # Test 6: Filter by Date Range
+        date_from = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
+        date_to = datetime.now().strftime("%Y-%m-%d")
+        
+        response = self.make_request("GET", f"/timesheet/entries?dateFrom={date_from}&dateTo={date_to}")
+        if response and response.status_code == 200:
+            entries = response.json()
+            self.log_result("hr_timesheet", "filter_by_date_range", True,
+                          f"Found {len(entries)} entries in last 7 days")
+        else:
+            status = response.status_code if response else "No response"
+            self.log_result("hr_timesheet", "filter_by_date_range", False, f"Date range filter failed: {status}")
+
+        # Test 7: Filter by Month
+        current_month = datetime.now().strftime("%Y-%m-01")
+        
+        response = self.make_request("GET", f"/timesheet/entries?month={current_month}")
+        if response and response.status_code == 200:
+            entries = response.json()
+            self.log_result("hr_timesheet", "filter_by_month", True,
+                          f"Found {len(entries)} entries for current month")
+        else:
+            status = response.status_code if response else "No response"
+            self.log_result("hr_timesheet", "filter_by_month", False, f"Month filter failed: {status}")
+
+        return True
+
+    def test_hr_business_trips_api(self):
+        """Test HR Business Trips API functionality"""
+        print("\n=== Testing HR Business Trips API ===")
+        
+        if not self.auth_token:
+            self.log_result("hr_business_trips", "no_token", False, "No auth token available")
+            return False
+
+        if not hasattr(self, 'test_employee_id') or not self.test_employee_id:
+            self.log_result("hr_business_trips", "no_employee_id", False, "No test employee ID available")
+            return False
+
+        # Test 1: Create Business Trip Request
+        start_date = datetime.now() + timedelta(days=7)
+        end_date = start_date + timedelta(days=3)
+        
+        trip_data = {
+            "employeeId": self.test_employee_id,
+            "destination": "Київ",
+            "purpose": "Участь у конференції з HR-технологій",
+            "startDate": start_date.strftime("%Y-%m-%d"),
+            "endDate": end_date.strftime("%Y-%m-%d"),
+            "transportType": "train",
+            "estimatedCost": 5000,
+            "comments": "Потрібне бронювання готелю"
+        }
+        
+        response = self.make_request("POST", "/hr/business-trips", trip_data)
+        if response and response.status_code == 200:
+            data = response.json()
+            self.test_trip_id = data["businessTrip"]["id"]
+            self.log_result("hr_business_trips", "create_business_trip", True,
+                          f"Business trip created: {trip_data['destination']}")
+        else:
+            status = response.status_code if response else "No response"
+            error_msg = response.json().get("error", "Unknown error") if response and response.headers.get('content-type', '').startswith('application/json') else "No error details"
+            self.log_result("hr_business_trips", "create_business_trip", False, f"Create trip failed: {status} - {error_msg}")
+
+        # Test 2: Create Another Business Trip (Different Status)
+        start_date = datetime.now() + timedelta(days=14)
+        end_date = start_date + timedelta(days=2)
+        
+        trip_data = {
+            "employeeId": self.test_employee_id,
+            "destination": "Львів",
+            "purpose": "Навчання персоналу",
+            "startDate": start_date.strftime("%Y-%m-%d"),
+            "endDate": end_date.strftime("%Y-%m-%d"),
+            "transportType": "car",
+            "estimatedCost": 3000
+        }
+        
+        response = self.make_request("POST", "/hr/business-trips", trip_data)
+        if response and response.status_code == 200:
+            data = response.json()
+            self.log_result("hr_business_trips", "create_second_trip", True,
+                          f"Second trip created: {trip_data['destination']}")
+        else:
+            status = response.status_code if response else "No response"
+            error_msg = response.json().get("error", "Unknown error") if response and response.headers.get('content-type', '').startswith('application/json') else "No error details"
+            self.log_result("hr_business_trips", "create_second_trip", False, f"Create second trip failed: {status} - {error_msg}")
+
+        # Test 3: Get All Business Trips
+        response = self.make_request("GET", "/hr/business-trips")
+        if response and response.status_code == 200:
+            trips = response.json()
+            if isinstance(trips, list):
+                self.log_result("hr_business_trips", "get_all_trips", True,
+                              f"Retrieved {len(trips)} business trips")
+                
+                # Verify trip structure and employee enrichment
+                if trips:
+                    trip = trips[0]
+                    required_fields = ['id', 'employeeId', 'destination', 'purpose', 'startDate', 'endDate', 'status']
+                    missing_fields = [field for field in required_fields if field not in trip]
+                    
+                    if not missing_fields:
+                        self.log_result("hr_business_trips", "trip_structure", True,
+                                      "Business trip structure correct")
+                    else:
+                        self.log_result("hr_business_trips", "trip_structure", False,
+                                      f"Missing fields: {missing_fields}")
+                    
+                    # Check employee enrichment
+                    if 'employee' in trip and trip['employee']:
+                        self.log_result("hr_business_trips", "employee_enrichment", True,
+                                      f"Employee info enriched: {trip['employee'].get('fullName', 'N/A')}")
+                    else:
+                        self.log_result("hr_business_trips", "employee_enrichment", False,
+                                      "Employee information not enriched")
+            else:
+                self.log_result("hr_business_trips", "get_all_trips", False,
+                              f"Invalid trips response: {trips}")
+        else:
+            status = response.status_code if response else "No response"
+            self.log_result("hr_business_trips", "get_all_trips", False, f"Get trips failed: {status}")
+
+        # Test 4: Filter Business Trips by Status
+        response = self.make_request("GET", "/hr/business-trips?status=pending")
+        if response and response.status_code == 200:
+            trips = response.json()
+            pending_trips = [t for t in trips if t.get('status') == 'pending']
+            self.log_result("hr_business_trips", "filter_by_status", True,
+                          f"Found {len(pending_trips)} pending trips")
+        else:
+            status = response.status_code if response else "No response"
+            self.log_result("hr_business_trips", "filter_by_status", False, f"Status filter failed: {status}")
+
+        # Test 5: Filter Business Trips by Employee
+        response = self.make_request("GET", f"/hr/business-trips?employeeId={self.test_employee_id}")
+        if response and response.status_code == 200:
+            trips = response.json()
+            employee_trips = [t for t in trips if t.get('employeeId') == self.test_employee_id]
+            self.log_result("hr_business_trips", "filter_by_employee", True,
+                          f"Found {len(employee_trips)} trips for test employee")
+        else:
+            status = response.status_code if response else "No response"
+            self.log_result("hr_business_trips", "filter_by_employee", False, f"Employee filter failed: {status}")
+
+        return True
+
+    def test_complete_hr_workflow(self):
+        """Test complete HR workflow integration"""
+        print("\n=== Testing Complete HR Workflow Integration ===")
+        
+        if not self.auth_token:
+            self.log_result("hr_workflow", "no_token", False, "No auth token available")
+            return False
+
+        try:
+            # Step 1: Create Department
+            dept_data = {
+                "name": "Тестовий відділ",
+                "description": "Відділ для тестування workflow"
+            }
+            
+            dept_response = self.make_request("POST", "/hr/departments", dept_data)
+            
+            if not (dept_response and dept_response.status_code == 200):
+                self.log_result("hr_workflow", "complete_workflow", False, "Failed to create department")
+                return False
+            
+            # Step 2: Create Employee in that Department
+            emp_data = {
+                "fullName": "Тестовий Співробітник",
+                "position": "Тестова посада",
+                "department": "Тестовий відділ",
+                "email": "test.employee@tiskis.com"
+            }
+            
+            emp_response = self.make_request("POST", "/hr/employees", emp_data)
+            
+            if not (emp_response and emp_response.status_code == 200):
+                self.log_result("hr_workflow", "complete_workflow", False, "Failed to create employee")
+                return False
+            
+            workflow_employee_id = emp_response.json()["employee"]["id"]
+            
+            # Step 3: Create Timesheet Entry for Employee
+            timesheet_data = {
+                "employeeId": workflow_employee_id,
+                "date": datetime.now().strftime("%Y-%m-%d"),
+                "startTime": "08:30",
+                "endTime": "17:30",
+                "workHours": 8,
+                "comments": "Workflow test entry"
+            }
+            
+            timesheet_response = self.make_request("POST", "/timesheet/entries", timesheet_data)
+            
+            if not (timesheet_response and timesheet_response.status_code == 200):
+                self.log_result("hr_workflow", "complete_workflow", False, "Failed to create timesheet entry")
+                return False
+            
+            # Step 4: Create Business Trip Request for Employee
+            trip_data = {
+                "employeeId": workflow_employee_id,
+                "destination": "Одеса",
+                "purpose": "Workflow testing trip",
+                "startDate": (datetime.now() + timedelta(days=5)).strftime("%Y-%m-%d"),
+                "endDate": (datetime.now() + timedelta(days=7)).strftime("%Y-%m-%d"),
+                "estimatedCost": 2500
+            }
+            
+            trip_response = self.make_request("POST", "/hr/business-trips", trip_data)
+            
+            if trip_response and trip_response.status_code == 200:
+                self.log_result("hr_workflow", "complete_workflow", True,
+                              "Complete HR workflow successful: Department → Employee → Timesheet → Business Trip")
+                return True
+            else:
+                self.log_result("hr_workflow", "complete_workflow", False, "Failed to create business trip")
+                
+        except Exception as e:
+            self.log_result("hr_workflow", "complete_workflow", False, f"Workflow test error: {str(e)}")
+            
+        return False
+
+    def test_hr_data_validation(self):
+        """Test HR data validation and error handling"""
+        print("\n=== Testing HR Data Validation ===")
+        
+        if not self.auth_token:
+            self.log_result("hr_validation", "no_token", False, "No auth token available")
+            return False
+
+        # Test 1: Create Employee without required fields
+        invalid_employee = {
+            "fullName": "Test User"
+            # Missing position and department
+        }
+        
+        response = self.make_request("POST", "/hr/employees", invalid_employee)
+        if response and response.status_code == 400:
+            self.log_result("hr_validation", "employee_missing_fields", True,
+                          "Employee validation correctly rejected missing fields")
+        else:
+            status = response.status_code if response else "No response"
+            self.log_result("hr_validation", "employee_missing_fields", False,
+                          f"Employee validation failed: {status}")
+
+        # Test 2: Create Timesheet without required fields
+        invalid_timesheet = {
+            "date": datetime.now().strftime("%Y-%m-%d")
+            # Missing employeeId
+        }
+        
+        response = self.make_request("POST", "/timesheet/entries", invalid_timesheet)
+        if response and response.status_code == 400:
+            self.log_result("hr_validation", "timesheet_missing_fields", True,
+                          "Timesheet validation correctly rejected missing employeeId")
+        else:
+            status = response.status_code if response else "No response"
+            self.log_result("hr_validation", "timesheet_missing_fields", False,
+                          f"Timesheet validation failed: {status}")
+
+        # Test 3: Create Business Trip without required fields
+        invalid_trip = {
+            "destination": "Test City"
+            # Missing employeeId, purpose, dates
+        }
+        
+        response = self.make_request("POST", "/hr/business-trips", invalid_trip)
+        if response and response.status_code == 400:
+            self.log_result("hr_validation", "trip_missing_fields", True,
+                          "Business trip validation correctly rejected missing fields")
+        else:
+            status = response.status_code if response else "No response"
+            self.log_result("hr_validation", "trip_missing_fields", False,
+                          f"Business trip validation failed: {status}")
+
+        # Test 4: Create Department without name
+        invalid_dept = {
+            "description": "Test department"
+            # Missing name
+        }
+        
+        response = self.make_request("POST", "/hr/departments", invalid_dept)
+        if response and response.status_code == 400:
+            self.log_result("hr_validation", "department_missing_name", True,
+                          "Department validation correctly rejected missing name")
+        else:
+            status = response.status_code if response else "No response"
+            self.log_result("hr_validation", "department_missing_name", False,
+                          f"Department validation failed: {status}")
+
+        return True
+
+    def test_hr_authentication_requirements(self):
+        """Test that all HR endpoints require authentication"""
+        print("\n=== Testing HR Authentication Requirements ===")
+        
+        endpoints = [
+            ("GET", "/hr/employees"),
+            ("POST", "/hr/employees"),
+            ("GET", "/hr/departments"),
+            ("POST", "/hr/departments"),
+            ("GET", "/timesheet/entries"),
+            ("POST", "/timesheet/entries"),
+            ("GET", "/hr/business-trips"),
+            ("POST", "/hr/business-trips")
+        ]
+        
+        old_token = self.auth_token
+        self.auth_token = None
+        
+        for method, endpoint in endpoints:
+            if method == "GET":
+                response = self.make_request("GET", endpoint)
+            else:
+                response = self.make_request("POST", endpoint, {})
+            
+            if response and response.status_code == 401:
+                self.log_result("hr_auth", f"auth_required_{method}_{endpoint.replace('/', '_')}", True,
+                              f"{method} {endpoint} correctly requires authentication")
+            else:
+                status = response.status_code if response else "No response"
+                self.log_result("hr_auth", f"auth_required_{method}_{endpoint.replace('/', '_')}", False,
+                              f"{method} {endpoint} auth requirement failed: {status}")
+        
+        self.auth_token = old_token
+        return True
+
     def run_all_tests(self):
         """Run all backend tests in priority order"""
         print(f"\n🚀 Starting ТИС КІС Enhanced Backend API Tests with Calendar and Tasks")
