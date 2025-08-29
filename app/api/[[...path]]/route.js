@@ -2275,6 +2275,333 @@ async function handleRoute(request, { params }) {
       return handleCORS(NextResponse.json(bankAccounts))
     }
 
+    // CRM AND SALES MODULE ROUTES
+
+    // LEADS MANAGEMENT
+
+    // Create Lead - POST /api/crm/leads
+    if (route === '/crm/leads' && method === 'POST') {
+      const decoded = verifyToken(request)
+      if (!decoded) {
+        return handleCORS(NextResponse.json(
+          { error: "Авторизація потрібна" }, 
+          { status: 401 }
+        ))
+      }
+
+      const { 
+        title, 
+        contactName, 
+        company, 
+        email, 
+        phone, 
+        source, 
+        expectedValue,
+        description,
+        assignedTo 
+      } = await request.json()
+
+      if (!title || !contactName) {
+        return handleCORS(NextResponse.json(
+          { error: "Назва та ім'я контакту обов'язкові" }, 
+          { status: 400 }
+        ))
+      }
+
+      const lead = {
+        id: uuidv4(),
+        title,
+        contactName,
+        company: company || '',
+        email: email || '',
+        phone: phone || '',
+        source: source || 'website', // website, referral, cold_call, social_media
+        expectedValue: expectedValue || 0,
+        description: description || '',
+        status: 'new', // new, contacted, qualified, proposal, negotiation, won, lost
+        assignedTo: assignedTo || decoded.userId,
+        createdBy: decoded.userId,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+
+      await db.collection('leads').insertOne(lead)
+      return handleCORS(NextResponse.json({ 
+        message: "Лід створено успішно",
+        lead
+      }))
+    }
+
+    // Get Leads - GET /api/crm/leads
+    if (route === '/crm/leads' && method === 'GET') {
+      const decoded = verifyToken(request)
+      if (!decoded) {
+        return handleCORS(NextResponse.json(
+          { error: "Авторизація потрібна" }, 
+          { status: 401 }
+        ))
+      }
+
+      const url = new URL(request.url)
+      const status = url.searchParams.get('status')
+      const assignedToMe = url.searchParams.get('assignedToMe') === 'true'
+      
+      let filter = {}
+      
+      if (status && status !== 'all') {
+        filter.status = status
+      }
+      
+      if (assignedToMe) {
+        filter.assignedTo = decoded.userId
+      }
+
+      const leads = await db.collection('leads')
+        .find(filter)
+        .sort({ createdAt: -1 })
+        .toArray()
+
+      return handleCORS(NextResponse.json(leads))
+    }
+
+    // Update Lead Status - PUT /api/crm/leads/:id/status
+    if (route.match(/^\/crm\/leads\/(.+)\/status$/) && method === 'PUT') {
+      const decoded = verifyToken(request)
+      if (!decoded) {
+        return handleCORS(NextResponse.json(
+          { error: "Авторизація потрібна" }, 
+          { status: 401 }
+        ))
+      }
+
+      const leadId = route.match(/^\/crm\/leads\/(.+)\/status$/)[1]
+      const { status, comment } = await request.json()
+
+      const validStatuses = ['new', 'contacted', 'qualified', 'proposal', 'negotiation', 'won', 'lost']
+      if (!validStatuses.includes(status)) {
+        return handleCORS(NextResponse.json(
+          { error: "Невірний статус ліда" }, 
+          { status: 400 }
+        ))
+      }
+
+      await db.collection('leads').updateOne(
+        { id: leadId },
+        { 
+          $set: { 
+            status,
+            updatedAt: new Date(),
+            updatedBy: decoded.userId
+          }
+        }
+      )
+
+      // Log status change
+      const activity = {
+        id: uuidv4(),
+        leadId,
+        type: 'status_change',
+        description: `Статус змінено на: ${status}`,
+        comment: comment || '',
+        performedBy: decoded.userId,
+        createdAt: new Date()
+      }
+
+      await db.collection('lead_activities').insertOne(activity)
+
+      return handleCORS(NextResponse.json({ 
+        message: "Статус ліда оновлено"
+      }))
+    }
+
+    // OPPORTUNITIES (DEALS)
+
+    // Create Opportunity - POST /api/crm/opportunities
+    if (route === '/crm/opportunities' && method === 'POST') {
+      const decoded = verifyToken(request)
+      if (!decoded) {
+        return handleCORS(NextResponse.json(
+          { error: "Авторизація потрібна" }, 
+          { status: 401 }
+        ))
+      }
+
+      const { 
+        name, 
+        counterpartyId, 
+        expectedValue, 
+        probability, 
+        expectedCloseDate, 
+        stage,
+        description,
+        products 
+      } = await request.json()
+
+      if (!name || !counterpartyId || !expectedValue) {
+        return handleCORS(NextResponse.json(
+          { error: "Назва, контрагент та очікувана сума обов'язкові" }, 
+          { status: 400 }
+        ))
+      }
+
+      const opportunity = {
+        id: uuidv4(),
+        name,
+        counterpartyId,
+        expectedValue,
+        probability: probability || 50,
+        expectedCloseDate: expectedCloseDate ? new Date(expectedCloseDate) : null,
+        stage: stage || 'prospecting', // prospecting, qualification, proposal, negotiation, closed_won, closed_lost
+        description: description || '',
+        products: products || [],
+        assignedTo: decoded.userId,
+        createdBy: decoded.userId,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+
+      await db.collection('opportunities').insertOne(opportunity)
+      return handleCORS(NextResponse.json({ 
+        message: "Угоду створено успішно",
+        opportunity
+      }))
+    }
+
+    // Get Opportunities - GET /api/crm/opportunities
+    if (route === '/crm/opportunities' && method === 'GET') {
+      const decoded = verifyToken(request)
+      if (!decoded) {
+        return handleCORS(NextResponse.json(
+          { error: "Авторизація потрібна" }, 
+          { status: 401 }
+        ))
+      }
+
+      const url = new URL(request.url)
+      const stage = url.searchParams.get('stage')
+      const assignedToMe = url.searchParams.get('assignedToMe') === 'true'
+      
+      let filter = {}
+      
+      if (stage && stage !== 'all') {
+        filter.stage = stage
+      }
+      
+      if (assignedToMe) {
+        filter.assignedTo = decoded.userId
+      }
+
+      const opportunities = await db.collection('opportunities')
+        .find(filter)
+        .sort({ expectedCloseDate: 1, createdAt: -1 })
+        .toArray()
+
+      // Get counterparty details
+      const counterpartyIds = opportunities.map(opp => opp.counterpartyId)
+      const counterparties = await db.collection('counterparties')
+        .find({ id: { $in: counterpartyIds } })
+        .toArray()
+      
+      const counterpartyMap = {}
+      counterparties.forEach(cp => {
+        counterpartyMap[cp.id] = cp
+      })
+
+      // Enrich opportunities with counterparty info
+      const enrichedOpportunities = opportunities.map(opp => ({
+        ...opp,
+        counterparty: counterpartyMap[opp.counterpartyId] || null
+      }))
+
+      return handleCORS(NextResponse.json(enrichedOpportunities))
+    }
+
+    // PRODUCTS AND PRICING
+
+    // Create Product - POST /api/crm/products
+    if (route === '/crm/products' && method === 'POST') {
+      const decoded = verifyToken(request)
+      if (!decoded) {
+        return handleCORS(NextResponse.json(
+          { error: "Авторизація потрібна" }, 
+          { status: 401 }
+        ))
+      }
+
+      if (!['admin', 'manager'].includes(decoded.role)) {
+        return handleCORS(NextResponse.json(
+          { error: "Недостатньо прав доступу" }, 
+          { status: 403 }
+        ))
+      }
+
+      const { 
+        name, 
+        sku, 
+        category, 
+        basePrice, 
+        cost, 
+        unit, 
+        description,
+        isActive 
+      } = await request.json()
+
+      if (!name || !sku || !basePrice) {
+        return handleCORS(NextResponse.json(
+          { error: "Назва, артикул та базова ціна обов'язкові" }, 
+          { status: 400 }
+        ))
+      }
+
+      const product = {
+        id: uuidv4(),
+        name,
+        sku,
+        category: category || 'general',
+        basePrice,
+        cost: cost || 0,
+        unit: unit || 'шт',
+        description: description || '',
+        isActive: isActive !== false,
+        createdBy: decoded.userId,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+
+      await db.collection('products').insertOne(product)
+      return handleCORS(NextResponse.json({ 
+        message: "Товар створено успішно",
+        product
+      }))
+    }
+
+    // Get Products - GET /api/crm/products
+    if (route === '/crm/products' && method === 'GET') {
+      const decoded = verifyToken(request)
+      if (!decoded) {
+        return handleCORS(NextResponse.json(
+          { error: "Авторизація потрібна" }, 
+          { status: 401 }
+        ))
+      }
+
+      const url = new URL(request.url)
+      const category = url.searchParams.get('category')
+      
+      let filter = { isActive: true }
+      
+      if (category && category !== 'all') {
+        filter.category = category
+      }
+
+      const products = await db.collection('products')
+        .find(filter)
+        .sort({ name: 1 })
+        .toArray()
+
+      return handleCORS(NextResponse.json(products))
+    }
+
     // Route not found
     return handleCORS(NextResponse.json(
       { error: `Route ${route} not found` }, 
