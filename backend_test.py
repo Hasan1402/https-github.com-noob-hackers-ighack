@@ -13,8 +13,8 @@ import time
 from datetime import datetime, timedelta
 import uuid
 
-# Configuration - use localhost for testing since external URL has connectivity issues
-BASE_URL = "http://localhost:3000/api"
+# Configuration - use external URL for HR testing
+BASE_URL = "https://tys-edu-system.preview.emergentagent.com/api"
 
 class TISKISBackendTester:
     def __init__(self):
