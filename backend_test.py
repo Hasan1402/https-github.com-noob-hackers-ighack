@@ -1,17 +1,20 @@
 #!/usr/bin/env python3
 """
-Comprehensive Backend API Tests for ТИС КІС System
-Tests all authentication, user management, document management, and dashboard endpoints
+Comprehensive Backend API Testing for ТИС КІС Calendar and Tasks System
+Testing Calendar Events API, Tasks Management API, and Notifications API
+Plus existing authentication, user management, and document management
 """
 
 import requests
 import json
 import os
 import tempfile
-from datetime import datetime
+import time
+from datetime import datetime, timedelta
+import uuid
 
-# Get base URL from environment - use local URL for testing
-BASE_URL = "http://localhost:3000/api"
+# Configuration - use external URL for testing
+BASE_URL = "https://tys-edu-system.preview.emergentagent.com/api"
 
 class TISKISBackendTester:
     def __init__(self):
