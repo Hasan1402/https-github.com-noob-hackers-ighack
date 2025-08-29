@@ -218,8 +218,10 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus: []
-  stuck_tasks: []
+  current_focus:
+    - "Authentication UI"
+  stuck_tasks:
+    - "Authentication UI"
   test_all: false
   test_priority: "high_first"
 
@@ -232,3 +234,5 @@ agent_communication:
       message: "Updated frontend tasks for testing. Ready to test Authentication UI (login/register forms), Main Dashboard UI (navigation, quick actions), and basic Document Management UI. Need to verify complete user flow from registration to dashboard usage."
     - agent: "testing"
       message: "✅ BACKEND TESTING COMPLETE: All 4 backend API tasks are working correctly. Authentication flow (registration/login/JWT verification) works with proper password hashing and role assignment. User management has proper RBAC (admin/manager can access user lists, regular users get 403). Document management returns mock data with authentication. Dashboard stats work with real user counts from database. All endpoints have proper CORS headers and error handling. MongoDB connection working. All high and medium priority backend tasks are functional."
+    - agent: "testing"
+      message: "🚨 CRITICAL FRONTEND TESTING RESULTS: Frontend UI is EXCELLENT - Ukrainian interface perfect, responsive design working, all components render beautifully. However, CRITICAL BACKEND ROUTING ISSUE found: API calls from browser return 502 errors while backend logs show 200 success internally. This indicates Kubernetes ingress routing problem where /api routes are not properly forwarded. Backend works internally but frontend cannot reach it. Need to fix API routing configuration urgently."
