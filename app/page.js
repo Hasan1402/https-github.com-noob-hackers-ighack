@@ -1397,6 +1397,9 @@ export default function App() {
       </div>
     )
   }
+
+  // Analytics View
+  if (currentView === 'analytics') {
     return (
       <div className="min-h-screen bg-gray-50">
         {/* Top Navigation */}
