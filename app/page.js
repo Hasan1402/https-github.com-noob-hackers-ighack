@@ -51,6 +51,10 @@ export default function App() {
   const [departments, setDepartments] = useState([])
   const [timesheetEntries, setTimesheetEntries] = useState([])
   const [businessTrips, setBusinessTrips] = useState([])
+  const [monthlyTimesheet, setMonthlyTimesheet] = useState(null)
+  const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().substring(0, 7)) // YYYY-MM
+  const [workCodes, setWorkCodes] = useState({})
+  const [selectedDepartment, setSelectedDepartment] = useState('all')
 
   // Check if user is logged in on load
   useEffect(() => {
