@@ -805,17 +805,136 @@ export default function App() {
     )
   }
 
-  // Placeholder for other views
-  if (['users', 'calendar', 'analytics'].includes(currentView)) {
+  // Calendar View
+  if (currentView === 'calendar') {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        {/* Top Navigation */}
+        <header className="bg-white shadow-sm border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center h-16">
+              <div className="flex items-center space-x-4">
+                <Button 
+                  variant="ghost" 
+                  onClick={() => setCurrentView('dashboard')}
+                  className="text-gray-600 hover:text-gray-900"
+                >
+                  <Home className="w-4 h-4 mr-2" />
+                  Головна
+                </Button>
+                <h1 className="text-xl font-bold text-gray-900">Календар і завдання</h1>
+              </div>
+              
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-3">
+                  <Avatar>
+                    <AvatarFallback>
+                      {user?.fullName?.charAt(0) || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="hidden md:block">
+                    <div className="text-sm font-medium text-gray-900">{user?.fullName}</div>
+                    <Badge variant="secondary" className="text-xs">
+                      {user?.role === 'admin' ? 'Адміністратор' : 
+                       user?.role === 'manager' ? 'Менеджер' : 'Користувач'}
+                    </Badge>
+                  </div>
+                </div>
+                
+                <Button variant="ghost" size="sm" onClick={handleLogout}>
+                  <LogOut className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Header Actions */}
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-gray-900">Календар подій та завдань</h2>
+            
+            <div className="flex space-x-2">
+              <CreateEventDialog onCreateEvent={handleCreateEvent} users={users} />
+              <CreateTaskDialog onCreateTask={handleCreateTask} users={users} />
+            </div>
+          </div>
+
+          {/* Calendar Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Calendar */}
+            <div className="lg:col-span-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Calendar className="w-5 h-5 mr-2" />
+                    Календар подій
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CalendarComponent 
+                    events={events}
+                    selectedDate={selectedDate}
+                    onDateSelect={setSelectedDate}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Tasks and Notifications */}
+            <div className="space-y-6">
+              {/* Tasks */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <FileText className="w-5 h-5 mr-2" />
+                      Мої завдання
+                    </div>
+                    <Badge variant="secondary">
+                      {tasks.filter(t => t.status !== 'completed').length}
+                    </Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <TasksList 
+                    tasks={tasks}
+                    onUpdateStatus={handleUpdateTaskStatus}
+                  />
+                </CardContent>
+              </Card>
+
+              {/* Notifications */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <Bell className="w-5 h-5 mr-2" />
+                      Повідомлення
+                    </div>
+                    <Badge variant="destructive">
+                      {notifications.filter(n => !n.read).length}
+                    </Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <NotificationsList notifications={notifications} />
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Placeholder for other views - updated for analytics only
+  if (currentView === 'analytics') {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <Card className="max-w-md w-full">
           <CardContent className="p-8 text-center">
-            <h2 className="text-xl font-bold mb-4">
-              {currentView === 'users' && 'Користувачі'}
-              {currentView === 'calendar' && 'Календар'}
-              {currentView === 'analytics' && 'Аналітика'}
-            </h2>
+            <h2 className="text-xl font-bold mb-4">Аналітика</h2>
             <p className="text-gray-600 mb-6">
               Цей розділ буде доступний в наступній версії
             </p>
