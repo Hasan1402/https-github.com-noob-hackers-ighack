@@ -67,6 +67,20 @@ export default function App() {
     }
   }, [])
 
+  // Load data when user changes or view changes
+  useEffect(() => {
+    if (user) {
+      if (currentView === 'documents') {
+        loadDocuments()
+        loadUsers()
+      } else if (currentView === 'calendar') {
+        loadEvents()
+        loadTasks()
+        loadNotifications()
+      }
+    }
+  }, [user, currentView, documentFilter])
+
   const handleLogin = async (e) => {
     e.preventDefault()
     
