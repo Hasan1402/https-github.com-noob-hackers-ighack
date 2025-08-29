@@ -485,6 +485,9 @@ backend:
         - working: false
           agent: "testing"
           comment: "❌ PRODUCTS API ISSUES: POST /api/crm/products fails to create products due to network timeout issues. GET /api/crm/products retrieves successfully but returns 0 products. Role-based access control (admin/manager only) appears implemented but cannot test creation due to connectivity issues. Category filtering operational but no products to filter. Product catalog functionality blocked by creation endpoint issues."
+        - working: "NA"
+          agent: "main"
+          comment: "FIXED DATABASE CONNECTION ISSUE: Same fix as Opportunities API - corrected database connection to use existing database 'your_database_name' instead of undefined DB_NAME. Database connection timeouts should be resolved. Ready for retesting."
 
   - task: "Finance-CRM Integration"
     implemented: true
