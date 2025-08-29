@@ -987,22 +987,244 @@ export default function App() {
     )
   }
 
-  // Placeholder for other views - updated for analytics only
+  // Analytics View
   if (currentView === 'analytics') {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Card className="max-w-md w-full">
-          <CardContent className="p-8 text-center">
-            <h2 className="text-xl font-bold mb-4">Аналітика</h2>
-            <p className="text-gray-600 mb-6">
-              Цей розділ буде доступний в наступній версії
-            </p>
-            <Button onClick={() => setCurrentView('dashboard')}>
-              <Home className="w-4 h-4 mr-2" />
-              Повернутися на головну
-            </Button>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-gray-50">
+        {/* Top Navigation */}
+        <header className="bg-white shadow-sm border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center h-16">
+              <div className="flex items-center space-x-4">
+                <Button 
+                  variant="ghost" 
+                  onClick={() => setCurrentView('dashboard')}
+                  className="text-gray-600 hover:text-gray-900"
+                >
+                  <Home className="w-4 h-4 mr-2" />
+                  Головна
+                </Button>
+                <h1 className="text-xl font-bold text-gray-900">Аналітика та звіти</h1>
+              </div>
+              
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-3">
+                  <Avatar>
+                    <AvatarFallback>
+                      {user?.fullName?.charAt(0) || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="hidden md:block">
+                    <div className="text-sm font-medium text-gray-900">{user?.fullName}</div>
+                    <Badge variant="secondary" className="text-xs">
+                      {user?.role === 'admin' ? 'Адміністратор' : 
+                       user?.role === 'manager' ? 'Менеджер' : 'Користувач'}
+                    </Badge>
+                  </div>
+                </div>
+                
+                <Button variant="ghost" size="sm" onClick={handleLogout}>
+                  <LogOut className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {analytics ? (
+            <>
+              {/* Overview Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center">
+                      <div className="p-2 bg-blue-100 rounded-lg">
+                        <Users className="w-6 h-6 text-blue-600" />
+                      </div>
+                      <div className="ml-4">
+                        <p className="text-sm font-medium text-gray-500">Користувачі</p>
+                        <p className="text-2xl font-bold text-gray-900">{analytics.overview.totalUsers}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center">
+                      <div className="p-2 bg-green-100 rounded-lg">
+                        <FileText className="w-6 h-6 text-green-600" />
+                      </div>
+                      <div className="ml-4">
+                        <p className="text-sm font-medium text-gray-500">Документи</p>
+                        <p className="text-2xl font-bold text-gray-900">{analytics.overview.totalDocuments}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center">
+                      <div className="p-2 bg-purple-100 rounded-lg">
+                        <Calendar className="w-6 h-6 text-purple-600" />
+                      </div>
+                      <div className="ml-4">
+                        <p className="text-sm font-medium text-gray-500">Завдання</p>
+                        <p className="text-2xl font-bold text-gray-900">{analytics.overview.totalTasks}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center">
+                      <div className="p-2 bg-orange-100 rounded-lg">
+                        <BarChart3 className="w-6 h-6 text-orange-600" />
+                      </div>
+                      <div className="ml-4">
+                        <p className="text-sm font-medium text-gray-500">Події</p>
+                        <p className="text-2xl font-bold text-gray-900">{analytics.overview.totalEvents}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Performance Metrics */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Ефективність роботи</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span>Документи затверджені</span>
+                          <span>{analytics.performance.documentCompletionRate}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-blue-600 h-2 rounded-full" 
+                            style={{width: `${analytics.performance.documentCompletionRate}%`}}
+                          ></div>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span>Завдання виконані</span>
+                          <span>{analytics.performance.taskCompletionRate}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-green-600 h-2 rounded-full" 
+                            style={{width: `${analytics.performance.taskCompletionRate}%`}}
+                          ></div>
+                        </div>
+                      </div>
+
+                      <div className="pt-4 border-t">
+                        <p className="text-sm text-gray-600">
+                          Середній час обробки: <strong>{analytics.performance.averageProcessingTime}</strong>
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Поточний стан</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="text-center p-4 bg-yellow-50 rounded-lg">
+                        <div className="text-2xl font-bold text-yellow-600">
+                          {analytics.overview.pendingDocuments}
+                        </div>
+                        <div className="text-sm text-gray-600">На перевірці</div>
+                      </div>
+                      
+                      <div className="text-center p-4 bg-green-50 rounded-lg">
+                        <div className="text-2xl font-bold text-green-600">
+                          {analytics.overview.completedTasks}
+                        </div>
+                        <div className="text-sm text-gray-600">Завершені завдання</div>
+                      </div>
+
+                      <div className="text-center p-4 bg-blue-50 rounded-lg">
+                        <div className="text-2xl font-bold text-blue-600">
+                          {analytics.overview.upcomingEvents}
+                        </div>
+                        <div className="text-sm text-gray-600">Майбутні події</div>
+                      </div>
+
+                      <div className="text-center p-4 bg-purple-50 rounded-lg">
+                        <div className="text-2xl font-bold text-purple-600">
+                          {analytics.trends.documentsLastWeek}
+                        </div>
+                        <div className="text-sm text-gray-600">Нових за тиждень</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Recent Activity & Reports */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Нещодавні дії</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {analytics.activity.recentActivities.length > 0 ? (
+                      <div className="space-y-3">
+                        {analytics.activity.recentActivities.map((activity, index) => (
+                          <div key={index} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
+                            <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                            <div className="flex-1">
+                              <p className="text-sm font-medium">{activity.comment || activity.action}</p>
+                              <p className="text-xs text-gray-500">
+                                {new Date(activity.timestamp).toLocaleString('uk-UA')}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-gray-500">
+                        <BarChart3 className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                        <p>Активність відсутня</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {['admin', 'manager'].includes(user?.role) && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Генерація звітів</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ReportGenerator onGenerateReport={handleGenerateReport} />
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            </>
+          ) : (
+            <div className="flex items-center justify-center h-64">
+              <div className="text-center">
+                <BarChart3 className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                <p className="text-gray-500">Завантаження аналітики...</p>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     )
   }
