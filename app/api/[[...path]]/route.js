@@ -1588,8 +1588,10 @@ async function handleRoute(request, { params }) {
       }))
     }
 
-    // Get Departments - GET /api/hr/departments
-    if (route === '/hr/departments' && method === 'GET') {
+    // ENHANCED TIMESHEET ROUTES
+
+    // Get Monthly Timesheet - GET /api/timesheet/monthly
+    if (route === '/timesheet/monthly' && method === 'GET') {
       const decoded = verifyToken(request)
       if (!decoded) {
         return handleCORS(NextResponse.json(
@@ -1598,12 +1600,246 @@ async function handleRoute(request, { params }) {
         ))
       }
 
-      const departments = await db.collection('departments')
-        .find({})
-        .sort({ name: 1 })
-        .toArray()
+      const url = new URL(request.url)
+      const month = url.searchParams.get('month') // YYYY-MM format
+      const department = url.searchParams.get('department')
+      const responsiblePersonId = url.searchParams.get('responsiblePersonId')
 
-      return handleCORS(NextResponse.json(departments))
+      if (!month) {
+        return handleCORS(NextResponse.json(
+          { error: "Параметр місяця обов'язковий (YYYY-MM)" }, 
+          { status: 400 }
+        ))
+      }
+
+      try {
+        // Parse month
+        const [year, monthNum] = month.split('-').map(Number)
+        const startOfMonth = new Date(year, monthNum - 1, 1)
+        const endOfMonth = new Date(year, monthNum, 0)
+        const daysInMonth = endOfMonth.getDate()
+
+        // Get employees for the department
+        let employeeFilter = {}
+        if (department && department !== 'all') {
+          employeeFilter.department = department
+        }
+
+        const employees = await db.collection('employees')
+          .find(employeeFilter)
+          .sort({ fullName: 1 })
+          .toArray()
+
+        // Get timesheet entries for the month
+        const timesheetEntries = await db.collection('timesheet_entries')
+          .find({
+            date: {
+              $gte: startOfMonth,
+              $lte: endOfMonth
+            }
+          })
+          .toArray()
+
+        // Create timesheet grid
+        const timesheetGrid = employees.map(employee => {
+          const employeeEntries = timesheetEntries.filter(entry => entry.employeeId === employee.id)
+          
+          // Create daily entries array
+          const dailyEntries = []
+          let totalWorkHours = 0
+          let totalOvertime = 0
+          let workDays = 0
+          let weekendDays = 0
+          let sickDays = 0
+          let vacationDays = 0
+
+          for (let day = 1; day <= daysInMonth; day++) {
+            const currentDate = new Date(year, monthNum - 1, day)
+            const dayOfWeek = currentDate.getDay() // 0 = Sunday, 6 = Saturday
+            const dateString = currentDate.toISOString().split('T')[0]
+            
+            // Find entry for this date
+            const dayEntry = employeeEntries.find(entry => 
+              entry.date.toISOString().split('T')[0] === dateString
+            )
+
+            let dayType = 'work' // work, weekend, sick, vacation, business_trip, personal
+            let hours = 0
+            let overtime = 0
+            let status = 'present'
+
+            if (dayEntry) {
+              hours = dayEntry.workHours || 0
+              overtime = dayEntry.overtime || 0
+              if (dayEntry.absenceType) {
+                dayType = dayEntry.absenceType
+                status = dayEntry.absenceType
+              }
+              totalWorkHours += hours
+              totalOvertime += overtime
+            } else {
+              // Default logic for weekends
+              if (dayOfWeek === 0 || dayOfWeek === 6) {
+                dayType = 'weekend'
+                status = 'weekend'
+                weekendDays++
+              } else {
+                // Default work day
+                hours = 8
+                totalWorkHours += 8
+                workDays++
+              }
+            }
+
+            // Count different types of days
+            if (dayType === 'sick') sickDays++
+            else if (dayType === 'vacation') vacationDays++
+            else if (status === 'present' && dayType === 'work') workDays++
+
+            dailyEntries.push({
+              day,
+              date: currentDate,
+              dayOfWeek,
+              hours,
+              overtime,
+              dayType,
+              status,
+              comments: dayEntry?.comments || ''
+            })
+          }
+
+          return {
+            employee,
+            dailyEntries,
+            summary: {
+              totalWorkHours,
+              totalOvertime,
+              workDays,
+              weekendDays, 
+              sickDays,
+              vacationDays,
+              plannedHours: workDays * 8, // Assuming 8h work day
+              efficiency: workDays > 0 ? (totalWorkHours / (workDays * 8) * 100).toFixed(1) : 0
+            }
+          }
+        })
+
+        return handleCORS(NextResponse.json({
+          month,
+          year,
+          monthNum,
+          daysInMonth,
+          employees: timesheetGrid,
+          monthName: getMonthName(monthNum)
+        }))
+
+      } catch (error) {
+        console.error('Monthly timesheet error:', error)
+        return handleCORS(NextResponse.json(
+          { error: "Помилка отримання місячного табеля" }, 
+          { status: 500 }
+        ))
+      }
+    }
+
+    // Update Daily Entry - PUT /api/timesheet/daily/:employeeId/:date
+    if (route.match(/^\/timesheet\/daily\/(.+)\/(.+)$/) && method === 'PUT') {
+      const decoded = verifyToken(request)
+      if (!decoded) {
+        return handleCORS(NextResponse.json(
+          { error: "Авторизація потрібна" }, 
+          { status: 401 }
+        ))
+      }
+
+      const matches = route.match(/^\/timesheet\/daily\/(.+)\/(.+)$/)
+      const employeeId = matches[1]
+      const dateStr = matches[2] // YYYY-MM-DD format
+
+      const { hours, overtime, dayType, status, comments } = await request.json()
+
+      try {
+        const entryDate = new Date(dateStr)
+        
+        // Find existing entry
+        const existingEntry = await db.collection('timesheet_entries').findOne({
+          employeeId,
+          date: entryDate
+        })
+
+        const entryData = {
+          employeeId,
+          date: entryDate,
+          workHours: hours || 0,
+          overtime: overtime || 0,
+          absenceType: dayType !== 'work' ? dayType : null,
+          comments: comments || '',
+          status: status || 'submitted',
+          updatedBy: decoded.userId,
+          updatedAt: new Date()
+        }
+
+        if (existingEntry) {
+          // Update existing entry
+          await db.collection('timesheet_entries').updateOne(
+            { _id: existingEntry._id },
+            { $set: entryData }
+          )
+        } else {
+          // Create new entry
+          entryData.id = uuidv4()
+          entryData.createdBy = decoded.userId
+          entryData.createdAt = new Date()
+          await db.collection('timesheet_entries').insertOne(entryData)
+        }
+
+        return handleCORS(NextResponse.json({
+          message: "Запис табеля оновлено",
+          entry: entryData
+        }))
+
+      } catch (error) {
+        console.error('Update daily entry error:', error)
+        return handleCORS(NextResponse.json(
+          { error: "Помилка оновлення запису" }, 
+          { status: 500 }
+        ))
+      }
+    }
+
+    // Get Timesheet Templates - GET /api/timesheet/templates
+    if (route === '/timesheet/templates' && method === 'GET') {
+      const decoded = verifyToken(request)
+      if (!decoded) {
+        return handleCORS(NextResponse.json(
+          { error: "Авторизація потрібна" }, 
+          { status: 401 }
+        ))
+      }
+
+      // Return predefined timesheet templates and work codes
+      const templates = {
+        workCodes: {
+          '8': { label: 'Робочий день (8 год)', hours: 8, type: 'work', color: '#10B981' },
+          '7': { label: 'Скорочений день (7 год)', hours: 7, type: 'work', color: '#059669' },
+          '4': { label: 'Неповний день (4 год)', hours: 4, type: 'work', color: '#34D399' },
+          'НТ': { label: 'Нічна зміна', hours: 8, type: 'night', color: '#1E40AF' },
+          'В': { label: 'Вихідний', hours: 0, type: 'weekend', color: '#DC2626' },
+          'Л': { label: 'Лікарняний', hours: 0, type: 'sick', color: '#F59E0B' },
+          'ВП': { label: 'Відпустка', hours: 0, type: 'vacation', color: '#8B5CF6' },
+          'ВК': { label: 'Відрядження', hours: 8, type: 'business_trip', color: '#EF4444' },
+          'НН': { label: 'Неявка з невідомих причин', hours: 0, type: 'absence', color: '#6B7280' },
+          'ДВ': { label: 'Додаткові вихідні', hours: 0, type: 'extra_weekend', color: '#DC2626' }
+        },
+        workSchedules: {
+          'standard': { name: 'Стандартний графік', dailyHours: 8, weeklyHours: 40 },
+          'part_time': { name: 'Неповний робочий день', dailyHours: 4, weeklyHours: 20 },
+          'shift': { name: 'Змінний графік', dailyHours: 12, weeklyHours: 36 },
+          'flexible': { name: 'Гнучкий графік', dailyHours: 8, weeklyHours: 40 }
+        }
+      }
+
+      return handleCORS(NextResponse.json(templates))
     }
 
     // Route not found
