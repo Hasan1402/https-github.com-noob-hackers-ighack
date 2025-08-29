@@ -597,11 +597,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Opportunities API"
-    - "Products API"
-  stuck_tasks:
-    - "Opportunities API"
-    - "Products API"
+    - "Complete CRM System Integration"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
