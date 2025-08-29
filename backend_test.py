@@ -426,6 +426,8 @@ class TISKISBackendTester:
         response = self.make_request("GET", "/dashboard/stats")
         if response and response.status_code == 401:
             self.log_result("dashboard_stats", "unauthorized_access", True, "Unauthorized access properly rejected")
+        elif response is None:
+            self.log_result("dashboard_stats", "unauthorized_access", False, "No response received")
         else:
             status = response.status_code if response else "No response"
             self.log_result("dashboard_stats", "unauthorized_access", False, f"Unauthorized access not handled: {status}")
