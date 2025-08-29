@@ -1367,9 +1367,9 @@ class TISKISBackendTester:
 
     def run_all_tests(self):
         """Run all backend tests in priority order"""
-        print(f"\n🚀 Starting ТИС КІС Enhanced Backend API Tests")
+        print(f"\n🚀 Starting ТИС КІС Enhanced Backend API Tests with Calendar and Tasks")
         print(f"Base URL: {self.base_url}")
-        print("=" * 60)
+        print("=" * 80)
         
         # HIGH PRIORITY TESTS
         print("\n🔥 HIGH PRIORITY TESTS")
@@ -1387,6 +1387,24 @@ class TISKISBackendTester:
         
         # Login additional users for workflow testing
         self.login_additional_users()
+        
+        # NEW CALENDAR AND TASKS API TESTS (HIGH PRIORITY)
+        print("\n📅 CALENDAR AND TASKS API TESTS")
+        
+        # Test authentication requirements for new APIs
+        self.test_authentication_requirements_new_apis()
+        
+        # Calendar Events API Tests
+        self.test_calendar_events_api()
+        
+        # Tasks Management API Tests
+        self.test_tasks_management_api()
+        
+        # Notifications API Tests
+        self.test_notifications_api()
+        
+        # Complete Workflow Integration Test
+        self.test_complete_workflow_integration()
         
         # ENHANCED DOCUMENT WORKFLOW TESTS (HIGH PRIORITY)
         print("\n📄 ENHANCED DOCUMENT WORKFLOW TESTS")
