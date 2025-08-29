@@ -470,6 +470,9 @@ backend:
         - working: false
           agent: "testing"
           comment: "❌ OPPORTUNITIES API ISSUES: POST /api/crm/opportunities fails to create sales opportunities due to network timeout issues. GET /api/crm/opportunities retrieves successfully but returns 0 opportunities. Counterparty integration implemented but cannot test due to creation failures. Core API structure appears correct but creation endpoint has connectivity issues preventing full testing."
+        - working: "NA"
+          agent: "main"
+          comment: "FIXED DATABASE CONNECTION ISSUE: Found that API was trying to connect to wrong database name (process.env.DB_NAME='tis_kis_erp') but actual database is 'your_database_name'. Fixed hardcoded connection to use existing database. Also fixed frontend syntax error that was preventing server startup. Ready for retesting."
 
   - task: "Products API"
     implemented: true
