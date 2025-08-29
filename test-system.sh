@@ -14,8 +14,8 @@ echo "Локальний API (http://localhost:3000):"
 curl -s http://localhost:3000/api/health | jq .
 
 # Тест зовнішнього API  
-echo -e "\nЗовнішній API (https://tys-edu-system.preview.emergentagent.com):"
-curl -s -w "HTTP_CODE: %{http_code}\n" https://tys-edu-system.preview.emergentagent.com/api/health
+echo -e "\nЗовнішній API (https://tys-kis-erp.preview.emergentagent.com):"
+curl -s -w "HTTP_CODE: %{http_code}\n" https://tys-kis-erp.preview.emergentagent.com/api/health
 
 # Створення тестових користувачів
 echo -e "\n👤 Створення тестових користувачів:"
@@ -54,7 +54,7 @@ curl -s -X POST http://localhost:3000/api/auth/register \
   }' | jq '.message // .error'
 
 echo -e "\n✅ Система готова до тестування!"
-echo "🌐 Frontend URL: https://tys-edu-system.preview.emergentagent.com"
+echo "🌐 Frontend URL: https://tys-kis-erp.preview.emergentagent.com"
 echo ""
 echo "🔑 Тестові акаунти:"
 echo "   👑 Admin:   admin@tiskis.test   / Admin123!"
