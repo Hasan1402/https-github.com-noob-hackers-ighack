@@ -208,6 +208,8 @@ class TISKISBackendTester:
         response = self.make_request("POST", "/auth/login", invalid_login)
         if response and response.status_code == 401:
             self.log_result("authentication", "invalid_login", True, "Invalid login properly rejected")
+        elif response is None:
+            self.log_result("authentication", "invalid_login", False, "No response received")
         else:
             status = response.status_code if response else "No response"
             self.log_result("authentication", "invalid_login", False, f"Invalid login not handled: {status}")
@@ -216,6 +218,8 @@ class TISKISBackendTester:
         response = self.make_request("POST", "/auth/login", {"email": "test@example.com"})
         if response and response.status_code == 400:
             self.log_result("authentication", "missing_credentials", True, "Missing credentials properly rejected")
+        elif response is None:
+            self.log_result("authentication", "missing_credentials", False, "No response received")
         else:
             status = response.status_code if response else "No response"
             self.log_result("authentication", "missing_credentials", False, f"Missing credentials not handled: {status}")
