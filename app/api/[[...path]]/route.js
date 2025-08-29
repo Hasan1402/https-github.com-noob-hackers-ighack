@@ -1851,6 +1851,394 @@ async function handleRoute(request, { params }) {
       return handleCORS(NextResponse.json(templates))
     }
 
+    // FINANCIAL ACCOUNTING MODULE ROUTES
+
+    // CHART OF ACCOUNTS
+    
+    // Create Account - POST /api/finance/accounts
+    if (route === '/finance/accounts' && method === 'POST') {
+      const decoded = verifyToken(request)
+      if (!decoded) {
+        return handleCORS(NextResponse.json(
+          { error: "Авторизація потрібна" }, 
+          { status: 401 }
+        ))
+      }
+
+      if (!['admin', 'manager'].includes(decoded.role)) {
+        return handleCORS(NextResponse.json(
+          { error: "Недостатньо прав доступу" }, 
+          { status: 403 }
+        ))
+      }
+
+      const { 
+        code, 
+        name, 
+        type, 
+        parentAccountId, 
+        level, 
+        isActive, 
+        currency,
+        description 
+      } = await request.json()
+
+      if (!code || !name || !type) {
+        return handleCORS(NextResponse.json(
+          { error: "Код, назва та тип рахунку обов'язкові" }, 
+          { status: 400 }
+        ))
+      }
+
+      const account = {
+        id: uuidv4(),
+        code,
+        name,
+        type, // asset, liability, equity, revenue, expense
+        parentAccountId: parentAccountId || null,
+        level: level || 1,
+        isActive: isActive !== false,
+        currency: currency || 'UAH',
+        description: description || '',
+        balance: 0,
+        createdBy: decoded.userId,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+
+      await db.collection('chart_of_accounts').insertOne(account)
+      return handleCORS(NextResponse.json({ 
+        message: "Рахунок створено успішно",
+        account
+      }))
+    }
+
+    // Get Chart of Accounts - GET /api/finance/accounts
+    if (route === '/finance/accounts' && method === 'GET') {
+      const decoded = verifyToken(request)
+      if (!decoded) {
+        return handleCORS(NextResponse.json(
+          { error: "Авторизація потрібна" }, 
+          { status: 401 }
+        ))
+      }
+
+      const accounts = await db.collection('chart_of_accounts')
+        .find({ isActive: true })
+        .sort({ code: 1 })
+        .toArray()
+
+      return handleCORS(NextResponse.json(accounts))
+    }
+
+    // COUNTERPARTIES
+
+    // Create Counterparty - POST /api/finance/counterparties
+    if (route === '/finance/counterparties' && method === 'POST') {
+      const decoded = verifyToken(request)
+      if (!decoded) {
+        return handleCORS(NextResponse.json(
+          { error: "Авторизація потрібна" }, 
+          { status: 401 }
+        ))
+      }
+
+      const { 
+        name, 
+        type, 
+        taxId, 
+        address, 
+        phone, 
+        email, 
+        bankAccount,
+        contactPerson,
+        isCustomer,
+        isSupplier,
+        creditLimit 
+      } = await request.json()
+
+      if (!name || !type) {
+        return handleCORS(NextResponse.json(
+          { error: "Назва та тип контрагента обов'язкові" }, 
+          { status: 400 }
+        ))
+      }
+
+      const counterparty = {
+        id: uuidv4(),
+        name,
+        type, // individual, company
+        taxId: taxId || '',
+        address: address || '',
+        phone: phone || '',
+        email: email || '',
+        bankAccount: bankAccount || '',
+        contactPerson: contactPerson || '',
+        isCustomer: isCustomer || false,
+        isSupplier: isSupplier || false,
+        creditLimit: creditLimit || 0,
+        currentBalance: 0,
+        isActive: true,
+        createdBy: decoded.userId,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+
+      await db.collection('counterparties').insertOne(counterparty)
+      return handleCORS(NextResponse.json({ 
+        message: "Контрагента створено успішно",
+        counterparty
+      }))
+    }
+
+    // Get Counterparties - GET /api/finance/counterparties
+    if (route === '/finance/counterparties' && method === 'GET') {
+      const decoded = verifyToken(request)
+      if (!decoded) {
+        return handleCORS(NextResponse.json(
+          { error: "Авторизація потрібна" }, 
+          { status: 401 }
+        ))
+      }
+
+      const url = new URL(request.url)
+      const type = url.searchParams.get('type') // customer, supplier, all
+      
+      let filter = { isActive: true }
+      if (type === 'customer') {
+        filter.isCustomer = true
+      } else if (type === 'supplier') {
+        filter.isSupplier = true
+      }
+
+      const counterparties = await db.collection('counterparties')
+        .find(filter)
+        .sort({ name: 1 })
+        .toArray()
+
+      return handleCORS(NextResponse.json(counterparties))
+    }
+
+    // JOURNAL ENTRIES (ПРОВОДКИ)
+
+    // Create Journal Entry - POST /api/finance/journal-entries
+    if (route === '/finance/journal-entries' && method === 'POST') {
+      const decoded = verifyToken(request)
+      if (!decoded) {
+        return handleCORS(NextResponse.json(
+          { error: "Авторизація потрібна" }, 
+          { status: 401 }
+        ))
+      }
+
+      if (!['admin', 'manager'].includes(decoded.role)) {
+        return handleCORS(NextResponse.json(
+          { error: "Недостатньо прав для створення проводок" }, 
+          { status: 403 }
+        ))
+      }
+
+      const { 
+        date, 
+        description, 
+        reference, 
+        lines,
+        documentId,
+        documentType 
+      } = await request.json()
+
+      if (!date || !lines || !Array.isArray(lines) || lines.length < 2) {
+        return handleCORS(NextResponse.json(
+          { error: "Дата та мінімум 2 рядки проводки обов'язкові" }, 
+          { status: 400 }
+        ))
+      }
+
+      // Validate debit = credit
+      const totalDebit = lines.reduce((sum, line) => sum + (line.debit || 0), 0)
+      const totalCredit = lines.reduce((sum, line) => sum + (line.credit || 0), 0)
+
+      if (Math.abs(totalDebit - totalCredit) > 0.01) {
+        return handleCORS(NextResponse.json(
+          { error: "Сума по дебету повинна дорівнювати сумі по кредиту" }, 
+          { status: 400 }
+        ))
+      }
+
+      const journalEntry = {
+        id: uuidv4(),
+        number: await getNextJournalNumber(db),
+        date: new Date(date),
+        description: description || '',
+        reference: reference || '',
+        lines: lines.map(line => ({
+          id: uuidv4(),
+          accountId: line.accountId,
+          debit: line.debit || 0,
+          credit: line.credit || 0,
+          description: line.description || '',
+          counterpartyId: line.counterpartyId || null,
+          costCenter: line.costCenter || null,
+          project: line.project || null
+        })),
+        documentId: documentId || null,
+        documentType: documentType || null,
+        totalAmount: totalDebit,
+        status: 'posted', // draft, posted, reversed
+        createdBy: decoded.userId,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+
+      await db.collection('journal_entries').insertOne(journalEntry)
+      
+      // Update account balances
+      await updateAccountBalances(db, journalEntry.lines)
+
+      return handleCORS(NextResponse.json({ 
+        message: "Проводку створено успішно",
+        journalEntry
+      }))
+    }
+
+    // Get Journal Entries - GET /api/finance/journal-entries
+    if (route === '/finance/journal-entries' && method === 'GET') {
+      const decoded = verifyToken(request)
+      if (!decoded) {
+        return handleCORS(NextResponse.json(
+          { error: "Авторизація потрібна" }, 
+          { status: 401 }
+        ))
+      }
+
+      const url = new URL(request.url)
+      const dateFrom = url.searchParams.get('dateFrom')
+      const dateTo = url.searchParams.get('dateTo')
+      const accountId = url.searchParams.get('accountId')
+      
+      let filter = {}
+      
+      if (dateFrom && dateTo) {
+        filter.date = {
+          $gte: new Date(dateFrom),
+          $lte: new Date(dateTo)
+        }
+      }
+
+      let entries = await db.collection('journal_entries')
+        .find(filter)
+        .sort({ date: -1, number: -1 })
+        .toArray()
+
+      // Filter by account if specified
+      if (accountId) {
+        entries = entries.filter(entry => 
+          entry.lines.some(line => line.accountId === accountId)
+        )
+      }
+
+      // Get account details for lines
+      const accountIds = [...new Set(
+        entries.flatMap(entry => entry.lines.map(line => line.accountId))
+      )]
+      
+      const accounts = await db.collection('chart_of_accounts')
+        .find({ id: { $in: accountIds } })
+        .toArray()
+      
+      const accountMap = {}
+      accounts.forEach(account => {
+        accountMap[account.id] = account
+      })
+
+      // Enrich entries with account info
+      const enrichedEntries = entries.map(entry => ({
+        ...entry,
+        lines: entry.lines.map(line => ({
+          ...line,
+          account: accountMap[line.accountId] || null
+        }))
+      }))
+
+      return handleCORS(NextResponse.json(enrichedEntries))
+    }
+
+    // BANK ACCOUNTS
+
+    // Create Bank Account - POST /api/finance/bank-accounts
+    if (route === '/finance/bank-accounts' && method === 'POST') {
+      const decoded = verifyToken(request)
+      if (!decoded) {
+        return handleCORS(NextResponse.json(
+          { error: "Авторизація потрібна" }, 
+          { status: 401 }
+        ))
+      }
+
+      if (!['admin', 'manager'].includes(decoded.role)) {
+        return handleCORS(NextResponse.json(
+          { error: "Недостатньо прав доступу" }, 
+          { status: 403 }
+        ))
+      }
+
+      const { 
+        bankName, 
+        accountNumber, 
+        currency, 
+        iban, 
+        swift, 
+        accountType,
+        initialBalance 
+      } = await request.json()
+
+      if (!bankName || !accountNumber || !currency) {
+        return handleCORS(NextResponse.json(
+          { error: "Назва банку, номер рахунку та валюта обов'язкові" }, 
+          { status: 400 }
+        ))
+      }
+
+      const bankAccount = {
+        id: uuidv4(),
+        bankName,
+        accountNumber,
+        currency,
+        iban: iban || '',
+        swift: swift || '',
+        accountType: accountType || 'current', // current, savings, credit
+        balance: initialBalance || 0,
+        isActive: true,
+        createdBy: decoded.userId,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+
+      await db.collection('bank_accounts').insertOne(bankAccount)
+      return handleCORS(NextResponse.json({ 
+        message: "Банківський рахунок створено успішно",
+        bankAccount
+      }))
+    }
+
+    // Get Bank Accounts - GET /api/finance/bank-accounts
+    if (route === '/finance/bank-accounts' && method === 'GET') {
+      const decoded = verifyToken(request)
+      if (!decoded) {
+        return handleCORS(NextResponse.json(
+          { error: "Авторизація потрібна" }, 
+          { status: 401 }
+        ))
+      }
+
+      const bankAccounts = await db.collection('bank_accounts')
+        .find({ isActive: true })
+        .sort({ bankName: 1 })
+        .toArray()
+
+      return handleCORS(NextResponse.json(bankAccounts))
+    }
+
     // Route not found
     return handleCORS(NextResponse.json(
       { error: `Route ${route} not found` }, 
