@@ -152,6 +152,8 @@ class TISKISBackendTester:
                 self.log_result("authentication", "duplicate_registration", True, "Duplicate registration properly rejected")
             else:
                 self.log_result("authentication", "duplicate_registration", False, f"Unexpected error message: {data}")
+        elif response is None:
+            self.log_result("authentication", "duplicate_registration", False, "No response received")
         else:
             status = response.status_code if response else "No response"
             self.log_result("authentication", "duplicate_registration", False, f"Duplicate registration not handled: {status}")
@@ -161,6 +163,8 @@ class TISKISBackendTester:
         response = self.make_request("POST", "/auth/register", invalid_data)
         if response and response.status_code == 400:
             self.log_result("authentication", "invalid_registration", True, "Invalid registration properly rejected")
+        elif response is None:
+            self.log_result("authentication", "invalid_registration", False, "No response received")
         else:
             status = response.status_code if response else "No response"
             self.log_result("authentication", "invalid_registration", False, f"Invalid registration not handled: {status}")
