@@ -461,11 +461,11 @@ backend:
 
   - task: "Opportunities API"
     implemented: true
-    working: false
+    working: true
     file: "/app/app/api/[[...path]]/route.js"
-    stuck_count: 1
+    stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: false
           agent: "testing"
@@ -473,6 +473,9 @@ backend:
         - working: "NA"
           agent: "main"
           comment: "FIXED DATABASE CONNECTION ISSUE: Found that API was trying to connect to wrong database name (process.env.DB_NAME='tis_kis_erp') but actual database is 'your_database_name'. Fixed hardcoded connection to use existing database. Also fixed frontend syntax error that was preventing server startup. Ready for retesting."
+        - working: true
+          agent: "testing"
+          comment: "✅ OPPORTUNITIES API FULLY WORKING: Database timeout issues completely resolved! Created 3 opportunities successfully with all types (ERP system sales, consulting services, technical support). GET /api/crm/opportunities retrieves opportunities with proper counterparty enrichment. Stage filtering operational (qualification, proposal, negotiation stages). Role-based access control working - regular users can read, creation restricted appropriately. Finance-CRM integration working perfectly - counterparty references valid and data enrichment functional. Database connectivity test passed (5/5 rapid requests successful in 0.52s). Complete opportunities management system operational."
 
   - task: "Products API"
     implemented: true
