@@ -489,11 +489,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "HR Departments API"
-    - "HR Employee Management API"
-    - "HR Timesheet Management API"
-    - "HR Business Trips API"
-    - "Complete HR Workflow Integration"
+    - "Enhanced Monthly Timesheet API"
+    - "Enhanced Daily Entry Update API"
+    - "Enhanced Work Templates API"
+    - "Complete Enhanced Timesheet Workflow Integration"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
