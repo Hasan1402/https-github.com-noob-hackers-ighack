@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
 Comprehensive Backend API Testing for ТИС КІС System
-Testing HR and Personnel Management APIs, Calendar Events API, Tasks Management API, and Notifications API
+Testing Financial Accounting and CRM modules, HR and Personnel Management APIs, 
+Calendar Events API, Tasks Management API, and Notifications API
 Plus existing authentication, user management, and document management
 """
 
