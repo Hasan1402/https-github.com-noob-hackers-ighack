@@ -47,6 +47,10 @@ export default function App() {
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [analytics, setAnalytics] = useState(null)
   const [documentStats, setDocumentStats] = useState(null)
+  const [employees, setEmployees] = useState([])
+  const [departments, setDepartments] = useState([])
+  const [timesheetEntries, setTimesheetEntries] = useState([])
+  const [businessTrips, setBusinessTrips] = useState([])
 
   // Check if user is logged in on load
   useEffect(() => {
