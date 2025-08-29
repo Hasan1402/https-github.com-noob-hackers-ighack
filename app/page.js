@@ -37,6 +37,10 @@ export default function App() {
     fullName: '',
     role: 'user' 
   })
+  const [documents, setDocuments] = useState([])
+  const [users, setUsers] = useState([])
+  const [documentFilter, setDocumentFilter] = useState('all')
+  const [isUploading, setIsUploading] = useState(false)
 
   // Check if user is logged in on load
   useEffect(() => {
