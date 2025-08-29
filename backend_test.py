@@ -2366,6 +2366,924 @@ class TISKISBackendTester:
         self.auth_token = old_token
         return True
 
+    def test_finance_accounts_api(self):
+        """Test Financial Accounting - Chart of Accounts API"""
+        print("\n=== Testing Chart of Accounts API ===")
+        
+        if not self.auth_token:
+            self.log_result("finance_accounts", "no_token", False, "No auth token available")
+            return False
+
+        # Test 1: Create accounting accounts (admin/manager only)
+        print("Creating accounting accounts with different types...")
+        
+        test_accounts_data = [
+            {
+                "code": "1000",
+                "name": "Каса",
+                "type": "asset",
+                "level": 1,
+                "currency": "UAH",
+                "description": "Готівкові кошти в касі підприємства"
+            },
+            {
+                "code": "2000", 
+                "name": "Кредиторська заборгованість",
+                "type": "liability",
+                "level": 1,
+                "currency": "UAH",
+                "description": "Заборгованість перед постачальниками"
+            },
+            {
+                "code": "3000",
+                "name": "Статутний капітал",
+                "type": "equity", 
+                "level": 1,
+                "currency": "UAH",
+                "description": "Власний капітал підприємства"
+            },
+            {
+                "code": "7000",
+                "name": "Доходи від реалізації",
+                "type": "revenue",
+                "level": 1,
+                "currency": "UAH",
+                "description": "Доходи від основної діяльності"
+            },
+            {
+                "code": "9000",
+                "name": "Витрати на оплату праці",
+                "type": "expense",
+                "level": 1,
+                "currency": "UAH",
+                "description": "Витрати на заробітну плату співробітників"
+            }
+        ]
+        
+        created_accounts = 0
+        for account_data in test_accounts_data:
+            response = self.make_request("POST", "/finance/accounts", account_data)
+            if response and response.status_code == 200:
+                account = response.json().get("account")
+                if account:
+                    created_accounts += 1
+                    self.log_result("finance_accounts", f"create_account_{account_data['type']}", True, 
+                                  f"Created {account_data['type']} account: {account_data['name']} ({account_data['code']})")
+                else:
+                    self.log_result("finance_accounts", f"create_account_{account_data['type']}", False, 
+                                  f"Account created but no account data returned")
+            else:
+                status = response.status_code if response else "No response"
+                error_msg = response.json().get("error", "Unknown error") if response and response.headers.get('content-type', '').startswith('application/json') else "No error details"
+                self.log_result("finance_accounts", f"create_account_{account_data['type']}", False, 
+                              f"Failed to create account: {status} - {error_msg}")
+
+        # Test 2: Get Chart of Accounts (GET /api/finance/accounts)
+        response = self.make_request("GET", "/finance/accounts")
+        if response and response.status_code == 200:
+            accounts = response.json()
+            if isinstance(accounts, list):
+                self.log_result("finance_accounts", "get_accounts", True, 
+                              f"Retrieved {len(accounts)} accounts successfully")
+                
+                # Verify account structure
+                if accounts:
+                    account = accounts[0]
+                    required_fields = ["id", "code", "name", "type", "balance", "currency", "createdAt"]
+                    missing_fields = [field for field in required_fields if field not in account]
+                    if not missing_fields:
+                        self.log_result("finance_accounts", "account_structure", True, "Account structure validation passed")
+                    else:
+                        self.log_result("finance_accounts", "account_structure", False, f"Missing fields: {missing_fields}")
+                        
+                    # Verify account types
+                    account_types = set(acc.get("type") for acc in accounts)
+                    expected_types = {"asset", "liability", "equity", "revenue", "expense"}
+                    if expected_types.issubset(account_types):
+                        self.log_result("finance_accounts", "account_types", True, "All account types created successfully")
+                    else:
+                        missing_types = expected_types - account_types
+                        self.log_result("finance_accounts", "account_types", False, f"Missing account types: {missing_types}")
+            else:
+                self.log_result("finance_accounts", "get_accounts", False, f"Invalid accounts response: {accounts}")
+        else:
+            status = response.status_code if response else "No response"
+            self.log_result("finance_accounts", "get_accounts", False, f"Failed to retrieve accounts: {status}")
+
+        # Test 3: Test role-based access control (regular user should be denied)
+        if self.user_token:
+            old_token = self.auth_token
+            self.auth_token = self.user_token
+            
+            test_account = {
+                "code": "1001",
+                "name": "Test Account",
+                "type": "asset"
+            }
+            
+            response = self.make_request("POST", "/finance/accounts", test_account)
+            if response and response.status_code == 403:
+                self.log_result("finance_accounts", "rbac_user_denied", True, "Regular user properly denied account creation")
+            else:
+                status = response.status_code if response else "No response"
+                self.log_result("finance_accounts", "rbac_user_denied", False, f"RBAC not working for accounts: {status}")
+            
+            self.auth_token = old_token
+
+        return created_accounts > 0
+
+    def test_finance_counterparties_api(self):
+        """Test Financial Accounting - Counterparties API"""
+        print("\n=== Testing Counterparties API ===")
+        
+        if not self.auth_token:
+            self.log_result("finance_counterparties", "no_token", False, "No auth token available")
+            return False
+
+        # Test 1: Create counterparties (customers and suppliers)
+        print("Creating counterparties (customers and suppliers)...")
+        
+        test_counterparties_data = [
+            {
+                "name": "ТОВ 'Постачальник-1'",
+                "type": "supplier",
+                "taxId": "12345678901",
+                "contactPerson": "Іванов Іван Іванович",
+                "email": "supplier1@example.com",
+                "phone": "+380501234567",
+                "address": "м. Київ, вул. Хрещатик, 1",
+                "creditLimit": 100000,
+                "paymentTerms": 30
+            },
+            {
+                "name": "ПП 'Клієнт-1'",
+                "type": "customer", 
+                "taxId": "98765432109",
+                "contactPerson": "Петров Петро Петрович",
+                "email": "customer1@example.com",
+                "phone": "+380671234567",
+                "address": "м. Львів, вул. Свободи, 10",
+                "creditLimit": 50000,
+                "paymentTerms": 14
+            },
+            {
+                "name": "АТ 'Універсальний партнер'",
+                "type": "both",
+                "taxId": "11111111111",
+                "contactPerson": "Сидоров Сидір Сидорович",
+                "email": "partner@example.com", 
+                "phone": "+380931234567",
+                "address": "м. Одеса, вул. Дерибасівська, 5",
+                "creditLimit": 200000,
+                "paymentTerms": 21
+            }
+        ]
+        
+        created_counterparties = 0
+        for counterparty_data in test_counterparties_data:
+            response = self.make_request("POST", "/finance/counterparties", counterparty_data)
+            if response and response.status_code == 200:
+                counterparty = response.json().get("counterparty")
+                if counterparty:
+                    created_counterparties += 1
+                    self.log_result("finance_counterparties", f"create_{counterparty_data['type']}", True, 
+                                  f"Created {counterparty_data['type']}: {counterparty_data['name']}")
+                else:
+                    self.log_result("finance_counterparties", f"create_{counterparty_data['type']}", False, 
+                                  f"Counterparty created but no data returned")
+            else:
+                status = response.status_code if response else "No response"
+                error_msg = response.json().get("error", "Unknown error") if response and response.headers.get('content-type', '').startswith('application/json') else "No error details"
+                self.log_result("finance_counterparties", f"create_{counterparty_data['type']}", False, 
+                              f"Failed to create counterparty: {status} - {error_msg}")
+
+        # Test 2: Get all counterparties
+        response = self.make_request("GET", "/finance/counterparties")
+        if response and response.status_code == 200:
+            counterparties = response.json()
+            if isinstance(counterparties, list):
+                self.log_result("finance_counterparties", "get_all", True, 
+                              f"Retrieved {len(counterparties)} counterparties successfully")
+                
+                # Verify counterparty structure
+                if counterparties:
+                    counterparty = counterparties[0]
+                    required_fields = ["id", "name", "type", "taxId", "contactPerson", "creditLimit", "createdAt"]
+                    missing_fields = [field for field in required_fields if field not in counterparty]
+                    if not missing_fields:
+                        self.log_result("finance_counterparties", "counterparty_structure", True, "Counterparty structure validation passed")
+                    else:
+                        self.log_result("finance_counterparties", "counterparty_structure", False, f"Missing fields: {missing_fields}")
+            else:
+                self.log_result("finance_counterparties", "get_all", False, f"Invalid counterparties response: {counterparties}")
+        else:
+            status = response.status_code if response else "No response"
+            self.log_result("finance_counterparties", "get_all", False, f"Failed to retrieve counterparties: {status}")
+
+        # Test 3: Filter counterparties by type
+        for filter_type in ['customer', 'supplier', 'both']:
+            response = self.make_request("GET", f"/finance/counterparties?type={filter_type}")
+            if response and response.status_code == 200:
+                filtered_counterparties = response.json()
+                if isinstance(filtered_counterparties, list):
+                    self.log_result("finance_counterparties", f"filter_{filter_type}", True, 
+                                  f"Type filter '{filter_type}' returned {len(filtered_counterparties)} counterparties")
+                else:
+                    self.log_result("finance_counterparties", f"filter_{filter_type}", False, 
+                                  f"Invalid filtered response: {filtered_counterparties}")
+            else:
+                status = response.status_code if response else "No response"
+                self.log_result("finance_counterparties", f"filter_{filter_type}", False, 
+                              f"Type filtering failed: {status}")
+
+        return created_counterparties > 0
+
+    def test_finance_journal_entries_api(self):
+        """Test Financial Accounting - Journal Entries API"""
+        print("\n=== Testing Journal Entries API ===")
+        
+        if not self.auth_token:
+            self.log_result("finance_journal_entries", "no_token", False, "No auth token available")
+            return False
+
+        # First get some accounts to use in journal entries
+        accounts_response = self.make_request("GET", "/finance/accounts")
+        if not (accounts_response and accounts_response.status_code == 200):
+            self.log_result("finance_journal_entries", "get_accounts_prereq", False, "Failed to get accounts for journal entries")
+            return False
+            
+        accounts = accounts_response.json()
+        if len(accounts) < 2:
+            self.log_result("finance_journal_entries", "insufficient_accounts", False, "Need at least 2 accounts for journal entries")
+            return False
+
+        # Test 1: Create journal entries with proper double-entry bookkeeping
+        print("Creating journal entries with double-entry bookkeeping...")
+        
+        test_journal_entries = [
+            {
+                "description": "Надходження готівки до каси",
+                "date": datetime.now().isoformat(),
+                "reference": "ПКО-001",
+                "lines": [
+                    {
+                        "accountId": accounts[0]["id"],  # Debit account
+                        "debit": 10000,
+                        "credit": 0,
+                        "description": "Надходження готівки"
+                    },
+                    {
+                        "accountId": accounts[1]["id"],  # Credit account
+                        "debit": 0,
+                        "credit": 10000,
+                        "description": "Зменшення заборгованості"
+                    }
+                ]
+            },
+            {
+                "description": "Оплата постачальнику",
+                "date": datetime.now().isoformat(),
+                "reference": "ВКО-002",
+                "lines": [
+                    {
+                        "accountId": accounts[1]["id"],  # Debit account
+                        "debit": 5000,
+                        "credit": 0,
+                        "description": "Погашення заборгованості"
+                    },
+                    {
+                        "accountId": accounts[0]["id"],  # Credit account
+                        "debit": 0,
+                        "credit": 5000,
+                        "description": "Витрата готівки"
+                    }
+                ]
+            }
+        ]
+        
+        created_entries = 0
+        for entry_data in test_journal_entries:
+            response = self.make_request("POST", "/finance/journal-entries", entry_data)
+            if response and response.status_code == 200:
+                entry = response.json().get("entry")
+                if entry:
+                    created_entries += 1
+                    self.log_result("finance_journal_entries", f"create_entry_{created_entries}", True, 
+                                  f"Created journal entry: {entry_data['description']}")
+                    
+                    # Verify entry structure
+                    required_fields = ["id", "number", "description", "date", "lines", "totalDebit", "totalCredit"]
+                    missing_fields = [field for field in required_fields if field not in entry]
+                    if not missing_fields:
+                        self.log_result("finance_journal_entries", f"entry_structure_{created_entries}", True, 
+                                      "Journal entry structure validation passed")
+                    else:
+                        self.log_result("finance_journal_entries", f"entry_structure_{created_entries}", False, 
+                                      f"Missing fields: {missing_fields}")
+                    
+                    # Verify debit/credit balance
+                    if entry.get("totalDebit") == entry.get("totalCredit"):
+                        self.log_result("finance_journal_entries", f"balance_check_{created_entries}", True, 
+                                      "Debit equals credit - proper double-entry")
+                    else:
+                        self.log_result("finance_journal_entries", f"balance_check_{created_entries}", False, 
+                                      f"Debit ({entry.get('totalDebit')}) != Credit ({entry.get('totalCredit')})")
+                else:
+                    self.log_result("finance_journal_entries", f"create_entry_{created_entries + 1}", False, 
+                                  f"Entry created but no data returned")
+            else:
+                status = response.status_code if response else "No response"
+                error_msg = response.json().get("error", "Unknown error") if response and response.headers.get('content-type', '').startswith('application/json') else "No error details"
+                self.log_result("finance_journal_entries", f"create_entry_{created_entries + 1}", False, 
+                              f"Failed to create entry: {status} - {error_msg}")
+
+        # Test 2: Get journal entries
+        response = self.make_request("GET", "/finance/journal-entries")
+        if response and response.status_code == 200:
+            entries = response.json()
+            if isinstance(entries, list):
+                self.log_result("finance_journal_entries", "get_entries", True, 
+                              f"Retrieved {len(entries)} journal entries successfully")
+            else:
+                self.log_result("finance_journal_entries", "get_entries", False, f"Invalid entries response: {entries}")
+        else:
+            status = response.status_code if response else "No response"
+            self.log_result("finance_journal_entries", "get_entries", False, f"Failed to retrieve entries: {status}")
+
+        # Test 3: Date filtering
+        start_date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
+        end_date = (datetime.now() + timedelta(days=1)).isoformat()
+        
+        response = self.make_request("GET", f"/finance/journal-entries?startDate={start_date}&endDate={end_date}")
+        if response and response.status_code == 200:
+            filtered_entries = response.json()
+            if isinstance(filtered_entries, list):
+                self.log_result("finance_journal_entries", "date_filtering", True, 
+                              f"Date filtering returned {len(filtered_entries)} entries")
+            else:
+                self.log_result("finance_journal_entries", "date_filtering", False, f"Invalid filtered response: {filtered_entries}")
+        else:
+            status = response.status_code if response else "No response"
+            self.log_result("finance_journal_entries", "date_filtering", False, f"Date filtering failed: {status}")
+
+        # Test 4: Test invalid entry (unbalanced debit/credit)
+        invalid_entry = {
+            "description": "Неправильна проводка",
+            "date": datetime.now().isoformat(),
+            "reference": "ERR-001",
+            "lines": [
+                {
+                    "accountId": accounts[0]["id"],
+                    "debit": 1000,
+                    "credit": 0,
+                    "description": "Дебет"
+                },
+                {
+                    "accountId": accounts[1]["id"],
+                    "debit": 0,
+                    "credit": 500,  # Unbalanced!
+                    "description": "Кредит"
+                }
+            ]
+        }
+        
+        response = self.make_request("POST", "/finance/journal-entries", invalid_entry)
+        if response and response.status_code == 400:
+            self.log_result("finance_journal_entries", "unbalanced_validation", True, 
+                          "Unbalanced entry properly rejected")
+        else:
+            status = response.status_code if response else "No response"
+            self.log_result("finance_journal_entries", "unbalanced_validation", False, 
+                          f"Unbalanced entry validation failed: {status}")
+
+        return created_entries > 0
+
+    def test_finance_bank_accounts_api(self):
+        """Test Financial Accounting - Bank Accounts API"""
+        print("\n=== Testing Bank Accounts API ===")
+        
+        if not self.auth_token:
+            self.log_result("finance_bank_accounts", "no_token", False, "No auth token available")
+            return False
+
+        # Test 1: Create bank accounts
+        print("Creating bank accounts...")
+        
+        test_bank_accounts = [
+            {
+                "accountNumber": "UA213223130000026007233566001",
+                "bankName": "ПриватБанк",
+                "bankCode": "305299",
+                "currency": "UAH",
+                "accountType": "current",
+                "isActive": True,
+                "description": "Основний розрахунковий рахунок"
+            },
+            {
+                "accountNumber": "UA903052992990004149123456789",
+                "bankName": "Ощадбанк",
+                "bankCode": "300012",
+                "currency": "USD",
+                "accountType": "currency",
+                "isActive": True,
+                "description": "Валютний рахунок для міжнародних операцій"
+            }
+        ]
+        
+        created_bank_accounts = 0
+        for bank_account_data in test_bank_accounts:
+            response = self.make_request("POST", "/finance/bank-accounts", bank_account_data)
+            if response and response.status_code == 200:
+                bank_account = response.json().get("bankAccount")
+                if bank_account:
+                    created_bank_accounts += 1
+                    self.log_result("finance_bank_accounts", f"create_{bank_account_data['currency']}", True, 
+                                  f"Created {bank_account_data['currency']} bank account: {bank_account_data['bankName']}")
+                else:
+                    self.log_result("finance_bank_accounts", f"create_{bank_account_data['currency']}", False, 
+                                  f"Bank account created but no data returned")
+            else:
+                status = response.status_code if response else "No response"
+                error_msg = response.json().get("error", "Unknown error") if response and response.headers.get('content-type', '').startswith('application/json') else "No error details"
+                self.log_result("finance_bank_accounts", f"create_{bank_account_data['currency']}", False, 
+                              f"Failed to create bank account: {status} - {error_msg}")
+
+        # Test 2: Get bank accounts
+        response = self.make_request("GET", "/finance/bank-accounts")
+        if response and response.status_code == 200:
+            bank_accounts = response.json()
+            if isinstance(bank_accounts, list):
+                self.log_result("finance_bank_accounts", "get_accounts", True, 
+                              f"Retrieved {len(bank_accounts)} bank accounts successfully")
+                
+                # Verify bank account structure
+                if bank_accounts:
+                    bank_account = bank_accounts[0]
+                    required_fields = ["id", "accountNumber", "bankName", "bankCode", "currency", "accountType", "isActive"]
+                    missing_fields = [field for field in required_fields if field not in bank_account]
+                    if not missing_fields:
+                        self.log_result("finance_bank_accounts", "account_structure", True, "Bank account structure validation passed")
+                    else:
+                        self.log_result("finance_bank_accounts", "account_structure", False, f"Missing fields: {missing_fields}")
+            else:
+                self.log_result("finance_bank_accounts", "get_accounts", False, f"Invalid bank accounts response: {bank_accounts}")
+        else:
+            status = response.status_code if response else "No response"
+            self.log_result("finance_bank_accounts", "get_accounts", False, f"Failed to retrieve bank accounts: {status}")
+
+        return created_bank_accounts > 0
+
+    def test_crm_leads_api(self):
+        """Test CRM - Leads Management API"""
+        print("\n=== Testing CRM Leads Management API ===")
+        
+        if not self.auth_token:
+            self.log_result("crm_leads", "no_token", False, "No auth token available")
+            return False
+
+        # Test 1: Create leads
+        print("Creating leads with different statuses...")
+        
+        test_leads_data = [
+            {
+                "title": "Потенційний клієнт - ТОВ 'Інноваційні рішення'",
+                "contactName": "Коваленко Олександр Петрович",
+                "company": "ТОВ 'Інноваційні рішення'",
+                "email": "kovalenko@innovations.ua",
+                "phone": "+380671234567",
+                "source": "website",
+                "expectedValue": 150000,
+                "description": "Зацікавлені в розробці корпоративної системи управління"
+            },
+            {
+                "title": "Лід з соціальних мереж - Стартап",
+                "contactName": "Петренко Марія Іванівна",
+                "company": "Стартап 'Майбутнє'",
+                "email": "petrenko@future-startup.com",
+                "phone": "+380501234567",
+                "source": "social_media",
+                "expectedValue": 75000,
+                "description": "Потребують систему CRM для управління клієнтами"
+            },
+            {
+                "title": "Холодний дзвінок - Великий клієнт",
+                "contactName": "Сидоренко Віктор Миколайович",
+                "company": "Корпорація 'Лідер'",
+                "email": "sidorenko@leader-corp.ua",
+                "phone": "+380931234567",
+                "source": "cold_call",
+                "expectedValue": 300000,
+                "description": "Великий проект з автоматизації бізнес-процесів"
+            }
+        ]
+        
+        created_leads = 0
+        lead_ids = []
+        for lead_data in test_leads_data:
+            response = self.make_request("POST", "/crm/leads", lead_data)
+            if response and response.status_code == 200:
+                lead = response.json().get("lead")
+                if lead:
+                    created_leads += 1
+                    lead_ids.append(lead["id"])
+                    self.log_result("crm_leads", f"create_lead_{lead_data['source']}", True, 
+                                  f"Created lead from {lead_data['source']}: {lead_data['title']}")
+                else:
+                    self.log_result("crm_leads", f"create_lead_{lead_data['source']}", False, 
+                                  f"Lead created but no data returned")
+            else:
+                status = response.status_code if response else "No response"
+                error_msg = response.json().get("error", "Unknown error") if response and response.headers.get('content-type', '').startswith('application/json') else "No error details"
+                self.log_result("crm_leads", f"create_lead_{lead_data['source']}", False, 
+                              f"Failed to create lead: {status} - {error_msg}")
+
+        # Test 2: Get all leads
+        response = self.make_request("GET", "/crm/leads")
+        if response and response.status_code == 200:
+            leads = response.json()
+            if isinstance(leads, list):
+                self.log_result("crm_leads", "get_all_leads", True, 
+                              f"Retrieved {len(leads)} leads successfully")
+                
+                # Verify lead structure
+                if leads:
+                    lead = leads[0]
+                    required_fields = ["id", "title", "contactName", "status", "expectedValue", "createdBy", "createdAt"]
+                    missing_fields = [field for field in required_fields if field not in lead]
+                    if not missing_fields:
+                        self.log_result("crm_leads", "lead_structure", True, "Lead structure validation passed")
+                    else:
+                        self.log_result("crm_leads", "lead_structure", False, f"Missing fields: {missing_fields}")
+            else:
+                self.log_result("crm_leads", "get_all_leads", False, f"Invalid leads response: {leads}")
+        else:
+            status = response.status_code if response else "No response"
+            self.log_result("crm_leads", "get_all_leads", False, f"Failed to retrieve leads: {status}")
+
+        # Test 3: Filter leads by status
+        for status_filter in ['new', 'contacted', 'qualified']:
+            response = self.make_request("GET", f"/crm/leads?status={status_filter}")
+            if response and response.status_code == 200:
+                filtered_leads = response.json()
+                if isinstance(filtered_leads, list):
+                    self.log_result("crm_leads", f"filter_{status_filter}", True, 
+                                  f"Status filter '{status_filter}' returned {len(filtered_leads)} leads")
+                else:
+                    self.log_result("crm_leads", f"filter_{status_filter}", False, 
+                                  f"Invalid filtered response: {filtered_leads}")
+            else:
+                status = response.status_code if response else "No response"
+                self.log_result("crm_leads", f"filter_{status_filter}", False, 
+                              f"Status filtering failed: {status}")
+
+        # Test 4: Update lead status through pipeline
+        if lead_ids:
+            lead_id = lead_ids[0]
+            status_pipeline = [
+                {"status": "contacted", "comment": "Встановлено контакт з клієнтом"},
+                {"status": "qualified", "comment": "Клієнт кваліфікований як перспективний"},
+                {"status": "proposal", "comment": "Надіслано комерційну пропозицію"},
+                {"status": "negotiation", "comment": "Ведуться переговори щодо умов"},
+                {"status": "won", "comment": "Угода успішно закрита"}
+            ]
+            
+            for status_update in status_pipeline:
+                response = self.make_request("PUT", f"/crm/leads/{lead_id}/status", status_update)
+                if response and response.status_code == 200:
+                    self.log_result("crm_leads", f"update_status_{status_update['status']}", True, 
+                                  f"Lead status updated to '{status_update['status']}'")
+                else:
+                    status = response.status_code if response else "No response"
+                    error_msg = response.json().get("error", "Unknown error") if response and response.headers.get('content-type', '').startswith('application/json') else "No error details"
+                    self.log_result("crm_leads", f"update_status_{status_update['status']}", False, 
+                                  f"Failed to update status: {status} - {error_msg}")
+
+        return created_leads > 0
+
+    def test_crm_opportunities_api(self):
+        """Test CRM - Opportunities API"""
+        print("\n=== Testing CRM Opportunities API ===")
+        
+        if not self.auth_token:
+            self.log_result("crm_opportunities", "no_token", False, "No auth token available")
+            return False
+
+        # First get counterparties to link opportunities
+        counterparties_response = self.make_request("GET", "/finance/counterparties")
+        counterparty_id = None
+        if counterparties_response and counterparties_response.status_code == 200:
+            counterparties = counterparties_response.json()
+            if counterparties:
+                counterparty_id = counterparties[0]["id"]
+
+        # Test 1: Create opportunities
+        print("Creating sales opportunities...")
+        
+        test_opportunities_data = [
+            {
+                "title": "Розробка ERP системи для виробництва",
+                "description": "Комплексна система управління виробничими процесами",
+                "counterpartyId": counterparty_id,
+                "expectedValue": 500000,
+                "probability": 75,
+                "stage": "proposal",
+                "expectedCloseDate": (datetime.now() + timedelta(days=60)).isoformat(),
+                "products": []
+            },
+            {
+                "title": "Впровадження CRM системи",
+                "description": "Система управління взаємовідносинами з клієнтами",
+                "counterpartyId": counterparty_id,
+                "expectedValue": 200000,
+                "probability": 50,
+                "stage": "negotiation",
+                "expectedCloseDate": (datetime.now() + timedelta(days=30)).isoformat(),
+                "products": []
+            }
+        ]
+        
+        created_opportunities = 0
+        for opportunity_data in test_opportunities_data:
+            response = self.make_request("POST", "/crm/opportunities", opportunity_data)
+            if response and response.status_code == 200:
+                opportunity = response.json().get("opportunity")
+                if opportunity:
+                    created_opportunities += 1
+                    self.log_result("crm_opportunities", f"create_opportunity_{opportunity_data['stage']}", True, 
+                                  f"Created opportunity: {opportunity_data['title']} (Stage: {opportunity_data['stage']})")
+                else:
+                    self.log_result("crm_opportunities", f"create_opportunity_{opportunity_data['stage']}", False, 
+                                  f"Opportunity created but no data returned")
+            else:
+                status = response.status_code if response else "No response"
+                error_msg = response.json().get("error", "Unknown error") if response and response.headers.get('content-type', '').startswith('application/json') else "No error details"
+                self.log_result("crm_opportunities", f"create_opportunity_{opportunity_data['stage']}", False, 
+                              f"Failed to create opportunity: {status} - {error_msg}")
+
+        # Test 2: Get opportunities with counterparty enrichment
+        response = self.make_request("GET", "/crm/opportunities")
+        if response and response.status_code == 200:
+            opportunities = response.json()
+            if isinstance(opportunities, list):
+                self.log_result("crm_opportunities", "get_opportunities", True, 
+                              f"Retrieved {len(opportunities)} opportunities successfully")
+                
+                # Verify opportunity structure and counterparty enrichment
+                if opportunities:
+                    opportunity = opportunities[0]
+                    required_fields = ["id", "title", "expectedValue", "probability", "stage", "createdAt"]
+                    missing_fields = [field for field in required_fields if field not in opportunity]
+                    if not missing_fields:
+                        self.log_result("crm_opportunities", "opportunity_structure", True, "Opportunity structure validation passed")
+                    else:
+                        self.log_result("crm_opportunities", "opportunity_structure", False, f"Missing fields: {missing_fields}")
+                    
+                    # Check counterparty enrichment
+                    if "counterparty" in opportunity and opportunity["counterparty"]:
+                        self.log_result("crm_opportunities", "counterparty_enrichment", True, "Counterparty data enriched in opportunities")
+                    else:
+                        self.log_result("crm_opportunities", "counterparty_enrichment", False, "Counterparty data not enriched")
+            else:
+                self.log_result("crm_opportunities", "get_opportunities", False, f"Invalid opportunities response: {opportunities}")
+        else:
+            status = response.status_code if response else "No response"
+            self.log_result("crm_opportunities", "get_opportunities", False, f"Failed to retrieve opportunities: {status}")
+
+        return created_opportunities > 0
+
+    def test_crm_products_api(self):
+        """Test CRM - Products API"""
+        print("\n=== Testing CRM Products API ===")
+        
+        if not self.auth_token:
+            self.log_result("crm_products", "no_token", False, "No auth token available")
+            return False
+
+        # Test 1: Create products (admin/manager only)
+        print("Creating products with different categories...")
+        
+        test_products_data = [
+            {
+                "name": "ERP Система 'Базова'",
+                "description": "Базова версія системи планування ресурсів підприємства",
+                "category": "software",
+                "price": 100000,
+                "currency": "UAH",
+                "unit": "license",
+                "isActive": True,
+                "specifications": {
+                    "users": 10,
+                    "modules": ["finance", "hr", "inventory"],
+                    "support": "basic"
+                }
+            },
+            {
+                "name": "CRM Система 'Професійна'",
+                "description": "Професійна система управління взаємовідносинами з клієнтами",
+                "category": "software",
+                "price": 50000,
+                "currency": "UAH",
+                "unit": "license",
+                "isActive": True,
+                "specifications": {
+                    "users": 25,
+                    "features": ["lead_management", "sales_pipeline", "analytics"],
+                    "support": "premium"
+                }
+            },
+            {
+                "name": "Консультаційні послуги",
+                "description": "Консультації з впровадження та налаштування систем",
+                "category": "service",
+                "price": 2000,
+                "currency": "UAH",
+                "unit": "hour",
+                "isActive": True,
+                "specifications": {
+                    "expertise": ["implementation", "training", "customization"],
+                    "availability": "business_hours"
+                }
+            }
+        ]
+        
+        created_products = 0
+        for product_data in test_products_data:
+            response = self.make_request("POST", "/crm/products", product_data)
+            if response and response.status_code == 200:
+                product = response.json().get("product")
+                if product:
+                    created_products += 1
+                    self.log_result("crm_products", f"create_product_{product_data['category']}", True, 
+                                  f"Created {product_data['category']}: {product_data['name']}")
+                else:
+                    self.log_result("crm_products", f"create_product_{product_data['category']}", False, 
+                                  f"Product created but no data returned")
+            else:
+                status = response.status_code if response else "No response"
+                error_msg = response.json().get("error", "Unknown error") if response and response.headers.get('content-type', '').startswith('application/json') else "No error details"
+                self.log_result("crm_products", f"create_product_{product_data['category']}", False, 
+                              f"Failed to create product: {status} - {error_msg}")
+
+        # Test 2: Get all products
+        response = self.make_request("GET", "/crm/products")
+        if response and response.status_code == 200:
+            products = response.json()
+            if isinstance(products, list):
+                self.log_result("crm_products", "get_all_products", True, 
+                              f"Retrieved {len(products)} products successfully")
+                
+                # Verify product structure
+                if products:
+                    product = products[0]
+                    required_fields = ["id", "name", "category", "price", "currency", "unit", "isActive", "createdAt"]
+                    missing_fields = [field for field in required_fields if field not in product]
+                    if not missing_fields:
+                        self.log_result("crm_products", "product_structure", True, "Product structure validation passed")
+                    else:
+                        self.log_result("crm_products", "product_structure", False, f"Missing fields: {missing_fields}")
+            else:
+                self.log_result("crm_products", "get_all_products", False, f"Invalid products response: {products}")
+        else:
+            status = response.status_code if response else "No response"
+            self.log_result("crm_products", "get_all_products", False, f"Failed to retrieve products: {status}")
+
+        # Test 3: Filter products by category
+        for category in ['software', 'service']:
+            response = self.make_request("GET", f"/crm/products?category={category}")
+            if response and response.status_code == 200:
+                filtered_products = response.json()
+                if isinstance(filtered_products, list):
+                    self.log_result("crm_products", f"filter_{category}", True, 
+                                  f"Category filter '{category}' returned {len(filtered_products)} products")
+                else:
+                    self.log_result("crm_products", f"filter_{category}", False, 
+                                  f"Invalid filtered response: {filtered_products}")
+            else:
+                status = response.status_code if response else "No response"
+                self.log_result("crm_products", f"filter_{category}", False, 
+                              f"Category filtering failed: {status}")
+
+        # Test 4: Test role-based access control (regular user should be denied product creation)
+        if self.user_token:
+            old_token = self.auth_token
+            self.auth_token = self.user_token
+            
+            test_product = {
+                "name": "Test Product",
+                "category": "test",
+                "price": 1000,
+                "currency": "UAH",
+                "unit": "piece"
+            }
+            
+            response = self.make_request("POST", "/crm/products", test_product)
+            if response and response.status_code == 403:
+                self.log_result("crm_products", "rbac_user_denied", True, "Regular user properly denied product creation")
+            else:
+                status = response.status_code if response else "No response"
+                self.log_result("crm_products", "rbac_user_denied", False, f"RBAC not working for products: {status}")
+            
+            self.auth_token = old_token
+
+        return created_products > 0
+
+    def test_finance_crm_integration(self):
+        """Test integration between Finance and CRM modules"""
+        print("\n=== Testing Finance-CRM Integration ===")
+        
+        if not self.auth_token:
+            self.log_result("finance_crm_integration", "no_token", False, "No auth token available")
+            return False
+
+        # Test 1: Verify counterparty integration between modules
+        print("Testing counterparty integration between Finance and CRM...")
+        
+        # Get counterparties from finance module
+        finance_response = self.make_request("GET", "/finance/counterparties")
+        if not (finance_response and finance_response.status_code == 200):
+            self.log_result("finance_crm_integration", "get_finance_counterparties", False, "Failed to get finance counterparties")
+            return False
+            
+        finance_counterparties = finance_response.json()
+        
+        # Get opportunities from CRM module
+        crm_response = self.make_request("GET", "/crm/opportunities")
+        if not (crm_response and crm_response.status_code == 200):
+            self.log_result("finance_crm_integration", "get_crm_opportunities", False, "Failed to get CRM opportunities")
+            return False
+            
+        crm_opportunities = crm_response.json()
+        
+        # Check if opportunities reference valid counterparties
+        integration_working = False
+        for opportunity in crm_opportunities:
+            if opportunity.get("counterpartyId"):
+                # Find matching counterparty
+                matching_counterparty = next(
+                    (cp for cp in finance_counterparties if cp["id"] == opportunity["counterpartyId"]), 
+                    None
+                )
+                if matching_counterparty:
+                    integration_working = True
+                    self.log_result("finance_crm_integration", "counterparty_reference", True, 
+                                  f"Opportunity '{opportunity['title']}' correctly references counterparty '{matching_counterparty['name']}'")
+                    break
+        
+        if not integration_working:
+            self.log_result("finance_crm_integration", "counterparty_reference", False, 
+                          "No valid counterparty references found in opportunities")
+
+        # Test 2: Verify role-based access control consistency
+        print("Testing consistent role-based access control...")
+        
+        if self.user_token:
+            old_token = self.auth_token
+            self.auth_token = self.user_token
+            
+            # Test finance module access
+            finance_accounts_response = self.make_request("POST", "/finance/accounts", {
+                "code": "TEST", "name": "Test", "type": "asset"
+            })
+            finance_denied = finance_accounts_response and finance_accounts_response.status_code == 403
+            
+            # Test CRM module access
+            crm_products_response = self.make_request("POST", "/crm/products", {
+                "name": "Test Product", "category": "test", "price": 100, "currency": "UAH", "unit": "piece"
+            })
+            crm_denied = crm_products_response and crm_products_response.status_code == 403
+            
+            if finance_denied and crm_denied:
+                self.log_result("finance_crm_integration", "consistent_rbac", True, 
+                              "Role-based access control consistent across Finance and CRM modules")
+            else:
+                self.log_result("finance_crm_integration", "consistent_rbac", False, 
+                              f"Inconsistent RBAC - Finance denied: {finance_denied}, CRM denied: {crm_denied}")
+            
+            self.auth_token = old_token
+
+        # Test 3: Data consistency and referential integrity
+        print("Testing data consistency and referential integrity...")
+        
+        # Verify that all counterpartyIds in opportunities exist in counterparties
+        orphaned_opportunities = []
+        for opportunity in crm_opportunities:
+            if opportunity.get("counterpartyId"):
+                matching_counterparty = next(
+                    (cp for cp in finance_counterparties if cp["id"] == opportunity["counterpartyId"]), 
+                    None
+                )
+                if not matching_counterparty:
+                    orphaned_opportunities.append(opportunity["id"])
+        
+        if not orphaned_opportunities:
+            self.log_result("finance_crm_integration", "referential_integrity", True, 
+                          "All opportunity counterparty references are valid")
+        else:
+            self.log_result("finance_crm_integration", "referential_integrity", False, 
+                          f"Found {len(orphaned_opportunities)} opportunities with invalid counterparty references")
+
+        return integration_working
+
     def run_all_tests(self):
         """Run all backend tests in priority order"""
         print(f"\n🚀 Starting ТИС КІС Enhanced Backend API Tests with Calendar and Tasks")
