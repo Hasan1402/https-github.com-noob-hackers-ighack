@@ -79,13 +79,13 @@ class TISKISBackendTester:
         
         try:
             if method.upper() == "GET":
-                response = self.session.get(url, headers=default_headers)
+                response = self.session.get(url, headers=default_headers, timeout=10)
             elif method.upper() == "POST":
-                response = self.session.post(url, json=data, headers=default_headers)
+                response = self.session.post(url, json=data, headers=default_headers, timeout=10)
             elif method.upper() == "PUT":
-                response = self.session.put(url, json=data, headers=default_headers)
+                response = self.session.put(url, json=data, headers=default_headers, timeout=10)
             elif method.upper() == "DELETE":
-                response = self.session.delete(url, headers=default_headers)
+                response = self.session.delete(url, headers=default_headers, timeout=10)
             else:
                 raise ValueError(f"Unsupported method: {method}")
             
