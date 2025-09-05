@@ -568,11 +568,17 @@ export default function App() {
     }
   }
 
-  const handleLogout = () => {
-    localStorage.removeItem('token')
-    setUser(null)
-    setCurrentView('auth')
-    toast.success('Ви вийшли з системи')
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/sso/auth', { method: 'DELETE' })
+      setUser(null)
+      setTenant(null)
+      setCurrentView('auth')
+      toast.success('Ви успішно вийшли з системи')
+    } catch (error) {
+      console.error('Logout error:', error)
+      toast.error('Помилка виходу з системи')
+    }
   }
 
   // Load events and tasks for calendar
