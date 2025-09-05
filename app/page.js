@@ -42,6 +42,8 @@ import { toast } from 'sonner'
 export default function App() {
   const [currentView, setCurrentView] = useState('auth')
   const [user, setUser] = useState(null)
+  const [tenant, setTenant] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
   const [loginForm, setLoginForm] = useState({ email: '', password: '' })
   const [registerForm, setRegisterForm] = useState({ 
     email: '', 
