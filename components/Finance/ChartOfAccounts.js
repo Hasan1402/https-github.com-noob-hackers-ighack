@@ -315,7 +315,7 @@ export default function ChartOfAccounts({ user }) {
       }))
     }
 
-    if (filterClass) {
+    if (filterClass && filterClass !== 'all') {
       filtered = filtered.filter(account => account.class === filterClass)
     }
 
