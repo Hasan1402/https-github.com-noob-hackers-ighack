@@ -32,7 +32,7 @@ export default function ChartOfAccounts({ user }) {
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
-  const [filterClass, setFilterClass] = useState('')
+  const [filterClass, setFilterClass] = useState('all')
   const [expandedGroups, setExpandedGroups] = useState(new Set(['1', '2', '3', '4', '5']))
   const [isLoading, setIsLoading] = useState(false)
 
