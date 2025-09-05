@@ -38,6 +38,7 @@ import {
   Building
 } from 'lucide-react'
 import { toast } from 'sonner'
+import HRManagementTabs from '../components/HR/HRManagementTabs'
 
 export default function App() {
   const [currentView, setCurrentView] = useState('auth')
