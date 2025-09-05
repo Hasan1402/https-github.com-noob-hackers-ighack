@@ -71,26 +71,25 @@ export default function App() {
   const [workCodes, setWorkCodes] = useState({})
   const [selectedDepartment, setSelectedDepartment] = useState('all')
 
-  // Check if user is logged in on load
+  // Check for existing authentication on mount
   useEffect(() => {
-    const token = localStorage.getItem('token')
-    if (token) {
-      // Verify token with backend
-      fetch('/api/auth/verify', {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.user) {
-          setUser(data.user)
-          setCurrentView('dashboard')
-        }
-      })
-      .catch(() => {
-        localStorage.removeItem('token')
-      })
-    }
+    checkAuth()
   }, [])
+  
+  const checkAuth = async () => {
+    try {
+      const response = await fetch('/api/sso/auth')
+      if (response.ok) {
+        const result = await response.json()
+        setUser(result.user)
+        setCurrentView('dashboard')
+      }
+    } catch (error) {
+      console.error('Auth check failed:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   // Load data when user changes or view changes
   useEffect(() => {
