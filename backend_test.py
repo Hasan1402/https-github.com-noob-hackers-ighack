@@ -14,8 +14,8 @@ import time
 from datetime import datetime, timedelta
 import uuid
 
-# Configuration - use localhost for HR testing due to external URL connectivity issues
-BASE_URL = "http://localhost:3000/api"
+# Configuration - use external URL for Nova Poshta ERP testing
+BASE_URL = "https://logistix-erp.preview.emergentagent.com/api"
 
 class TISKISBackendTester:
     def __init__(self):
