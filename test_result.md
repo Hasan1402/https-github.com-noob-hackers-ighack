@@ -573,15 +573,18 @@ backend:
 frontend:
   - task: "Financial Accounting UI - Complete Finance Module"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/app/page.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "Completed Financial Accounting UI implementation: ✅ Created BankAccounts.js component (800+ lines) with full Ukrainian localization ✅ Added complete Finance module navigation in page.js ✅ Integrated all 4 Finance components: ChartOfAccounts, Counterparties, JournalEntries, BankAccounts ✅ Added financeSubView state management ✅ Implemented comprehensive UI matching HR module design patterns. Ready for frontend testing."
+        - working: false
+          agent: "testing"
+          comment: "🎯 FINANCIAL ACCOUNTING UI TESTING RESULTS: ✅ AUTHENTICATION: Nova Poshta SSO working with correct credentials (NovaPoshtaAdmin2025!). ✅ DASHBOARD: Successfully loaded with Ukrainian interface. ✅ FINANCE MODULE: Navigation to Finance module working, overview page displays correctly with all 4 components visible (План рахунків, Контрагенти, Журнал проводок, Банківські рахунки). ❌ CRITICAL REACT ERROR: Select component validation errors causing component crashes - 'A <Select.Item /> must have a value prop that is not an empty string'. This prevents proper navigation to BankAccounts and JournalEntries components. ❌ COMPONENT NAVIGATION: Only Chart of Accounts navigation working (1/4 components), other Finance sub-components fail due to React errors. ✅ UKRAINIAN LOCALIZATION: Excellent Ukrainian interface throughout Finance module. ✅ RESPONSIVE DESIGN: Tested on desktop, tablet, and mobile viewports. PRIORITY FIX NEEDED: Resolve Select component validation errors in Finance components to enable full functionality."
 
   - task: "BankAccounts Component Implementation"
     implemented: true
