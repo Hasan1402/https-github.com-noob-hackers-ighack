@@ -370,7 +370,7 @@ export default function JournalEntries({ user }) {
                 <SelectValue placeholder="Статус" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Всі статуси</SelectItem>
+                <SelectItem value="all">Всі статуси</SelectItem>
                 <SelectItem value="draft">Чернетки</SelectItem>
                 <SelectItem value="posted">Проведені</SelectItem>
                 <SelectItem value="cancelled">Скасовані</SelectItem>
@@ -382,7 +382,7 @@ export default function JournalEntries({ user }) {
                 <SelectValue placeholder="Період" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Всі періоди</SelectItem>
+                <SelectItem value="all">Всі періоди</SelectItem>
                 <SelectItem value="today">Сьогодні</SelectItem>
                 <SelectItem value="week">Цей тиждень</SelectItem>
                 <SelectItem value="month">Цей місяць</SelectItem>
