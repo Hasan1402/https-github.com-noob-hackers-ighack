@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import LoginForm from '../components/SSO/LoginForm'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -33,7 +34,8 @@ import {
   Factory,
   ShoppingCart,
   Warehouse,
-  Briefcase
+  Briefcase,
+  Building
 } from 'lucide-react'
 import { toast } from 'sonner'
 
