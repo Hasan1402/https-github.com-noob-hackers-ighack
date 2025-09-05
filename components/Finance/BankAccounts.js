@@ -372,7 +372,7 @@ export default function BankAccounts({ user }) {
       description: '',
       reference: '',
       counterparty: '',
-      category: '',
+      category: 'Доходи від основної діяльності',
       status: 'pending'
     })
   }
