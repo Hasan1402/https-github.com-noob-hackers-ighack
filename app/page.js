@@ -33,7 +33,6 @@ import {
   Factory,
   ShoppingCart,
   Warehouse,
-  ProjectorIcon,
   Briefcase
 } from 'lucide-react'
 import { toast } from 'sonner'
