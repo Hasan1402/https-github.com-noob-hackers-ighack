@@ -597,9 +597,15 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Complete CRM System Integration"
-  stuck_tasks: []
-  test_all: false
+    - "Complete ERP System Frontend Testing"
+    - "Authentication System Fix"
+    - "Missing HR and Business Trips Views"
+  stuck_tasks:
+    - "Authentication System"
+    - "Document Upload Interface"
+    - "HR View Implementation"
+    - "Business Trips View Implementation"
+  test_all: true
   test_priority: "high_first"
 
 agent_communication:
