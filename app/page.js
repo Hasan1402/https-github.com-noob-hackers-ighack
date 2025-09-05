@@ -28,7 +28,13 @@ import {
   Calculator,
   Target,
   TrendingUp,
-  Package
+  Package,
+  Truck,
+  Factory,
+  ShoppingCart,
+  Warehouse,
+  ProjectorIcon,
+  Briefcase
 } from 'lucide-react'
 import { toast } from 'sonner'
 
