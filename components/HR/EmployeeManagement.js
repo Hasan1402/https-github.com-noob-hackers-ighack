@@ -323,7 +323,7 @@ export default function EmployeeManagement({ user }) {
                 <SelectValue placeholder="Відділ" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Всі відділи</SelectItem>
+                <SelectItem value="all">Всі відділи</SelectItem>
                 {departments.map(dept => (
                   <SelectItem key={dept} value={dept}>{dept}</SelectItem>
                 ))}
