@@ -696,6 +696,24 @@ export default function App() {
     }
   }
 
+  // Show loading screen
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Building className="w-16 h-16 mx-auto mb-4 text-blue-600 animate-pulse" />
+          <h2 className="text-xl font-semibold text-gray-900">Нова Пошта ERP</h2>
+          <p className="text-gray-600">Завантаження системи...</p>
+        </div>
+      </div>
+    )
+  }
+  
+  // Show login form if not authenticated
+  if (currentView === 'auth') {
+    return <LoginForm onLoginSuccess={handleLoginSuccess} />
+  }
+
   // Auth Screen
   if (currentView === 'auth') {
     return (
