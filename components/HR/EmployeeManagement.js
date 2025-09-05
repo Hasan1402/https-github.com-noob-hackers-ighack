@@ -335,7 +335,7 @@ export default function EmployeeManagement({ user }) {
                 <SelectValue placeholder="Рівень доступу" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Всі рівні</SelectItem>
+                <SelectItem value="all">Всі рівні</SelectItem>
                 <SelectItem value="basic">Базовий</SelectItem>
                 <SelectItem value="warehouse">Склад</SelectItem>
                 <SelectItem value="branch">Відділення</SelectItem>
