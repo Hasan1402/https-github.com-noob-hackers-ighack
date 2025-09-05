@@ -37,7 +37,7 @@ export default function Counterparties({ user }) {
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [showDetailsDialog, setShowDetailsDialog] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
-  const [filterType, setFilterType] = useState('')
+  const [filterType, setFilterType] = useState('all')
   const [isLoading, setIsLoading] = useState(false)
 
   // Counterparty form state
