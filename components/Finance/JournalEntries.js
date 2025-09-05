@@ -38,8 +38,8 @@ export default function JournalEntries({ user }) {
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [showDetailsDialog, setShowDetailsDialog] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
-  const [filterStatus, setFilterStatus] = useState('')
-  const [filterDateRange, setFilterDateRange] = useState('')
+  const [filterStatus, setFilterStatus] = useState('all')
+  const [filterDateRange, setFilterDateRange] = useState('all')
   const [isLoading, setIsLoading] = useState(false)
 
   // Journal entry form state
