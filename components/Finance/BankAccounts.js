@@ -48,8 +48,8 @@ export default function BankAccounts({ user }) {
   const [showDetailsDialog, setShowDetailsDialog] = useState(false)
   const [showTransactionDialog, setShowTransactionDialog] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
-  const [filterCurrency, setFilterCurrency] = useState('')
-  const [filterStatus, setFilterStatus] = useState('')
+  const [filterCurrency, setFilterCurrency] = useState('all')
+  const [filterStatus, setFilterStatus] = useState('all')
   const [isLoading, setIsLoading] = useState(false)
 
   // Bank account form state
@@ -274,11 +274,11 @@ export default function BankAccounts({ user }) {
       )
     }
 
-    if (filterCurrency) {
+    if (filterCurrency && filterCurrency !== 'all') {
       filtered = filtered.filter(account => account.currency === filterCurrency)
     }
 
-    if (filterStatus) {
+    if (filterStatus && filterStatus !== 'all') {
       filtered = filtered.filter(account => 
         filterStatus === 'active' ? account.isActive : !account.isActive
       )
@@ -467,7 +467,7 @@ export default function BankAccounts({ user }) {
                 <SelectValue placeholder="Валюта" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Всі</SelectItem>
+                <SelectItem value="all">Всі</SelectItem>
                 <SelectItem value="UAH">₴ UAH</SelectItem>
                 <SelectItem value="USD">$ USD</SelectItem>
                 <SelectItem value="EUR">€ EUR</SelectItem>
@@ -479,7 +479,7 @@ export default function BankAccounts({ user }) {
                 <SelectValue placeholder="Статус" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Всі</SelectItem>
+                <SelectItem value="all">Всі</SelectItem>
                 <SelectItem value="active">Активні</SelectItem>
                 <SelectItem value="inactive">Неактивні</SelectItem>
               </SelectContent>
