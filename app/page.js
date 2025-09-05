@@ -75,6 +75,7 @@ export default function App() {
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().substring(0, 7)) // YYYY-MM
   const [workCodes, setWorkCodes] = useState({})
   const [selectedDepartment, setSelectedDepartment] = useState('all')
+  const [financeSubView, setFinanceSubView] = useState('overview')
 
   // Check for existing authentication on mount
   useEffect(() => {
