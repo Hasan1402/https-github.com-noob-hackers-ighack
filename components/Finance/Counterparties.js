@@ -266,7 +266,7 @@ export default function Counterparties({ user }) {
       )
     }
 
-    if (filterType) {
+    if (filterType && filterType !== 'all') {
       filtered = filtered.filter(cp => cp.type === filterType)
     }
 
