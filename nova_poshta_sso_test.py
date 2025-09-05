@@ -11,7 +11,7 @@ import os
 from datetime import datetime
 
 # Configuration
-BASE_URL = "https://tys-kis-erp.preview.emergentagent.com"
+BASE_URL = "https://logistix-erp.preview.emergentagent.com"
 SSO_BASE = f"{BASE_URL}/api/sso"
 
 # Test credentials from Nova Poshta initialization
