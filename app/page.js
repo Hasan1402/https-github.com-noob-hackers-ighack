@@ -2026,6 +2026,646 @@ export default function App() {
     )
   }
 
+  // Management Accounting View
+  if (currentView === 'management-accounting') {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <header className="bg-white shadow-sm border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center h-16">
+              <div className="flex items-center space-x-4">
+                <Button 
+                  variant="ghost" 
+                  onClick={() => setCurrentView('dashboard')}
+                  className="text-gray-600 hover:text-gray-900"
+                >
+                  <Home className="w-4 h-4 mr-2" />
+                  Головна
+                </Button>
+                <h1 className="text-xl font-bold text-gray-900">Управлінський облік</h1>
+              </div>
+              
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-3">
+                  <Avatar>
+                    <AvatarFallback>
+                      {user?.fullName?.charAt(0) || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="hidden md:block">
+                    <div className="text-sm font-medium text-gray-900">{user?.fullName}</div>
+                    <Badge variant="secondary" className="text-xs">
+                      {user?.role === 'admin' ? 'Адміністратор' : 
+                       user?.role === 'manager' ? 'Менеджер' : 'Користувач'}
+                    </Badge>
+                  </div>
+                </div>
+                
+                <Button variant="ghost" size="sm" onClick={handleLogout}>
+                  <LogOut className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <BarChart3 className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="font-medium text-gray-900">Центри витрат</h3>
+                    <p className="text-sm text-gray-500">Управління витратами</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-green-100 rounded-lg">
+                    <Calculator className="w-6 h-6 text-green-600" />
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="font-medium text-gray-900">Калькуляція</h3>
+                    <p className="text-sm text-gray-500">Розрахунок собівартості</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-purple-100 rounded-lg">
+                    <TrendingUp className="w-6 h-6 text-purple-600" />
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="font-medium text-gray-900">KPI</h3>
+                    <p className="text-sm text-gray-500">Ключові показники</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-yellow-100 rounded-lg">
+                    <FileText className="w-6 h-6 text-yellow-600" />
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="font-medium text-gray-900">Бюджетування</h3>
+                    <p className="text-sm text-gray-500">Планування витрат</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Управлінський облік - Внутрішній контроль</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8">
+                <Calculator className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Модуль управлінського обліку</h3>
+                <p className="text-gray-500 mb-6">
+                  Система внутрішнього управління витратами та ефективністю:<br/>
+                  📊 Центри витрат та прибутку<br/>
+                  💰 Калькуляція собівартості<br/>
+                  📈 KPI та метрики ефективності<br/>
+                  📋 Бюджетування та планування
+                </p>
+                <p className="text-sm text-gray-400">
+                  Backend API та детальний UI будуть додані в наступних ітераціях
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
+
+  // Purchases & Supply View
+  if (currentView === 'purchases') {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <header className="bg-white shadow-sm border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center h-16">
+              <div className="flex items-center space-x-4">
+                <Button 
+                  variant="ghost" 
+                  onClick={() => setCurrentView('dashboard')}
+                  className="text-gray-600 hover:text-gray-900"
+                >
+                  <Home className="w-4 h-4 mr-2" />
+                  Головна
+                </Button>
+                <h1 className="text-xl font-bold text-gray-900">Закупки та постачання</h1>
+              </div>
+              
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-3">
+                  <Avatar>
+                    <AvatarFallback>
+                      {user?.fullName?.charAt(0) || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="hidden md:block">
+                    <div className="text-sm font-medium text-gray-900">{user?.fullName}</div>
+                    <Badge variant="secondary" className="text-xs">
+                      {user?.role === 'admin' ? 'Адміністратор' : 
+                       user?.role === 'manager' ? 'Менеджер' : 'Користувач'}
+                    </Badge>
+                  </div>
+                </div>
+                
+                <Button variant="ghost" size="sm" onClick={handleLogout}>
+                  <LogOut className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-teal-100 rounded-lg">
+                    <ShoppingCart className="w-6 h-6 text-teal-600" />
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="font-medium text-gray-900">Заявки на закупку</h3>
+                    <p className="text-sm text-gray-500">Створення запитів</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <Users className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="font-medium text-gray-900">Постачальники</h3>
+                    <p className="text-sm text-gray-500">База постачальників</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-green-100 rounded-lg">
+                    <FileText className="w-6 h-6 text-green-600" />
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="font-medium text-gray-900">Договори</h3>
+                    <p className="text-sm text-gray-500">Управління договорами</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-orange-100 rounded-lg">
+                    <TrendingUp className="w-6 h-6 text-orange-600" />
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="font-medium text-gray-900">Аналітика закупок</h3>
+                    <p className="text-sm text-gray-500">Статистика та звіти</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Система закупок та постачання</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8">
+                <ShoppingCart className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Модуль закупок</h3>
+                <p className="text-gray-500 mb-6">
+                  Повний цикл управління закупками:<br/>
+                  📋 Заявки та замовлення<br/>
+                  🏢 База постачальників<br/>
+                  📄 Управління договорами<br/>
+                  📊 Аналітика та оптимізація
+                </p>
+                <p className="text-sm text-gray-400">
+                  Backend API та детальний UI будуть додані в наступних ітераціях
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
+
+  // Warehouse & Logistics View
+  if (currentView === 'warehouse') {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <header className="bg-white shadow-sm border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center h-16">
+              <div className="flex items-center space-x-4">
+                <Button 
+                  variant="ghost" 
+                  onClick={() => setCurrentView('dashboard')}
+                  className="text-gray-600 hover:text-gray-900"
+                >
+                  <Home className="w-4 h-4 mr-2" />
+                  Головна
+                </Button>
+                <h1 className="text-xl font-bold text-gray-900">Склад та логістика</h1>
+              </div>
+              
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-3">
+                  <Avatar>
+                    <AvatarFallback>
+                      {user?.fullName?.charAt(0) || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="hidden md:block">
+                    <div className="text-sm font-medium text-gray-900">{user?.fullName}</div>
+                    <Badge variant="secondary" className="text-xs">
+                      {user?.role === 'admin' ? 'Адміністратор' : 
+                       user?.role === 'manager' ? 'Менеджер' : 'Користувач'}
+                    </Badge>
+                  </div>
+                </div>
+                
+                <Button variant="ghost" size="sm" onClick={handleLogout}>
+                  <LogOut className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-amber-100 rounded-lg">
+                    <Package className="w-6 h-6 text-amber-600" />
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="font-medium text-gray-900">Товарні залишки</h3>
+                    <p className="text-sm text-gray-500">Облік матеріалів</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-green-100 rounded-lg">
+                    <TrendingUp className="w-6 h-6 text-green-600" />
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="font-medium text-gray-900">Надходження</h3>
+                    <p className="text-sm text-gray-500">Приймання товарів</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-red-100 rounded-lg">
+                    <Download className="w-6 h-6 text-red-600" />
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="font-medium text-gray-900">Відвантаження</h3>
+                    <p className="text-sm text-gray-500">Видача товарів</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-purple-100 rounded-lg">
+                    <BarChart3 className="w-6 h-6 text-purple-600" />
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="font-medium text-gray-900">Інвентаризація</h3>
+                    <p className="text-sm text-gray-500">Ревізія залишків</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Складська логістика</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8">
+                <Warehouse className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Модуль складу</h3>
+                <p className="text-gray-500 mb-6">
+                  Комплексне управління складськими процесами:<br/>
+                  📦 Товарні залишки та партії<br/>
+                  ⬆️ Надходження та приймання<br/>
+                  ⬇️ Відвантаження та видача<br/>
+                  🔍 Інвентаризація та ревізія
+                </p>
+                <p className="text-sm text-gray-400">
+                  Backend API та детальний UI будуть додані в наступних ітераціях
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
+
+  // Production View
+  if (currentView === 'production') {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <header className="bg-white shadow-sm border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center h-16">
+              <div className="flex items-center space-x-4">
+                <Button 
+                  variant="ghost" 
+                  onClick={() => setCurrentView('dashboard')}
+                  className="text-gray-600 hover:text-gray-900"
+                >
+                  <Home className="w-4 h-4 mr-2" />
+                  Головна
+                </Button>
+                <h1 className="text-xl font-bold text-gray-900">Виробництво</h1>
+              </div>
+              
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-3">
+                  <Avatar>
+                    <AvatarFallback>
+                      {user?.fullName?.charAt(0) || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="hidden md:block">
+                    <div className="text-sm font-medium text-gray-900">{user?.fullName}</div>
+                    <Badge variant="secondary" className="text-xs">
+                      {user?.role === 'admin' ? 'Адміністратор' : 
+                       user?.role === 'manager' ? 'Менеджер' : 'Користувач'}
+                    </Badge>
+                  </div>
+                </div>
+                
+                <Button variant="ghost" size="sm" onClick={handleLogout}>
+                  <LogOut className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-slate-100 rounded-lg">
+                    <Calendar className="w-6 h-6 text-slate-600" />
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="font-medium text-gray-900">Планування</h3>
+                    <p className="text-sm text-gray-500">Виробничі плани</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <Settings className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="font-medium text-gray-900">Обладнання</h3>
+                    <p className="text-sm text-gray-500">Управління машинами</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-green-100 rounded-lg">
+                    <Package className="w-6 h-6 text-green-600" />
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="font-medium text-gray-900">Матеріали</h3>
+                    <p className="text-sm text-gray-500">Сировина та компоненти</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-orange-100 rounded-lg">
+                    <BarChart3 className="w-6 h-6 text-orange-600" />
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="font-medium text-gray-900">Якість</h3>
+                    <p className="text-sm text-gray-500">Контроль якості</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Виробничий модуль</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8">
+                <Factory className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Система виробництва</h3>
+                <p className="text-gray-500 mb-6">
+                  Управління виробничими процесами:<br/>
+                  📋 Планування виробництва<br/>
+                  ⚙️ Управління обладнанням<br/>
+                  📦 Облік матеріалів<br/>
+                  ✅ Контроль якості
+                </p>
+                <p className="text-sm text-gray-400">
+                  Backend API та детальний UI будуть додані в наступних ітераціях
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
+
+  // Project Management View
+  if (currentView === 'projects') {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <header className="bg-white shadow-sm border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center h-16">
+              <div className="flex items-center space-x-4">
+                <Button 
+                  variant="ghost" 
+                  onClick={() => setCurrentView('dashboard')}
+                  className="text-gray-600 hover:text-gray-900"
+                >
+                  <Home className="w-4 h-4 mr-2" />
+                  Головна
+                </Button>
+                <h1 className="text-xl font-bold text-gray-900">Управління проектами</h1>
+              </div>
+              
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-3">
+                  <Avatar>
+                    <AvatarFallback>
+                      {user?.fullName?.charAt(0) || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="hidden md:block">
+                    <div className="text-sm font-medium text-gray-900">{user?.fullName}</div>
+                    <Badge variant="secondary" className="text-xs">
+                      {user?.role === 'admin' ? 'Адміністратор' : 
+                       user?.role === 'manager' ? 'Менеджер' : 'Користувач'}
+                    </Badge>
+                  </div>
+                </div>
+                
+                <Button variant="ghost" size="sm" onClick={handleLogout}>
+                  <LogOut className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-cyan-100 rounded-lg">
+                    <Briefcase className="w-6 h-6 text-cyan-600" />
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="font-medium text-gray-900">Проекти</h3>
+                    <p className="text-sm text-gray-500">Управління портфелем</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <Calendar className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="font-medium text-gray-900">Задачі</h3>
+                    <p className="text-sm text-gray-500">Планування робіт</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-green-100 rounded-lg">
+                    <Users className="w-6 h-6 text-green-600" />
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="font-medium text-gray-900">Команда</h3>
+                    <p className="text-sm text-gray-500">Ресурси проекту</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-purple-100 rounded-lg">
+                    <TrendingUp className="w-6 h-6 text-purple-600" />
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="font-medium text-gray-900">Прогрес</h3>
+                    <p className="text-sm text-gray-500">Моніторинг виконання</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Система управління проектами</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8">
+                <Briefcase className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Модуль проектів</h3>
+                <p className="text-gray-500 mb-6">
+                  Комплексне управління проектами:<br/>
+                  💼 Портфель проектів<br/>
+                  📋 Планування та задачі<br/>
+                  👥 Управління командою<br/>
+                  📊 Моніторинг прогресу
+                </p>
+                <p className="text-sm text-gray-400">
+                  Backend API та детальний UI будуть додані в наступних ітераціях
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
+
 // Document Upload Dialog Component
 function DocumentUploadDialog({ onUpload, isUploading }) {
   const [isOpen, setIsOpen] = useState(false)
