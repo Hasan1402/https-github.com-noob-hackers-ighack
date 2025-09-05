@@ -398,7 +398,7 @@ export default function DepartmentStructure({ user }) {
                       <SelectValue placeholder="Виберіть батьківський відділ" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Немає (верхній рівень)</SelectItem>
+                      <SelectItem value="none">Немає (верхній рівень)</SelectItem>
                       <SelectItem value="1">Нова Пошта</SelectItem>
                       <SelectItem value="2">Логістика та доставка</SelectItem>
                       <SelectItem value="3">Відділення та обслуговування</SelectItem>
