@@ -402,7 +402,7 @@ export default function Counterparties({ user }) {
                 <SelectValue placeholder="Тип контрагента" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Всі типи</SelectItem>
+                <SelectItem value="all">Всі типи</SelectItem>
                 <SelectItem value="client">Клієнти</SelectItem>
                 <SelectItem value="supplier">Постачальники</SelectItem>
                 <SelectItem value="both">Клієнт/Постачальник</SelectItem>
