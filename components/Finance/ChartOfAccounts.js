@@ -41,9 +41,9 @@ export default function ChartOfAccounts({ user }) {
     code: '',
     name: '',
     nameEn: '',
-    type: '',
-    class: '',
-    parent: '',
+    type: 'asset',
+    class: '1',
+    parent: 'none',
     isActive: true,
     description: '',
     allowManualEntries: true
