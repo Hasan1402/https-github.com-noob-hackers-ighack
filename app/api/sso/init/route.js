@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { initializeNovaPoshtaTenant } from '../../../lib/seedTenant'
+import { initializeNovaPoshtaTenant } from '../../../../lib/seedTenant'
 
 // GET /api/sso/init - Initialize Nova Poshta tenant and users
 export async function GET() {
