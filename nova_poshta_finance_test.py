@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 import uuid
 
 # Configuration
-BASE_URL = "https://logistix-erp.preview.emergentagent.com/api"
+BASE_URL = "http://localhost:3000/api"
 
 class NovaPoshtaFinanceTester:
     def __init__(self):
