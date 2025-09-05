@@ -717,9 +717,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Nova Poshta SSO Authentication System"
-    - "Nova Poshta SSO HR Management System"
-    - "Nova Poshta SSO System Initialization"
+    - "Financial Accounting Backend APIs Integration"
+    - "Financial Accounting UI - Complete Finance Module" 
+    - "BankAccounts Component Implementation"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
