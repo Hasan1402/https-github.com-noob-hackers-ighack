@@ -39,6 +39,10 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import HRManagementTabs from '../components/HR/HRManagementTabs'
+import ChartOfAccounts from '../components/Finance/ChartOfAccounts'
+import Counterparties from '../components/Finance/Counterparties'
+import JournalEntries from '../components/Finance/JournalEntries'
+import BankAccounts from '../components/Finance/BankAccounts'
 
 export default function App() {
   const [currentView, setCurrentView] = useState('auth')
