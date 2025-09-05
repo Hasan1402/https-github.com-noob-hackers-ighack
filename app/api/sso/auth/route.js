@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
-import { authenticateUser, verifyToken } from '../../../lib/ssoAuth'
-import { logAuditEvent } from '../../../lib/auditLogger'
-import connectDB from '../../../lib/mongodb'
+import { authenticateUser, verifyToken } from '../../../../lib/ssoAuth'
+import { logAuditEvent } from '../../../../lib/auditLogger'
+import connectDB from '../../../../lib/mongodb'
 
 // POST /api/sso/auth - Login endpoint
 export async function POST(request) {
