@@ -90,6 +90,13 @@ export default function App() {
       setIsLoading(false)
     }
   }
+  
+  const handleLoginSuccess = (userData, tenantData) => {
+    setUser(userData)
+    setTenant(tenantData)
+    setCurrentView('dashboard')
+    toast.success(`Ласкаво просимо, ${userData.fullName}!`)
+  }
 
   // Load data when user changes or view changes
   useEffect(() => {
