@@ -782,7 +782,7 @@ function AccountForm({ form, setForm, accounts, onSubmit, onCancel, isEdit = fal
               <SelectValue placeholder="Виберіть батьківський рахунок" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Немає (кореневий рахунок)</SelectItem>
+              <SelectItem value="none">Немає (кореневий рахунок)</SelectItem>
               {parentAccounts.map(acc => (
                 <SelectItem key={acc.id} value={acc.id}>
                   {acc.code} - {acc.name}
