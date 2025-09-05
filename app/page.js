@@ -1717,90 +1717,171 @@ export default function App() {
         </header>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {/* Chart of Accounts Card */}
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <BookOpen className="w-6 h-6 text-blue-600" />
+          {/* Navigation Cards */}
+          {financeSubView === 'overview' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              {/* Chart of Accounts Card */}
+              <Card 
+                className="hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={() => setFinanceSubView('chart-of-accounts')}
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-center">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <BookOpen className="w-6 h-6 text-blue-600" />
+                    </div>
+                    <div className="ml-4">
+                      <h3 className="font-medium text-gray-900">План рахунків</h3>
+                      <p className="text-sm text-gray-500">Система рахунків</p>
+                    </div>
                   </div>
-                  <div className="ml-4">
-                    <h3 className="font-medium text-gray-900">План рахунків</h3>
-                    <p className="text-sm text-gray-500">Система рахунків</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
 
-            {/* Counterparties Card */}
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <div className="p-2 bg-green-100 rounded-lg">
-                    <Users className="w-6 h-6 text-green-600" />
+              {/* Counterparties Card */}
+              <Card 
+                className="hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={() => setFinanceSubView('counterparties')}
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-center">
+                    <div className="p-2 bg-green-100 rounded-lg">
+                      <Users className="w-6 h-6 text-green-600" />
+                    </div>
+                    <div className="ml-4">
+                      <h3 className="font-medium text-gray-900">Контрагенти</h3>
+                      <p className="text-sm text-gray-500">Клієнти та постачальники</p>
+                    </div>
                   </div>
-                  <div className="ml-4">
-                    <h3 className="font-medium text-gray-900">Контрагенти</h3>
-                    <p className="text-sm text-gray-500">Клієнти та постачальники</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
 
-            {/* Journal Entries Card */}
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <div className="p-2 bg-purple-100 rounded-lg">
-                    <FileText className="w-6 h-6 text-purple-600" />
+              {/* Journal Entries Card */}
+              <Card 
+                className="hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={() => setFinanceSubView('journal-entries')}
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-center">
+                    <div className="p-2 bg-purple-100 rounded-lg">
+                      <FileText className="w-6 h-6 text-purple-600" />
+                    </div>
+                    <div className="ml-4">
+                      <h3 className="font-medium text-gray-900">Журнал проводок</h3>
+                      <p className="text-sm text-gray-500">Облікові записи</p>
+                    </div>
                   </div>
-                  <div className="ml-4">
-                    <h3 className="font-medium text-gray-900">Проводки</h3>
-                    <p className="text-sm text-gray-500">Облікові записи</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
 
-            {/* Bank Accounts Card */}
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <div className="p-2 bg-yellow-100 rounded-lg">
-                    <CreditCard className="w-6 h-6 text-yellow-600" />
+              {/* Bank Accounts Card */}
+              <Card 
+                className="hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={() => setFinanceSubView('bank-accounts')}
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-center">
+                    <div className="p-2 bg-orange-100 rounded-lg">
+                      <CreditCard className="w-6 h-6 text-orange-600" />
+                    </div>
+                    <div className="ml-4">
+                      <h3 className="font-medium text-gray-900">Банк. рахунки</h3>
+                      <p className="text-sm text-gray-500">Рахунки в банках</p>
+                    </div>
                   </div>
-                  <div className="ml-4">
-                    <h3 className="font-medium text-gray-900">Банк. рахунки</h3>
-                    <p className="text-sm text-gray-500">Рахунки в банках</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
           {/* Finance Module Content */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Фінансовий облік - Основні функції</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8">
-                <Calculator className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Фінансовий модуль активний</h3>
-                <p className="text-gray-500 mb-6">
-                  Backend APIs для фінансового обліку повністю функціональні:<br/>
-                  ✅ План рахунків<br/>
-                  ✅ Контрагенти<br/>
-                  ✅ Журнал проводок<br/>
-                  ✅ Банківські рахунки
-                </p>
-                <p className="text-sm text-gray-400">
-                  Детальний UI для роботи з фінансовими даними буде додано в наступних ітераціях
-                </p>
+          {financeSubView === 'overview' && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Фінансовий облік - Основні функції</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8">
+                  <Calculator className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Система фінансового обліку</h3>
+                  <p className="text-gray-500 mb-6">
+                    Повнофункціональний модуль бухгалтерського та фінансового обліку:<br/>
+                    ✅ План рахунків з українською класифікацією<br/>
+                    ✅ Управління контрагентами (клієнти та постачальники)<br/>
+                    ✅ Журнал проводок з подвійним записом<br/>
+                    ✅ Банківські рахунки та операції
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    Оберіть розділ для детальної роботи з фінансовими даними
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Chart of Accounts */}
+          {financeSubView === 'chart-of-accounts' && (
+            <div>
+              <div className="mb-6">
+                <Button 
+                  variant="ghost" 
+                  onClick={() => setFinanceSubView('overview')}
+                  className="text-gray-600 hover:text-gray-900"
+                >
+                  ← Назад до фінансового обліку
+                </Button>
               </div>
-            </CardContent>
-          </Card>
+              <ChartOfAccounts user={user} />
+            </div>
+          )}
+
+          {/* Counterparties */}
+          {financeSubView === 'counterparties' && (
+            <div>
+              <div className="mb-6">
+                <Button 
+                  variant="ghost" 
+                  onClick={() => setFinanceSubView('overview')}
+                  className="text-gray-600 hover:text-gray-900"
+                >
+                  ← Назад до фінансового обліку
+                </Button>
+              </div>
+              <Counterparties user={user} />
+            </div>
+          )}
+
+          {/* Journal Entries */}
+          {financeSubView === 'journal-entries' && (
+            <div>
+              <div className="mb-6">
+                <Button 
+                  variant="ghost" 
+                  onClick={() => setFinanceSubView('overview')}
+                  className="text-gray-600 hover:text-gray-900"
+                >
+                  ← Назад до фінансового обліку
+                </Button>
+              </div>
+              <JournalEntries user={user} />
+            </div>
+          )}
+
+          {/* Bank Accounts */}
+          {financeSubView === 'bank-accounts' && (
+            <div>
+              <div className="mb-6">
+                <Button 
+                  variant="ghost" 
+                  onClick={() => setFinanceSubView('overview')}
+                  className="text-gray-600 hover:text-gray-900"
+                >
+                  ← Назад до фінансового обліку
+                </Button>
+              </div>
+              <BankAccounts user={user} />
+            </div>
+          )}
         </div>
       </div>
     )
