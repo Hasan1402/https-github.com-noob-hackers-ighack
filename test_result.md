@@ -678,15 +678,11 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Complete ERP System Frontend Testing"
-    - "Authentication System Fix"
-    - "Missing HR and Business Trips Views"
-  stuck_tasks:
-    - "Authentication System"
-    - "Document Upload Interface"
-    - "HR View Implementation"
-    - "Business Trips View Implementation"
-  test_all: true
+    - "Nova Poshta SSO Authentication System"
+    - "Nova Poshta SSO HR Management System"
+    - "Nova Poshta SSO System Initialization"
+  stuck_tasks: []
+  test_all: false
   test_priority: "high_first"
 
 agent_communication:
