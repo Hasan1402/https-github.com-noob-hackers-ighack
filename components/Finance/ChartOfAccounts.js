@@ -568,7 +568,7 @@ export default function ChartOfAccounts({ user }) {
                 <SelectValue placeholder="Клас рахунків" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Всі класи</SelectItem>
+                <SelectItem value="all">Всі класи</SelectItem>
                 <SelectItem value="1">Клас 1: Необоротні активи</SelectItem>
                 <SelectItem value="2">Клас 2: Оборотні активи</SelectItem>
                 <SelectItem value="3">Клас 3: Витрати та амортизація</SelectItem>
