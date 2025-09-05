@@ -1061,6 +1061,86 @@ export default function App() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Management Accounting */}
+            <Card 
+              className="hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => setCurrentView('management-accounting')}
+            >
+              <CardContent className="p-4">
+                <div className="flex flex-col items-center text-center">
+                  <div className="p-2 bg-purple-100 rounded-lg mb-2">
+                    <Calculator className="w-6 h-6 text-purple-600" />
+                  </div>
+                  <h3 className="font-medium text-gray-900 text-sm">Управлін. облік</h3>
+                  <p className="text-xs text-gray-500">Внутрішній облік</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Purchases & Supply */}
+            <Card 
+              className="hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => setCurrentView('purchases')}
+            >
+              <CardContent className="p-4">
+                <div className="flex flex-col items-center text-center">
+                  <div className="p-2 bg-teal-100 rounded-lg mb-2">
+                    <ShoppingCart className="w-6 h-6 text-teal-600" />
+                  </div>
+                  <h3 className="font-medium text-gray-900 text-sm">Закупки</h3>
+                  <p className="text-xs text-gray-500">Постачання</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Warehouse & Logistics */}
+            <Card 
+              className="hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => setCurrentView('warehouse')}
+            >
+              <CardContent className="p-4">
+                <div className="flex flex-col items-center text-center">
+                  <div className="p-2 bg-amber-100 rounded-lg mb-2">
+                    <Warehouse className="w-6 h-6 text-amber-600" />
+                  </div>
+                  <h3 className="font-medium text-gray-900 text-sm">Склад</h3>
+                  <p className="text-xs text-gray-500">Логістика</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Production */}
+            <Card 
+              className="hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => setCurrentView('production')}
+            >
+              <CardContent className="p-4">
+                <div className="flex flex-col items-center text-center">
+                  <div className="p-2 bg-slate-100 rounded-lg mb-2">
+                    <Factory className="w-6 h-6 text-slate-600" />
+                  </div>
+                  <h3 className="font-medium text-gray-900 text-sm">Виробництво</h3>
+                  <p className="text-xs text-gray-500">Планування</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Project Management */}
+            <Card 
+              className="hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => setCurrentView('projects')}
+            >
+              <CardContent className="p-4">
+                <div className="flex flex-col items-center text-center">
+                  <div className="p-2 bg-cyan-100 rounded-lg mb-2">
+                    <Briefcase className="w-6 h-6 text-cyan-600" />
+                  </div>
+                  <h3 className="font-medium text-gray-900 text-sm">Проекти</h3>
+                  <p className="text-xs text-gray-500">Управління</p>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Recent Activities */}
