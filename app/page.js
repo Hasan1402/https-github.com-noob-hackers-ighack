@@ -106,6 +106,11 @@ export default function App() {
 
   // Load data when user changes or view changes
   useEffect(() => {
+    // Reset finance subview when switching views
+    if (currentView !== 'finance') {
+      setFinanceSubView('overview')
+    }
+    
     if (user) {
       if (currentView === 'documents') {
         loadDocuments()
