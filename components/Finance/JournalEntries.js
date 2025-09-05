@@ -187,7 +187,7 @@ export default function JournalEntries({ user }) {
       )
     }
 
-    if (filterStatus) {
+    if (filterStatus && filterStatus !== 'all') {
       filtered = filtered.filter(entry => entry.status === filterStatus)
     }
 
