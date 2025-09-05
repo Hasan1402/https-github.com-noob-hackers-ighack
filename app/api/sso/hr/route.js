@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server'
-import { verifyToken, hasPermission, hasAccessLevel } from '../../../lib/ssoAuth'
-import User from '../../../lib/models/User'
-import Tenant from '../../../lib/models/Tenant'
-import { Role } from '../../../lib/models/Role'
-import { logAuditEvent } from '../../../lib/auditLogger'
-import connectDB from '../../../lib/mongodb'
+import { verifyToken, hasPermission, hasAccessLevel } from '../../../../lib/ssoAuth'
+import User from '../../../../lib/models/User'
+import Tenant from '../../../../lib/models/Tenant'
+import { Role } from '../../../../lib/models/Role'
+import { logAuditEvent } from '../../../../lib/auditLogger'
+import connectDB from '../../../../lib/mongodb'
 
 // Middleware for authentication
 async function authenticate(request) {
