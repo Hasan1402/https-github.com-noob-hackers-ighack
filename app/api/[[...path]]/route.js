@@ -42,12 +42,31 @@ const JWT_SECRET = process.env.JWT_SECRET || 'tis-kis-secret-key-2024'
 
 // Helper function to verify JWT token (updated for SSO compatibility)
 function verifyToken(request) {
+  // First, try to get token from Authorization header
   const authHeader = request.headers.get('authorization')
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  let token = null
+  
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    token = authHeader.substring(7)
+  } else {
+    // If no Authorization header, try to get token from cookies
+    const cookieHeader = request.headers.get('cookie')
+    if (cookieHeader) {
+      const cookies = cookieHeader.split(';').reduce((acc, cookie) => {
+        const [key, value] = cookie.trim().split('=')
+        acc[key] = value
+        return acc
+      }, {})
+      
+      // Try different cookie names that SSO might use
+      token = cookies.accessToken || cookies.token || cookies.authToken
+    }
+  }
+  
+  if (!token) {
     return null
   }
 
-  const token = authHeader.substring(7)
   try {
     // Try SSO token first (new format)
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret')
