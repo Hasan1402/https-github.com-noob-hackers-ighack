@@ -53,7 +53,7 @@ class CRMBackendTester:
             
             # Try SSO login first
             sso_response = requests.post(
-                f"{BASE_URL}/sso/auth/login",
+                f"{BASE_URL}/sso/auth",
                 json=TEST_CREDENTIALS,
                 timeout=TIMEOUT
             )
