@@ -478,7 +478,7 @@ export default function DealsManagement({ user }) {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Виграні</p>
+                <p className="text-sm text-gray-600">Виграно</p>
                 <p className="text-2xl font-bold text-green-600">{stats.closedWon}</p>
               </div>
               <CheckCircle className="w-8 h-8 text-green-600" />
