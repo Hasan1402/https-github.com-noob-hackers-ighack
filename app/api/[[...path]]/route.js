@@ -40,7 +40,7 @@ function handleCORS(response) {
 // JWT secret - in production, use a proper secret from env
 const JWT_SECRET = process.env.JWT_SECRET || 'tis-kis-secret-key-2024'
 
-// Helper function to verify JWT token
+// Helper function to verify JWT token (updated for SSO compatibility)
 function verifyToken(request) {
   const authHeader = request.headers.get('authorization')
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -49,9 +49,32 @@ function verifyToken(request) {
 
   const token = authHeader.substring(7)
   try {
-    return jwt.verify(token, JWT_SECRET)
+    // Try SSO token first (new format)
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret')
+    
+    // If it's an SSO token, return user info in expected format
+    if (decoded.sub && decoded.tenantId && decoded.type === 'access') {
+      return {
+        userId: decoded.sub,
+        email: decoded.email,
+        tenantId: decoded.tenantId,
+        tenantSlug: decoded.tenantSlug,
+        roles: decoded.roles,
+        accessLevel: decoded.accessLevel,
+        isSSO: true
+      }
+    }
+    
+    // Fallback to old format for backwards compatibility
+    return decoded
   } catch (error) {
-    return null
+    // Try legacy JWT secret as fallback
+    try {
+      return jwt.verify(token, 'tis-kis-secret-key-2024')
+    } catch (legacyError) {
+      console.error('Token verification failed:', error.message)
+      return null
+    }
   }
 }
 
