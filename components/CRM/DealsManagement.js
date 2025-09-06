@@ -586,6 +586,49 @@ export default function DealsManagement({ user }) {
         )}
       </div>
 
+      {/* Deal Edit Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Редагувати угоду</DialogTitle>
+          </DialogHeader>
+
+          <DealForm
+            form={dealForm}
+            setForm={setDealForm}
+            onSubmit={async () => {
+              try {
+                setIsLoading(true)
+                
+                const updatedDeal = {
+                  ...selectedDeal,
+                  ...dealForm,
+                  updatedAt: new Date().toISOString()
+                }
+
+                setDeals(prev => prev.map(deal => 
+                  deal.id === selectedDeal.id ? updatedDeal : deal
+                ))
+                setShowEditDialog(false)
+                resetDealForm()
+                toast.success('Угоду оновлено успішно')
+              } catch (error) {
+                console.error('Error updating deal:', error)
+                toast.error('Помилка оновлення угоди')
+              } finally {
+                setIsLoading(false)
+              }
+            }}
+            onCancel={() => {
+              setShowEditDialog(false)
+              resetDealForm()
+            }}
+            isLoading={isLoading}
+            isEdit={true}
+          />
+        </DialogContent>
+      </Dialog>
+
       {/* Deal Details Dialog */}
       <Dialog open={showDetailsDialog} onOpenChange={setShowDetailsDialog}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
