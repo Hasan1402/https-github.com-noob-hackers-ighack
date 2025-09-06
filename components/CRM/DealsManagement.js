@@ -559,7 +559,7 @@ export default function DealsManagement({ user }) {
             
             <Select value={filterStage} onValueChange={setFilterStage}>
               <SelectTrigger className="w-full md:w-48">
-                <SelectValue placeholder="Етап" />
+                <SelectValue placeholder="Етап угоди" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Всі етапи</SelectItem>
