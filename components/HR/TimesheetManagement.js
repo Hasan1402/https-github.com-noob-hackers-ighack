@@ -274,7 +274,7 @@ export default function TimesheetManagement({ user }) {
                 </Button>
                 
                 <h3 className="text-lg font-medium min-w-[200px] text-center">
-                  {format(currentDate, 'MMMM yyyy', { locale: uk })}
+                  {format(currentDate, 'MMMM yyyy р.', { locale: uk })}
                 </h3>
                 
                 <Button 
