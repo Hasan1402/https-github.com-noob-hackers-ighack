@@ -69,7 +69,15 @@ export default function LoginForm({ onLoginSuccess }) {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 p-3 bg-red-100 rounded-full w-16 h-16 flex items-center justify-center">
-            <Building className="w-8 h-8 text-red-600" />
+            <svg viewBox="0 0 200 80" className="w-10 h-8 text-red-600" fill="currentColor">
+              {/* Nova Poshta Logo */}
+              <path d="M15 15 L50 15 L50 25 L25 25 L25 35 L45 35 L45 45 L25 45 L25 55 L50 55 L50 65 L15 65 Z" />
+              <path d="M60 15 L70 15 L85 45 L100 15 L110 15 L110 65 L100 65 L100 35 L90 55 L80 55 L70 35 L70 65 L60 65 Z" />
+              <circle cx="130" cy="40" r="25" strokeWidth="8" stroke="currentColor" fill="none" />
+              <path d="M120 40 L125 45 L140 30" strokeWidth="4" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+              <text x="165" y="30" fontSize="12" fontWeight="bold" fill="currentColor">NOVA</text>
+              <text x="165" y="50" fontSize="12" fontWeight="bold" fill="currentColor">POSHTA</text>
+            </svg>
           </div>
           <CardTitle className="text-2xl font-bold text-gray-900">
             Nova KIC
