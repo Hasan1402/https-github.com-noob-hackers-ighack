@@ -1,23 +1,25 @@
 #!/usr/bin/env python3
 """
-Comprehensive Backend API Testing for ТИС КІС System
-Testing Financial Accounting and CRM modules, HR and Personnel Management APIs, 
-Calendar Events API, Tasks Management API, and Notifications API
-Plus existing authentication, user management, and document management
+Nova Poshta ERP - CRM Backend APIs Testing
+Testing CRM Deals (Opportunities), Products, and Leads APIs
 """
 
 import requests
 import json
-import os
-import tempfile
 import time
 from datetime import datetime, timedelta
-import uuid
 
-# Configuration - use external URL for Nova Poshta ERP testing
+# Configuration
 BASE_URL = "https://logistics-crm-app.preview.emergentagent.com/api"
+TIMEOUT = 30
 
-class TISKISBackendTester:
+# Test credentials for Nova Poshta
+TEST_CREDENTIALS = {
+    "email": "admin@novaposhta.ua",
+    "password": "NovaPoshtaAdmin2025!"
+}
+
+class CRMBackendTester:
     def __init__(self):
         self.base_url = BASE_URL
         self.session = requests.Session()
