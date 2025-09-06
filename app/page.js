@@ -722,8 +722,27 @@ export default function App() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <Building className="w-16 h-16 mx-auto mb-4 text-blue-600 animate-pulse" />
-          <h2 className="text-xl font-semibold text-gray-900">Нова Пошта ERP</h2>
+          <div className="mx-auto mb-4 p-4 bg-white rounded-full w-20 h-20 flex items-center justify-center shadow-lg animate-pulse">
+            <svg viewBox="0 0 100 100" className="w-12 h-12" fill="#E53E3E">
+              {/* Official Nova Poshta Logo - Four directional arrows */}
+              
+              {/* Top Arrow */}
+              <path d="M50 5 L35 25 L42 25 L42 35 L58 35 L58 25 L65 25 Z" />
+              
+              {/* Bottom Arrow */}
+              <path d="M50 95 L65 75 L58 75 L58 65 L42 65 L42 75 L35 75 Z" />
+              
+              {/* Left Arrow */}
+              <path d="M5 50 L25 35 L25 42 L35 42 L35 58 L25 58 L25 65 Z" />
+              
+              {/* Right Arrow */}
+              <path d="M95 50 L75 65 L75 58 L65 58 L65 42 L75 42 L75 35 Z" />
+              
+              {/* Center square */}
+              <rect x="42" y="42" width="16" height="16" rx="2" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-semibold text-gray-900">Nova Poshta ERP</h2>
           <p className="text-gray-600">Завантаження системи...</p>
         </div>
       </div>
