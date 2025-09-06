@@ -79,25 +79,83 @@ export default function TimesheetManagement({ user }) {
   const fetchTimesheetData = async () => {
     setIsLoading(true)
     try {
-      // Mock timesheet data - in real app, fetch from API
-      const monthStart = startOfMonth(currentDate)
-      const monthEnd = endOfMonth(currentDate)
-      const days = eachDayOfInterval({ start: monthStart, end: monthEnd })
-
-      const mockData = {}
-      days.forEach(day => {
-        const dayKey = format(day, 'yyyy-MM-dd')
+      // Fetch real timesheet data from API
+      const month = format(currentDate, 'yyyy-MM')
+      const response = await fetch(`/api/timesheet/monthly?month=${month}&department=all`, {
+        credentials: 'include'
+      })
+      
+      if (response.ok) {
+        const result = await response.json()
+        console.log('Timesheet API response:', result)
         
-        if (isWeekend(day)) {
-          mockData[dayKey] = { code: 'В', hours: 0, note: '' }
-        } else {
-          // Random work patterns for demonstration
-          const rand = Math.random()
-          if (rand > 0.95) {
-            mockData[dayKey] = { code: 'Лк', hours: 0, note: 'Лікарняний' }
-          } else if (rand > 0.90) {
-            mockData[dayKey] = { code: 'Вп', hours: 0, note: 'Відпустка' }
-          } else if (rand > 0.85) {
+        // Convert API data to component format
+        const timesheetMap = {}
+        
+        if (result.employees && result.employees.length > 0) {
+          // Find current employee data
+          const currentEmp = result.employees.find(emp => emp.employee.id === selectedEmployee) 
+            || result.employees[0] // fallback to first employee if current not found
+          
+          if (currentEmp && currentEmp.dailyEntries) {
+            currentEmp.dailyEntries.forEach(entry => {
+              const dayKey = format(new Date(entry.date), 'yyyy-MM-dd')
+              
+              // Map status to work codes
+              let code = 'Я' // default work day
+              let hours = entry.workHours || 8
+              let note = entry.comments || ''
+              
+              if (entry.status === 'absent') {
+                if (entry.absenceType === 'sick') {
+                  code = 'Лк'
+                  hours = 0
+                } else if (entry.absenceType === 'vacation') {
+                  code = 'Вп' 
+                  hours = 0
+                } else {
+                  code = 'Н' // absent
+                  hours = 0
+                }
+              } else if (entry.dayType === 'weekend') {
+                code = 'В'
+                hours = 0
+              } else if (entry.dayType === 'holiday') {
+                code = 'С'
+                hours = 0
+              }
+              
+              timesheetMap[dayKey] = { code, hours, note }
+            })
+          }
+        }
+        
+        setTimesheetData(timesheetMap)
+        
+        // Update employees list if available
+        if (result.employees) {
+          const empList = result.employees.map(emp => ({
+            id: emp.employee.id,
+            name: emp.employee.fullName,
+            department: emp.employee.department,
+            position: emp.employee.position || 'Співrobітник'
+          }))
+          setEmployees(empList)
+        }
+      } else {
+        console.error('Failed to fetch timesheet data:', response.status)
+        // Fallback to basic structure
+        const monthStart = startOfMonth(currentDate)
+        const monthEnd = endOfMonth(currentDate)
+        const days = eachDayOfInterval({ start: monthStart, end: monthEnd })
+
+        const fallbackData = {}
+        days.forEach(day => {
+          const dayKey = format(day, 'yyyy-MM-dd')
+          
+          if (isWeekend(day)) {
+            fallbackData[dayKey] = { code: 'В', hours: 0, note: '' }
+          } else {
             mockData[dayKey] = { code: 'Пн', hours: 10, note: 'Понаднормові' }
           } else {
             mockData[dayKey] = { code: 'Я', hours: 8, note: '' }
