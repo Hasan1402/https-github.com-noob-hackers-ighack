@@ -28,6 +28,8 @@ import {
   Image as ImageIcon
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { format } from 'date-fns'
+import { uk } from 'date-fns/locale'
 
 export default function ProductsManagement({ user }) {
   const [products, setProducts] = useState([])
