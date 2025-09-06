@@ -108,9 +108,12 @@ export default function App() {
 
   // Load data when user changes or view changes
   useEffect(() => {
-    // Reset finance subview when switching views
+    // Reset subviews when switching views
     if (currentView !== 'finance') {
       setFinanceSubView('overview')
+    }
+    if (currentView !== 'crm') {
+      setCrmSubView('overview')
     }
     
     if (user) {
