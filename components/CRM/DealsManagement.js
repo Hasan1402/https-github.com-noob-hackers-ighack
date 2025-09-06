@@ -889,7 +889,7 @@ function DealForm({ form, setForm, onSubmit, onCancel, isLoading = false, isEdit
           Скасувати
         </Button>
         <Button onClick={onSubmit} disabled={isLoading} className="bg-red-600 hover:bg-red-700">
-          {isLoading ? 'Створення...' : 'Створити угоду'}
+          {isLoading ? (isEdit ? 'Оновлення...' : 'Створення...') : (isEdit ? 'Оновити угоду' : 'Створити угоду')}
         </Button>
       </div>
     </div>
