@@ -563,12 +563,12 @@ export default function DealsManagement({ user }) {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Всі етапи</SelectItem>
-                <SelectItem value="negotiation">Перемовини</SelectItem>
+                <SelectItem value="negotiation">Переговори</SelectItem>
                 <SelectItem value="proposal">Пропозиція</SelectItem>
                 <SelectItem value="invoice_sent">Рахунок відправлено</SelectItem>
                 <SelectItem value="payment_pending">Очікування оплати</SelectItem>
-                <SelectItem value="closed_won">Виграні</SelectItem>
-                <SelectItem value="closed_lost">Програні</SelectItem>
+                <SelectItem value="closed_won">Закрито (виграно)</SelectItem>
+                <SelectItem value="closed_lost">Закрито (програно)</SelectItem>
               </SelectContent>
             </Select>
             
