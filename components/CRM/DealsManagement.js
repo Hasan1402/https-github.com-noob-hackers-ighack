@@ -585,6 +585,19 @@ export default function DealsManagement({ user }) {
           ))
         )}
       </div>
+
+      {/* Deal Details Dialog */}
+      <Dialog open={showDetailsDialog} onOpenChange={setShowDetailsDialog}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Деталі угоди</DialogTitle>
+          </DialogHeader>
+
+          {selectedDeal && (
+            <DealDetails deal={selectedDeal} getStageBadge={getStageBadge} />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
