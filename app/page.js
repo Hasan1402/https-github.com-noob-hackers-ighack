@@ -77,6 +77,7 @@ export default function App() {
   const [workCodes, setWorkCodes] = useState({})
   const [selectedDepartment, setSelectedDepartment] = useState('all')
   const [financeSubView, setFinanceSubView] = useState('overview')
+  const [crmSubView, setCrmSubView] = useState('overview')
 
   // Check for existing authentication on mount
   useEffect(() => {
