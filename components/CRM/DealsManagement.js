@@ -743,7 +743,7 @@ function DealCard({ deal, onViewDetails, onEdit, getStageBadge, getStageIcon }) 
 }
 
 // Deal Form Component
-function DealForm({ form, setForm, onSubmit, onCancel, isLoading = false }) {
+function DealForm({ form, setForm, onSubmit, onCancel, isLoading = false, isEdit = false }) {
   const updateForm = (field, value) => {
     setForm(prev => ({ ...prev, [field]: value }))
   }
