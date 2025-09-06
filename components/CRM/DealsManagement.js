@@ -852,3 +852,233 @@ function DealForm({ form, setForm, onSubmit, onCancel, isLoading = false }) {
     </div>
   )
 }
+// Deal Details Component
+function DealDetails({ deal, getStageBadge }) {
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-start">
+        <div>
+          <h3 className="text-xl font-bold text-gray-900 mb-2">{deal.title}</h3>
+          <div className="flex items-center space-x-3">
+            {getStageBadge(deal.stage)}
+            <span className="text-sm text-gray-500">
+              Ймовірність: {deal.probability}%
+            </span>
+          </div>
+        </div>
+        <div className="text-right">
+          <p className="text-2xl font-bold text-green-600">
+            {deal.amount.toLocaleString()} ₴
+          </p>
+          <p className="text-sm text-gray-500">{deal.currency}</p>
+        </div>
+      </div>
+
+      {/* Client Information */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <Users className="w-5 h-5" />
+            <span>Інформація про клієнта</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label className="text-sm font-medium text-gray-600">Ім'я клієнта</Label>
+              <p className="text-gray-900">{deal.clientName}</p>
+            </div>
+            <div>
+              <Label className="text-sm font-medium text-gray-600">Тип клієнта</Label>
+              <p className="text-gray-900">
+                {deal.clientType === 'individual' ? 'Фізична особа' : 'Юридична особа'}
+              </p>
+            </div>
+          </div>
+          
+          {deal.clientCompany && (
+            <div>
+              <Label className="text-sm font-medium text-gray-600">Компанія</Label>
+              <p className="text-gray-900">{deal.clientCompany}</p>
+            </div>
+          )}
+          
+          <div className="grid grid-cols-2 gap-4">
+            {deal.clientEmail && (
+              <div>
+                <Label className="text-sm font-medium text-gray-600">Email</Label>
+                <p className="text-gray-900">{deal.clientEmail}</p>
+              </div>
+            )}
+            {deal.clientPhone && (
+              <div>
+                <Label className="text-sm font-medium text-gray-600">Телефон</Label>
+                <p className="text-gray-900">{deal.clientPhone}</p>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Deal Information */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <TrendingUp className="w-5 h-5" />
+            <span>Деталі угоди</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label className="text-sm font-medium text-gray-600">Відповідальний</Label>
+              <p className="text-gray-900">{deal.assignedToName}</p>
+            </div>
+            <div>
+              <Label className="text-sm font-medium text-gray-600">Створено</Label>
+              <p className="text-gray-900">
+                {format(new Date(deal.createdAt), 'dd MMMM yyyy, HH:mm', { locale: uk })}
+              </p>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            {deal.expectedCloseDate && (
+              <div>
+                <Label className="text-sm font-medium text-gray-600">Очікувана дата закриття</Label>
+                <p className="text-gray-900">
+                  {format(new Date(deal.expectedCloseDate), 'dd MMMM yyyy', { locale: uk })}
+                </p>
+              </div>
+            )}
+            {deal.actualCloseDate && (
+              <div>
+                <Label className="text-sm font-medium text-gray-600">Фактична дата закриття</Label>
+                <p className="text-gray-900">
+                  {format(new Date(deal.actualCloseDate), 'dd MMMM yyyy, HH:mm', { locale: uk })}
+                </p>
+              </div>
+            )}
+          </div>
+          
+          <div>
+            <Label className="text-sm font-medium text-gray-600">Останнє оновлення</Label>
+            <p className="text-gray-900">
+              {format(new Date(deal.updatedAt), 'dd MMMM yyyy, HH:mm', { locale: uk })}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Products/Services */}
+      {deal.products && deal.products.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <BarChart3 className="w-5 h-5" />
+              <span>Послуги в угоді</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {deal.products.map((product, index) => (
+                <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                  <div>
+                    <p className="font-medium text-gray-900">{product.productName}</p>
+                    <p className="text-sm text-gray-600">
+                      Кількість: {product.quantity} × {product.unitPrice.toLocaleString()} ₴
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-bold text-gray-900">
+                      {product.totalPrice.toLocaleString()} ₴
+                    </p>
+                    {product.discount > 0 && (
+                      <p className="text-sm text-green-600">
+                        Знижка: {product.discount}%
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+              
+              <div className="border-t pt-3 mt-3">
+                <div className="flex justify-between items-center">
+                  <span className="font-bold text-gray-900">Загальна сума:</span>
+                  <span className="font-bold text-xl text-green-600">
+                    {deal.amount.toLocaleString()} ₴
+                  </span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Documents */}
+      {deal.documents && deal.documents.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Download className="w-5 h-5" />
+              <span>Документи</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {deal.documents.map((doc, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div>
+                    <p className="font-medium text-gray-900">{doc.name}</p>
+                    <p className="text-sm text-gray-600">
+                      Завантажено: {format(new Date(doc.uploadedAt), 'dd MMM yyyy, HH:mm', { locale: uk })}
+                    </p>
+                  </div>
+                  <Badge variant="outline">
+                    {doc.type === 'proposal' ? 'Пропозиція' :
+                     doc.type === 'contract' ? 'Договір' :
+                     doc.type === 'invoice' ? 'Рахунок' : 'Інше'}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Notes */}
+      {deal.notes && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <AlertCircle className="w-5 h-5" />
+              <span>Примітки</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-gray-700 whitespace-pre-wrap">{deal.notes}</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Tags */}
+      {deal.tags && deal.tags.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Теги</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              {deal.tags.map((tag, index) => (
+                <Badge key={index} variant="secondary">
+                  {tag}
+                </Badge>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  )
+}
