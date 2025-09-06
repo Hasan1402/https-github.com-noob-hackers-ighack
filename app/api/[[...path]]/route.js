@@ -23,7 +23,7 @@ async function connectToMongo() {
   if (!client) {
     client = new MongoClient(process.env.MONGO_URL)
     await client.connect()
-    db = client.db('your_database_name')  // Use existing database name
+    db = client.db('tis_kis_erp')  // Use correct database name
   }
   return db
 }
