@@ -261,8 +261,8 @@ export default function EmployeeManagement({ user }) {
       employee.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       employee.employeeId?.toLowerCase().includes(searchTerm.toLowerCase())
     
-    const matchesDepartment = !filterDepartment || employee.department === filterDepartment
-    const matchesAccessLevel = !filterAccessLevel || employee.accessLevel === filterAccessLevel
+    const matchesDepartment = !filterDepartment || filterDepartment === 'all' || employee.department === filterDepartment
+    const matchesAccessLevel = !filterAccessLevel || filterAccessLevel === 'all' || employee.accessLevel === filterAccessLevel
     
     return matchesSearch && matchesDepartment && matchesAccessLevel
   })
