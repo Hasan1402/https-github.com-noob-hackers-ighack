@@ -231,6 +231,14 @@ export default function DealsManagement({ user }) {
         tags: ['IT', 'Closed', 'Satisfied'],
         createdAt: '2024-11-15T14:30:00Z',
         updatedAt: '2024-12-01T18:00:00Z',
+        documents: [
+          {
+            name: 'Акт виконаних робіт',
+            type: 'other',
+            uploadedAt: '2024-12-01T18:00:00Z',
+            uploadedBy: 'admin'
+          }
+        ],
         products: [
           {
             productId: 'service-006',
