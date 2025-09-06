@@ -44,6 +44,8 @@ import Counterparties from '../components/Finance/Counterparties'
 import JournalEntries from '../components/Finance/JournalEntries'
 import BankAccounts from '../components/Finance/BankAccounts'
 import LeadsManagement from '../components/CRM/LeadsManagement'
+import DealsManagement from '../components/CRM/DealsManagement'
+import ProductsManagement from '../components/CRM/ProductsManagement'
 
 export default function App() {
   const [currentView, setCurrentView] = useState('auth')
