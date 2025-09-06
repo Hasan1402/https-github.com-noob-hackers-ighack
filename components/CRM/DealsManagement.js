@@ -333,6 +333,7 @@ export default function DealsManagement({ user }) {
         ...dealForm,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
+        documents: [],
         products: []
       }
 
