@@ -68,15 +68,23 @@ export default function LoginForm({ onLoginSuccess }) {
     <div className="min-h-screen bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 p-3 bg-red-100 rounded-full w-16 h-16 flex items-center justify-center">
-            <svg viewBox="0 0 200 80" className="w-10 h-8 text-red-600" fill="currentColor">
-              {/* Nova Poshta Logo */}
-              <path d="M15 15 L50 15 L50 25 L25 25 L25 35 L45 35 L45 45 L25 45 L25 55 L50 55 L50 65 L15 65 Z" />
-              <path d="M60 15 L70 15 L85 45 L100 15 L110 15 L110 65 L100 65 L100 35 L90 55 L80 55 L70 35 L70 65 L60 65 Z" />
-              <circle cx="130" cy="40" r="25" strokeWidth="8" stroke="currentColor" fill="none" />
-              <path d="M120 40 L125 45 L140 30" strokeWidth="4" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-              <text x="165" y="30" fontSize="12" fontWeight="bold" fill="currentColor">NOVA</text>
-              <text x="165" y="50" fontSize="12" fontWeight="bold" fill="currentColor">POSHTA</text>
+          <div className="mx-auto mb-4 p-2 bg-red-100 rounded-full w-16 h-16 flex items-center justify-center">
+            <svg viewBox="0 0 120 40" className="w-12 h-5 text-red-600" fill="currentColor">
+              {/* Nova Poshta Simplified Logo */}
+              {/* Letter N */}
+              <path d="M2 4 L2 16 L6 16 L6 10 L10 10 L10 16 L14 16 L14 4 L10 4 L10 8 L6 8 L6 4 Z" />
+              {/* Letter P */}
+              <path d="M18 4 L18 16 L22 16 L22 12 L26 12 Q28 12 28 10 L28 8 Q28 6 26 6 L22 6 L22 4 Z M22 8 L26 8 L26 10 L22 10 Z" />
+              {/* Checkmark in circle */}
+              <circle cx="40" cy="10" r="8" stroke="currentColor" strokeWidth="1.5" fill="none" />
+              <path d="M36 10 L38 12 L44 6" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+              {/* Decorative elements */}
+              <rect x="54" y="8" width="12" height="4" rx="2" />
+              <rect x="70" y="6" width="8" height="8" rx="4" />
+              <path d="M82 4 L90 10 L82 16 Z" />
+              {/* Mail/package icon */}
+              <rect x="95" y="6" width="12" height="8" rx="1" stroke="currentColor" strokeWidth="1" fill="none" />
+              <path d="M95 6 L101 11 L107 6" stroke="currentColor" strokeWidth="1" fill="none" />
             </svg>
           </div>
           <CardTitle className="text-2xl font-bold text-gray-900">
