@@ -68,23 +68,24 @@ export default function LoginForm({ onLoginSuccess }) {
     <div className="min-h-screen bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 p-3 bg-red-100 rounded-full w-16 h-16 flex items-center justify-center">
-            <svg viewBox="0 0 48 48" className="w-8 h-8 text-red-600" fill="currentColor">
-              {/* Nova Poshta Logo - Stylized NP with package/mail elements */}
+          <div className="mx-auto mb-4 p-3 bg-white rounded-full w-16 h-16 flex items-center justify-center shadow-lg">
+            <svg viewBox="0 0 100 100" className="w-10 h-10" fill="#E53E3E">
+              {/* Official Nova Poshta Logo - Four directional arrows */}
               
-              {/* Main letter N */}
-              <path d="M8 12 L8 36 L12 36 L12 26 L20 26 L20 36 L24 36 L24 12 L20 12 L20 22 L12 22 L12 12 Z" />
+              {/* Top Arrow */}
+              <path d="M50 5 L35 25 L42 25 L42 35 L58 35 L58 25 L65 25 Z" />
               
-              {/* Letter P with modern design */}
-              <path d="M28 12 L28 36 L32 36 L32 28 L38 28 Q42 28 42 24 L42 20 Q42 16 38 16 L32 16 L32 12 Z M32 20 L38 20 L38 24 L32 24 Z" />
+              {/* Bottom Arrow */}
+              <path d="M50 95 L65 75 L58 75 L58 65 L42 65 L42 75 L35 75 Z" />
               
-              {/* Package/mail symbol in bottom right */}
-              <rect x="34" y="30" width="10" height="6" rx="1" stroke="currentColor" strokeWidth="1" fill="none" />
-              <path d="M34 30 L39 33 L44 30" stroke="currentColor" strokeWidth="1" fill="none" />
+              {/* Left Arrow */}
+              <path d="M5 50 L25 35 L25 42 L35 42 L35 58 L25 58 L25 65 Z" />
               
-              {/* Decorative checkmark */}
-              <circle cx="40" cy="8" r="4" strokeWidth="1" stroke="currentColor" fill="none" />
-              <path d="M38 8 L39 9 L42 6" strokeWidth="1.5" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+              {/* Right Arrow */}
+              <path d="M95 50 L75 65 L75 58 L65 58 L65 42 L75 42 L75 35 Z" />
+              
+              {/* Center square (optional) */}
+              <rect x="42" y="42" width="16" height="16" rx="2" />
             </svg>
           </div>
           <CardTitle className="text-2xl font-bold text-gray-900">
