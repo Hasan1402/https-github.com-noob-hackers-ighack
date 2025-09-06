@@ -43,6 +43,7 @@ import ChartOfAccounts from '../components/Finance/ChartOfAccounts'
 import Counterparties from '../components/Finance/Counterparties'
 import JournalEntries from '../components/Finance/JournalEntries'
 import BankAccounts from '../components/Finance/BankAccounts'
+import LeadsManagement from '../components/CRM/LeadsManagement'
 
 export default function App() {
   const [currentView, setCurrentView] = useState('auth')
