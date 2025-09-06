@@ -156,14 +156,12 @@ export default function TimesheetManagement({ user }) {
           if (isWeekend(day)) {
             fallbackData[dayKey] = { code: 'В', hours: 0, note: '' }
           } else {
-            mockData[dayKey] = { code: 'Пн', hours: 10, note: 'Понаднормові' }
-          } else {
-            mockData[dayKey] = { code: 'Я', hours: 8, note: '' }
+            fallbackData[dayKey] = { code: 'Я', hours: 8, note: '' }
           }
-        }
-      })
+        })
 
-      setTimesheetData(mockData)
+        setTimesheetData(fallbackData)
+      }
     } catch (error) {
       console.error('Error fetching timesheet:', error)
       toast.error('Помилка завантаження табеля')
