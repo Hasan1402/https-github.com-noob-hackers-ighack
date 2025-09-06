@@ -145,6 +145,9 @@ export default function TimesheetManagement({ user }) {
           console.log('✅ Setting employees:', empList.length)
           setEmployees(empList)
         }
+        
+        // Success notification
+        toast.success(`Завантажено дані табеля: ${result.employees?.length || 0} співробітників`)
       } else {
         console.error('Failed to fetch timesheet data:', response.status)
         // Create fallback empty data for current month
