@@ -794,12 +794,12 @@ function DealForm({ form, setForm, onSubmit, onCancel, isLoading = false, isEdit
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="negotiation">Перемовини</SelectItem>
+              <SelectItem value="negotiation">Переговори</SelectItem>
               <SelectItem value="proposal">Пропозиція</SelectItem>
               <SelectItem value="invoice_sent">Рахунок відправлено</SelectItem>
               <SelectItem value="payment_pending">Очікування оплати</SelectItem>
-              <SelectItem value="closed_won">Виграна</SelectItem>
-              <SelectItem value="closed_lost">Програна</SelectItem>
+              <SelectItem value="closed_won">Закрито (виграно)</SelectItem>
+              <SelectItem value="closed_lost">Закрито (програно)</SelectItem>
             </SelectContent>
           </Select>
         </div>
