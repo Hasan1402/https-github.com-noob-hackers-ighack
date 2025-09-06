@@ -68,23 +68,23 @@ export default function LoginForm({ onLoginSuccess }) {
     <div className="min-h-screen bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 p-2 bg-red-100 rounded-full w-16 h-16 flex items-center justify-center">
-            <svg viewBox="0 0 120 40" className="w-12 h-5 text-red-600" fill="currentColor">
-              {/* Nova Poshta Simplified Logo */}
-              {/* Letter N */}
-              <path d="M2 4 L2 16 L6 16 L6 10 L10 10 L10 16 L14 16 L14 4 L10 4 L10 8 L6 8 L6 4 Z" />
-              {/* Letter P */}
-              <path d="M18 4 L18 16 L22 16 L22 12 L26 12 Q28 12 28 10 L28 8 Q28 6 26 6 L22 6 L22 4 Z M22 8 L26 8 L26 10 L22 10 Z" />
-              {/* Checkmark in circle */}
-              <circle cx="40" cy="10" r="8" stroke="currentColor" strokeWidth="1.5" fill="none" />
-              <path d="M36 10 L38 12 L44 6" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-              {/* Decorative elements */}
-              <rect x="54" y="8" width="12" height="4" rx="2" />
-              <rect x="70" y="6" width="8" height="8" rx="4" />
-              <path d="M82 4 L90 10 L82 16 Z" />
-              {/* Mail/package icon */}
-              <rect x="95" y="6" width="12" height="8" rx="1" stroke="currentColor" strokeWidth="1" fill="none" />
-              <path d="M95 6 L101 11 L107 6" stroke="currentColor" strokeWidth="1" fill="none" />
+          <div className="mx-auto mb-4 p-3 bg-red-100 rounded-full w-16 h-16 flex items-center justify-center">
+            <svg viewBox="0 0 48 48" className="w-8 h-8 text-red-600" fill="currentColor">
+              {/* Nova Poshta Logo - Stylized NP with package/mail elements */}
+              
+              {/* Main letter N */}
+              <path d="M8 12 L8 36 L12 36 L12 26 L20 26 L20 36 L24 36 L24 12 L20 12 L20 22 L12 22 L12 12 Z" />
+              
+              {/* Letter P with modern design */}
+              <path d="M28 12 L28 36 L32 36 L32 28 L38 28 Q42 28 42 24 L42 20 Q42 16 38 16 L32 16 L32 12 Z M32 20 L38 20 L38 24 L32 24 Z" />
+              
+              {/* Package/mail symbol in bottom right */}
+              <rect x="34" y="30" width="10" height="6" rx="1" stroke="currentColor" strokeWidth="1" fill="none" />
+              <path d="M34 30 L39 33 L44 30" stroke="currentColor" strokeWidth="1" fill="none" />
+              
+              {/* Decorative checkmark */}
+              <circle cx="40" cy="8" r="4" strokeWidth="1" stroke="currentColor" fill="none" />
+              <path d="M38 8 L39 9 L42 6" strokeWidth="1.5" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
           <CardTitle className="text-2xl font-bold text-gray-900">
