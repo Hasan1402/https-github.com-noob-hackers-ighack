@@ -87,7 +87,8 @@ export default function TimesheetManagement({ user }) {
       
       if (response.ok) {
         const result = await response.json()
-        console.log('Timesheet API response:', result)
+        console.log('✅ Timesheet API response:', result)
+        console.log('✅ Employees found:', result.employees?.length || 0)
         
         // Convert API data to component format
         const timesheetMap = {}
