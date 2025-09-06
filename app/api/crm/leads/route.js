@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import connectDB from '../../../../lib/mongodb'
 import { Lead, Activity } from '../../../../lib/models/CRM'
-import { verifyJWT } from '../../../../lib/ssoAuth'
+import { verifyToken } from '../../../../lib/ssoAuth'
 
 // GET /api/crm/leads - Отримати всі ліди
 export async function GET(request) {
