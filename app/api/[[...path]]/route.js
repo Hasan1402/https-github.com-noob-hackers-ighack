@@ -48,9 +48,12 @@ function verifyToken(request) {
   
   if (authHeader && authHeader.startsWith('Bearer ')) {
     token = authHeader.substring(7)
+    console.log('Found token in Authorization header:', token ? 'YES' : 'NO')
   } else {
     // If no Authorization header, try to get token from cookies
     const cookieHeader = request.headers.get('cookie')
+    console.log('Cookie header:', cookieHeader ? 'EXISTS' : 'NOT FOUND')
+    
     if (cookieHeader) {
       const cookies = cookieHeader.split(';').reduce((acc, cookie) => {
         const [key, value] = cookie.trim().split('=')
@@ -58,21 +61,29 @@ function verifyToken(request) {
         return acc
       }, {})
       
+      console.log('Available cookies:', Object.keys(cookies))
+      
       // Try different cookie names that SSO might use
-      token = cookies.accessToken || cookies.token || cookies.authToken
+      token = cookies.accessToken || cookies.token || cookies.authToken || cookies.access_token
+      console.log('Found token in cookies:', token ? 'YES' : 'NO')
     }
   }
   
   if (!token) {
+    console.log('No token found in request')
     return null
   }
+
+  console.log('Attempting to verify token, length:', token.length)
 
   try {
     // Try SSO token first (new format)
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret')
+    console.log('Successfully decoded token with SSO secret')
     
     // If it's an SSO token, return user info in expected format
     if (decoded.sub && decoded.tenantId && decoded.type === 'access') {
+      console.log('Valid SSO token found')
       return {
         userId: decoded.sub,
         email: decoded.email,
@@ -85,13 +96,17 @@ function verifyToken(request) {
     }
     
     // Fallback to old format for backwards compatibility
+    console.log('Using decoded token as legacy format')
     return decoded
   } catch (error) {
+    console.log('SSO token verification failed:', error.message)
     // Try legacy JWT secret as fallback
     try {
-      return jwt.verify(token, 'tis-kis-secret-key-2024')
+      const legacyDecoded = jwt.verify(token, 'tis-kis-secret-key-2024')
+      console.log('Successfully decoded token with legacy secret')
+      return legacyDecoded
     } catch (legacyError) {
-      console.error('Token verification failed:', error.message)
+      console.error('Both token verification methods failed. SSO error:', error.message, 'Legacy error:', legacyError.message)
       return null
     }
   }
