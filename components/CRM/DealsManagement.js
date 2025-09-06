@@ -401,7 +401,7 @@ export default function DealsManagement({ user }) {
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Угоди</h2>
-          <p className="text-gray-600">Управління продажними можливостями</p>
+          <p className="text-gray-600">Управління продажами та угодами</p>
         </div>
 
         <div className="flex space-x-2">
