@@ -502,7 +502,7 @@ export default function DealsManagement({ user }) {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Загальна вартість</p>
+                <p className="text-sm text-gray-600">Загальна сума</p>
                 <p className="text-xl font-bold text-purple-600">
                   {Math.round(stats.totalValue).toLocaleString()} ₴
                 </p>
