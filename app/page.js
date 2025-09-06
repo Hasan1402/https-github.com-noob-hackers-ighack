@@ -46,6 +46,7 @@ import BankAccounts from '../components/Finance/BankAccounts'
 import LeadsManagement from '../components/CRM/LeadsManagement'
 import DealsManagement from '../components/CRM/DealsManagement'
 import ProductsManagement from '../components/CRM/ProductsManagement'
+import BusinessTripManagement from '../components/BusinessTrips/BusinessTripManagement'
 
 export default function App() {
   const [currentView, setCurrentView] = useState('auth')
