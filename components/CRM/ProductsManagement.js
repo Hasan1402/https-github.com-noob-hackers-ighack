@@ -1013,3 +1013,231 @@ function ProductForm({ form, setForm, categories, onSubmit, onCancel, isLoading 
     </Tabs>
   )
 }
+
+// Product Details Component
+function ProductDetails({ product, getStockBadge }) {
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="border-b pb-4">
+        <div className="flex items-start justify-between mb-2">
+          <div>
+            <h3 className="text-xl font-bold text-gray-900">{product.name}</h3>
+            <p className="text-sm text-gray-500 font-mono mt-1">SKU: {product.sku}</p>
+          </div>
+          <div className="flex items-center space-x-2">
+            {getStockBadge(product)}
+            {!product.isActive && (
+              <Badge className="bg-gray-100 text-gray-800">Неактивний</Badge>
+            )}
+          </div>
+        </div>
+        
+        <div className="text-sm text-gray-500">
+          Створено: {format(new Date(product.createdAt), 'dd MMMM yyyy, HH:mm', { locale: uk })}
+          {product.updatedAt !== product.createdAt && (
+            <span className="ml-4">
+              Оновлено: {format(new Date(product.updatedAt), 'dd MMMM yyyy, HH:mm', { locale: uk })}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Main Info */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Basic Info */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Основна інформація</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex justify-between">
+              <span className="text-gray-600">Категорія:</span>
+              <span className="font-medium">{product.categoryName}</span>
+            </div>
+            
+            <div className="flex justify-between">
+              <span className="text-gray-600">Тип:</span>
+              <span className="font-medium">
+                {product.isService ? 'Послуга' : 'Товар'}
+              </span>
+            </div>
+            
+            <div className="flex justify-between">
+              <span className="text-gray-600">Одиниця:</span>
+              <span className="font-medium">{product.unit}</span>
+            </div>
+            
+            <div className="flex justify-between">
+              <span className="text-gray-600">ПДВ:</span>
+              <span className="font-medium">{product.vatRate}%</span>
+            </div>
+            
+            <div className="flex justify-between">
+              <span className="text-gray-600">Статус:</span>
+              <span className={`font-medium ${product.isActive ? 'text-green-600' : 'text-red-600'}`}>
+                {product.isActive ? 'Активний' : 'Неактивний'}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Pricing & Stock */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Ціни та залишки</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex justify-between">
+              <span className="text-gray-600">Ціна продажу:</span>
+              <span className="font-bold text-xl">
+                {product.price.toLocaleString()} ₴/{product.unit}
+              </span>
+            </div>
+            
+            <div className="flex justify-between">
+              <span className="text-gray-600">Собівартість:</span>
+              <span className="font-medium">
+                {product.cost.toLocaleString()} ₴/{product.unit}
+              </span>
+            </div>
+            
+            {product.price > 0 && product.cost > 0 && (
+              <div className="flex justify-between">
+                <span className="text-gray-600">Маржа:</span>
+                <span className="font-medium text-green-600">
+                  {Math.round(((product.price - product.cost) / product.price) * 100)}%
+                </span>
+              </div>
+            )}
+            
+            {!product.isService && (
+              <>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">В наявності:</span>
+                  <span className={`font-medium ${product.stockQuantity <= product.minStockLevel ? 'text-red-600' : 'text-gray-900'}`}>
+                    {product.stockQuantity} {product.unit}
+                  </span>
+                </div>
+                
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Мінімальний залишок:</span>
+                  <span className="font-medium">{product.minStockLevel} {product.unit}</span>
+                </div>
+                
+                {product.stockQuantity > 0 && product.cost > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Вартість запасів:</span>
+                    <span className="font-bold text-purple-600">
+                      {(product.stockQuantity * product.cost).toLocaleString()} ₴
+                    </span>
+                  </div>
+                )}
+              </>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Description */}
+      {product.description && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Опис</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-gray-700 whitespace-pre-wrap">{product.description}</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Images */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Зображення</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {product.images && product.images.length > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {product.images.map((image, index) => (
+                <div key={index} className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                  <img 
+                    src={image.url} 
+                    alt={image.alt || product.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-8">
+              <div className="text-center">
+                <ImageIcon className="w-12 h-12 mx-auto mb-2 text-gray-400" />
+                <p className="text-sm text-gray-500">Зображення не додані</p>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Stock Warning */}
+      {!product.isService && product.stockQuantity <= product.minStockLevel && (
+        <Card className="border-orange-200 bg-orange-50">
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-3">
+              <AlertTriangle className="w-6 h-6 text-orange-600" />
+              <div>
+                <h4 className="font-medium text-orange-800">Низький залишок товару</h4>
+                <p className="text-sm text-orange-700">
+                  Поточний залишок ({product.stockQuantity} {product.unit}) менший або дорівнює мінімальному рівню 
+                  ({product.minStockLevel} {product.unit}). Рекомендується поповнити запаси.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Product Analytics */}
+      {!product.isService && product.stockQuantity > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Аналітика товару</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="text-center p-3 bg-blue-50 rounded-lg">
+                <div className="text-2xl font-bold text-blue-600">{product.stockQuantity}</div>
+                <div className="text-sm text-blue-800">В наявності</div>
+              </div>
+              
+              <div className="text-center p-3 bg-green-50 rounded-lg">
+                <div className="text-2xl font-bold text-green-600">
+                  {(product.stockQuantity * product.cost).toLocaleString()}₴
+                </div>
+                <div className="text-sm text-green-800">Вартість запасів</div>
+              </div>
+              
+              <div className="text-center p-3 bg-purple-50 rounded-lg">
+                <div className="text-2xl font-bold text-purple-600">
+                  {product.price > 0 && product.cost > 0 
+                    ? Math.round(((product.price - product.cost) / product.price) * 100) + '%'
+                    : '0%'
+                  }
+                </div>
+                <div className="text-sm text-purple-800">Маржа</div>
+              </div>
+              
+              <div className="text-center p-3 bg-orange-50 rounded-lg">
+                <div className="text-2xl font-bold text-orange-600">
+                  {Math.max(0, product.minStockLevel - product.stockQuantity)}
+                </div>
+                <div className="text-sm text-orange-800">До мінімуму</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  )
+}
