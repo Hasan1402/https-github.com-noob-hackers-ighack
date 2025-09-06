@@ -490,7 +490,7 @@ export default function DealsManagement({ user }) {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Програні</p>
+                <p className="text-sm text-gray-600">Програно</p>
                 <p className="text-2xl font-bold text-red-600">{stats.closedLost}</p>
               </div>
               <XCircle className="w-8 h-8 text-red-600" />
