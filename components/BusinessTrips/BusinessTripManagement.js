@@ -743,3 +743,712 @@ export default function BusinessTripManagement({ user }) {
     </div>
   )
 }
+
+// Trip Card Component
+function TripCard({ trip, onViewDetails, onEdit, onViewExpenses, getStatusBadge, getPurposeText, getTransportIcon }) {
+  return (
+    <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
+      <CardContent className="p-6">
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex-1">
+            <div className="flex items-center space-x-2 mb-2">
+              <h3 className="font-medium text-gray-900">{trip.tripNumber}</h3>
+              {getStatusBadge(trip.status)}
+            </div>
+            <p className="text-sm text-gray-600 mb-1">{trip.employeeName}</p>
+            <p className="text-xs text-gray-500">{trip.departmentName}</p>
+          </div>
+          
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="flex space-x-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onViewDetails(trip)
+                }}
+              >
+                <Eye className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onEdit(trip)
+                }}
+              >
+                <Edit className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+        
+        <div className="space-y-3 mb-4" onClick={() => onViewDetails(trip)}>
+          <div className="flex items-start space-x-2">
+            <MapPin className="w-4 h-4 text-gray-400 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium">{trip.destination.city}</p>
+              <p className="text-xs text-gray-500">{trip.destination.facility}</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <CalendarIcon className="w-4 h-4 text-gray-400" />
+            <span className="text-sm">
+              {format(new Date(trip.departureDate), 'dd MMM', { locale: uk })} - {format(new Date(trip.returnDate), 'dd MMM yyyy', { locale: uk })}
+            </span>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            {getTransportIcon(trip.transportType)}
+            <span className="text-sm text-gray-600">
+              {getPurposeText(trip.purpose)}
+            </span>
+          </div>
+        </div>
+
+        <div className="bg-gray-50 p-3 rounded-lg">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-sm text-gray-600">Бюджет:</span>
+            <span className="font-bold text-lg">
+              {trip.estimatedBudget.total.toLocaleString()} ₴
+            </span>
+          </div>
+          
+          {trip.actualExpenses && trip.actualExpenses.total > 0 && (
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">Витрачено:</span>
+              <div className="flex items-center space-x-2">
+                <span className="font-medium text-purple-600">
+                  {trip.actualExpenses.total.toLocaleString()} ₴
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onViewExpenses(trip)
+                  }}
+                >
+                  <Receipt className="w-3 h-3" />
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="mt-3 flex justify-between text-xs text-gray-500">
+          <span>Тривалість: {trip.duration} дн.</span>
+          <span>Створено: {format(new Date(trip.createdAt), 'dd MMM yyyy', { locale: uk })}</span>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+// Trip Form Component
+function TripForm({ form, setForm, onSubmit, onCancel, isLoading = false }) {
+  const updateForm = (field, value) => {
+    if (field.includes('.')) {
+      const [parent, child] = field.split('.')
+      setForm(prev => ({
+        ...prev,
+        [parent]: {
+          ...prev[parent],
+          [child]: value
+        }
+      }))
+    } else {
+      setForm(prev => ({ ...prev, [field]: value }))
+    }
+  }
+
+  const updateBudget = (category, value) => {
+    const numValue = parseFloat(value) || 0
+    setForm(prev => {
+      const newBudget = {
+        ...prev.estimatedBudget,
+        [category]: numValue
+      }
+      newBudget.total = newBudget.transport + newBudget.accommodation + newBudget.meals + newBudget.other
+      return {
+        ...prev,
+        estimatedBudget: newBudget
+      }
+    })
+  }
+
+  return (
+    <Tabs defaultValue="basic" className="w-full">
+      <TabsList className="grid w-full grid-cols-4">
+        <TabsTrigger value="basic">Основні дані</TabsTrigger>
+        <TabsTrigger value="destination">Призначення</TabsTrigger>
+        <TabsTrigger value="transport">Транспорт</TabsTrigger>
+        <TabsTrigger value="budget">Бюджет</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="basic" className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="employeeName">Співробітник *</Label>
+            <Input
+              id="employeeName"
+              value={form.employeeName}
+              onChange={(e) => updateForm('employeeName', e.target.value)}
+              placeholder="ПІБ співробітника"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="employeePosition">Посада</Label>
+            <Input
+              id="employeePosition"
+              value={form.employeePosition}
+              onChange={(e) => updateForm('employeePosition', e.target.value)}
+              placeholder="Посада"
+            />
+          </div>
+        </div>
+
+        <div>
+          <Label htmlFor="purpose">Мета поїздки *</Label>
+          <Select value={form.purpose} onValueChange={(value) => updateForm('purpose', value)}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="warehouse_inspection">Перевірка складу</SelectItem>
+              <SelectItem value="client_meeting">Зустріч з клієнтом</SelectItem>
+              <SelectItem value="partner_negotiations">Переговори з партнерами</SelectItem>
+              <SelectItem value="audit">Аудит</SelectItem>
+              <SelectItem value="training">Навчання</SelectItem>
+              <SelectItem value="conference">Конференція</SelectItem>
+              <SelectItem value="maintenance">Тех. обслуговування</SelectItem>
+              <SelectItem value="other">Інше</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <Label htmlFor="purposeDescription">Детальний опис мети *</Label>
+          <Textarea
+            id="purposeDescription"
+            value={form.purposeDescription}
+            onChange={(e) => updateForm('purposeDescription', e.target.value)}
+            placeholder="Опишіть детально мету та завдання поїздки..."
+            rows={3}
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="departureDate">Дата виїзду *</Label>
+            <Input
+              id="departureDate"
+              type="datetime-local"
+              value={form.departureDate}
+              onChange={(e) => updateForm('departureDate', e.target.value)}
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="returnDate">Дата повернення *</Label>
+            <Input
+              id="returnDate"
+              type="datetime-local"
+              value={form.returnDate}
+              onChange={(e) => updateForm('returnDate', e.target.value)}
+            />
+          </div>
+        </div>
+      </TabsContent>
+
+      <TabsContent value="destination" className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="city">Місто *</Label>
+            <Input
+              id="city"
+              value={form.destination.city}
+              onChange={(e) => updateForm('destination.city', e.target.value)}
+              placeholder="Київ, Львів, Одеса..."
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="facility">Об'єкт/Установа</Label>
+            <Input
+              id="facility"
+              value={form.destination.facility}
+              onChange={(e) => updateForm('destination.facility', e.target.value)}
+              placeholder="Офіс, склад, відділення..."
+            />
+          </div>
+        </div>
+
+        <div>
+          <Label htmlFor="address">Адреса *</Label>
+          <Input
+            id="address"
+            value={form.destination.address}
+            onChange={(e) => updateForm('destination.address', e.target.value)}
+            placeholder="Вулиця, номер будинку"
+          />
+        </div>
+      </TabsContent>
+
+      <TabsContent value="transport" className="space-y-4">
+        <div>
+          <Label htmlFor="transportType">Тип транспорту *</Label>
+          <Select value={form.transportType} onValueChange={(value) => updateForm('transportType', value)}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="company_car">Службове авто</SelectItem>
+              <SelectItem value="personal_car">Особисте авто</SelectItem>
+              <SelectItem value="train">Потяг</SelectItem>
+              <SelectItem value="bus">Автобус</SelectItem>
+              <SelectItem value="plane">Літак</SelectItem>
+              <SelectItem value="other">Інше</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <Label htmlFor="route">Маршрут</Label>
+          <Input
+            id="route"
+            value={form.transportDetails.route}
+            onChange={(e) => updateForm('transportDetails.route', e.target.value)}
+            placeholder="Київ - Львів - Київ"
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="distance">Відстань (км)</Label>
+            <Input
+              id="distance"
+              type="number"
+              value={form.transportDetails.estimatedDistance}
+              onChange={(e) => updateForm('transportDetails.estimatedDistance', parseInt(e.target.value) || 0)}
+              placeholder="0"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="fuelCost">Орієнтовна вартість палива (₴)</Label>
+            <Input
+              id="fuelCost"
+              type="number"
+              value={form.transportDetails.estimatedFuelCost}
+              onChange={(e) => updateForm('transportDetails.estimatedFuelCost', parseInt(e.target.value) || 0)}
+              placeholder="0"
+            />
+          </div>
+        </div>
+      </TabsContent>
+
+      <TabsContent value="budget" className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="transportBudget">Транспорт (₴)</Label>
+            <Input
+              id="transportBudget"
+              type="number"
+              value={form.estimatedBudget.transport}
+              onChange={(e) => updateBudget('transport', e.target.value)}
+              placeholder="0"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="accommodationBudget">Проживання (₴)</Label>
+            <Input
+              id="accommodationBudget"
+              type="number"
+              value={form.estimatedBudget.accommodation}
+              onChange={(e) => updateBudget('accommodation', e.target.value)}
+              placeholder="0"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="mealsBudget">Харчування (₴)</Label>
+            <Input
+              id="mealsBudget"
+              type="number"
+              value={form.estimatedBudget.meals}
+              onChange={(e) => updateBudget('meals', e.target.value)}
+              placeholder="0"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="otherBudget">Інше (₴)</Label>
+            <Input
+              id="otherBudget"
+              type="number"
+              value={form.estimatedBudget.other}
+              onChange={(e) => updateBudget('other', e.target.value)}
+              placeholder="0"
+            />
+          </div>
+        </div>
+
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <div className="flex justify-between items-center">
+            <span className="text-lg font-medium">Загальний бюджет:</span>
+            <span className="text-2xl font-bold text-blue-600">
+              {form.estimatedBudget.total.toLocaleString()} ₴
+            </span>
+          </div>
+        </div>
+
+        <div>
+          <Label htmlFor="notes">Додаткові нотатки</Label>
+          <Textarea
+            id="notes"
+            value={form.notes}
+            onChange={(e) => updateForm('notes', e.target.value)}
+            placeholder="Додаткова інформація..."
+            rows={3}
+          />
+        </div>
+      </TabsContent>
+
+      <div className="flex justify-end space-x-4 pt-6">
+        <Button variant="outline" onClick={onCancel} disabled={isLoading}>
+          Скасувати
+        </Button>
+        <Button onClick={onSubmit} disabled={isLoading} className="bg-red-600 hover:bg-red-700">
+          {isLoading ? 'Збереження...' : 'Створити відрядження'}
+        </Button>
+      </div>
+    </Tabs>
+  )
+}
+
+// Trip Details Component
+function TripDetails({ trip, getStatusBadge, getPurposeText, getTransportIcon }) {
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="border-b pb-4">
+        <div className="flex items-start justify-between mb-2">
+          <div>
+            <h3 className="text-xl font-bold text-gray-900">{trip.tripNumber}</h3>
+            <p className="text-gray-600">{trip.employeeName} • {trip.employeePosition}</p>
+          </div>
+          {getStatusBadge(trip.status)}
+        </div>
+        
+        <div className="text-sm text-gray-500">
+          Створено: {format(new Date(trip.createdAt), 'dd MMMM yyyy, HH:mm', { locale: uk })}
+          {trip.updatedAt !== trip.createdAt && (
+            <span className="ml-4">
+              Оновлено: {format(new Date(trip.updatedAt), 'dd MMMM yyyy, HH:mm', { locale: uk })}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Main Info */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Trip Details */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Деталі поїздки</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex items-start space-x-3">
+              <MapPin className="w-5 h-5 text-gray-400 mt-0.5" />
+              <div>
+                <p className="font-medium">{trip.destination.city}</p>
+                <p className="text-sm text-gray-600">{trip.destination.address}</p>
+                {trip.destination.facility && (
+                  <p className="text-sm text-gray-500">{trip.destination.facility}</p>
+                )}
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-3">
+              <CalendarIcon className="w-5 h-5 text-gray-400" />
+              <div>
+                <p className="font-medium">
+                  {format(new Date(trip.departureDate), 'dd MMMM yyyy, HH:mm', { locale: uk })}
+                </p>
+                <p className="text-sm text-gray-600">
+                  до {format(new Date(trip.returnDate), 'dd MMMM yyyy, HH:mm', { locale: uk })}
+                </p>
+                <p className="text-sm text-gray-500">Тривалість: {trip.duration} дн.</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-3">
+              {getTransportIcon(trip.transportType)}
+              <div>
+                <p className="font-medium">{getPurposeText(trip.purpose)}</p>
+                <p className="text-sm text-gray-600">{trip.purposeDescription}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Budget & Expenses */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Бюджет та витрати</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <p className="text-gray-600">Транспорт:</p>
+                <p className="font-medium">
+                  {trip.estimatedBudget.transport.toLocaleString()} ₴
+                  {trip.actualExpenses && (
+                    <span className="text-purple-600 ml-2">
+                      / {trip.actualExpenses.transport.toLocaleString()} ₴
+                    </span>
+                  )}
+                </p>
+              </div>
+              
+              <div>
+                <p className="text-gray-600">Проживання:</p>
+                <p className="font-medium">
+                  {trip.estimatedBudget.accommodation.toLocaleString()} ₴
+                  {trip.actualExpenses && (
+                    <span className="text-purple-600 ml-2">
+                      / {trip.actualExpenses.accommodation.toLocaleString()} ₴
+                    </span>
+                  )}
+                </p>
+              </div>
+              
+              <div>
+                <p className="text-gray-600">Харчування:</p>
+                <p className="font-medium">
+                  {trip.estimatedBudget.meals.toLocaleString()} ₴
+                  {trip.actualExpenses && (
+                    <span className="text-purple-600 ml-2">
+                      / {trip.actualExpenses.meals.toLocaleString()} ₴
+                    </span>
+                  )}
+                </p>
+              </div>
+              
+              <div>
+                <p className="text-gray-600">Інше:</p>
+                <p className="font-medium">
+                  {trip.estimatedBudget.other.toLocaleString()} ₴
+                  {trip.actualExpenses && (
+                    <span className="text-purple-600 ml-2">
+                      / {trip.actualExpenses.other.toLocaleString()} ₴
+                    </span>
+                  )}
+                </p>
+              </div>
+            </div>
+            
+            <div className="border-t pt-4">
+              <div className="flex justify-between items-center">
+                <span className="text-lg font-medium">Всього:</span>
+                <div className="text-right">
+                  <div className="text-xl font-bold text-blue-600">
+                    {trip.estimatedBudget.total.toLocaleString()} ₴
+                  </div>
+                  {trip.actualExpenses && trip.actualExpenses.total > 0 && (
+                    <div className="text-sm text-purple-600">
+                      Витрачено: {trip.actualExpenses.total.toLocaleString()} ₴
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Transport Details */}
+      {trip.transportDetails && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Транспорт</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+              {trip.transportDetails.route && (
+                <div>
+                  <p className="text-gray-600">Маршрут:</p>
+                  <p className="font-medium">{trip.transportDetails.route}</p>
+                </div>
+              )}
+              
+              {trip.transportDetails.estimatedDistance > 0 && (
+                <div>
+                  <p className="text-gray-600">Відстань:</p>
+                  <p className="font-medium">{trip.transportDetails.estimatedDistance} км</p>
+                </div>
+              )}
+              
+              {trip.transportDetails.estimatedFuelCost > 0 && (
+                <div>
+                  <p className="text-gray-600">Вартість палива:</p>
+                  <p className="font-medium">{trip.transportDetails.estimatedFuelCost} ₴</p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Approval Workflow */}
+      {trip.approvalWorkflow && trip.approvalWorkflow.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Процес узгодження</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {trip.approvalWorkflow.map((workflow, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <div className={`w-3 h-3 rounded-full ${
+                      workflow.status === 'approved' ? 'bg-green-500' :
+                      workflow.status === 'rejected' ? 'bg-red-500' :
+                      'bg-yellow-500'
+                    }`} />
+                    <div>
+                      <p className="font-medium">
+                        {workflow.stage === 'manager' ? 'Керівник підрозділу' :
+                         workflow.stage === 'finance' ? 'Фінансовий відділ' :
+                         workflow.stage === 'final' ? 'Фінальне затвердження' : workflow.stage}
+                      </p>
+                      {workflow.approverName && (
+                        <p className="text-sm text-gray-600">{workflow.approverName}</p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="text-right">
+                    <Badge className={
+                      workflow.status === 'approved' ? 'bg-green-100 text-green-800' :
+                      workflow.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                      'bg-yellow-100 text-yellow-800'
+                    }>
+                      {workflow.status === 'approved' ? 'Затверджено' :
+                       workflow.status === 'rejected' ? 'Відхилено' : 'Очікує'}
+                    </Badge>
+                    {workflow.processedAt && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        {format(new Date(workflow.processedAt), 'dd MMM HH:mm', { locale: uk })}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Trip Report */}
+      {trip.tripReport && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Звіт про відрядження</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {trip.tripReport.summary && (
+              <div>
+                <h4 className="font-medium mb-2">Загальний підсумок:</h4>
+                <p className="text-gray-700">{trip.tripReport.summary}</p>
+              </div>
+            )}
+            
+            {trip.tripReport.tasksCompleted && trip.tripReport.tasksCompleted.length > 0 && (
+              <div>
+                <h4 className="font-medium mb-2">Виконані завдання:</h4>
+                <ul className="list-disc list-inside space-y-1 text-gray-700">
+                  {trip.tripReport.tasksCompleted.map((task, index) => (
+                    <li key={index}>{task}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            
+            {trip.tripReport.results && (
+              <div>
+                <h4 className="font-medium mb-2">Результати:</h4>
+                <p className="text-gray-700">{trip.tripReport.results}</p>
+              </div>
+            )}
+            
+            {trip.tripReport.recommendations && (
+              <div>
+                <h4 className="font-medium mb-2">Рекомендації:</h4>
+                <p className="text-gray-700">{trip.tripReport.recommendations}</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Documents */}
+      {trip.documents && trip.documents.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Документи</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {trip.documents.map((doc, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <FileText className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <div className="font-medium">{doc.name}</div>
+                      <div className="text-sm text-gray-600">
+                        {doc.type === 'application' && 'Заявка'}
+                        {doc.type === 'order' && 'Наказ'}
+                        {doc.type === 'report' && 'Звіт'}
+                        {doc.type === 'receipt' && 'Чек'}
+                        {doc.type === 'invoice' && 'Рахунок'}
+                        {doc.type === 'other' && 'Інший документ'}
+                        {' • '}
+                        {format(new Date(doc.uploadedAt), 'dd MMM yyyy', { locale: uk })}
+                      </div>
+                    </div>
+                  </div>
+                  <Button variant="ghost" size="sm">
+                    <Eye className="w-4 h-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Notes */}
+      {trip.notes && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Нотатки</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-gray-700">{trip.notes}</p>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  )
+}
