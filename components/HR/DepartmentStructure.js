@@ -35,7 +35,7 @@ export default function DepartmentStructure({ user }) {
   const [departmentForm, setDepartmentForm] = useState({
     name: '',
     description: '',
-    parentId: '',
+    parentId: 'none',
     managerId: '',
     location: '',
     budget: '',
