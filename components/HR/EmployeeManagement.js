@@ -109,13 +109,11 @@ export default function EmployeeManagement({ user }) {
 
   const handleCreateEmployee = async () => {
     try {
-      const response = await fetch('/api/sso/hr', {
+      const response = await fetch('/api/hr/employees', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'create',
-          employeeData: employeeForm
-        })
+        credentials: 'include',
+        body: JSON.stringify(employeeForm)
       })
 
       if (response.ok) {
