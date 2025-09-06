@@ -131,6 +131,7 @@ export default function TimesheetManagement({ user }) {
           }
         }
         
+        console.log('✅ Setting timesheet data:', Object.keys(timesheetMap).length, 'entries')
         setTimesheetData(timesheetMap)
         
         // Update employees list if available
@@ -141,6 +142,7 @@ export default function TimesheetManagement({ user }) {
             department: emp.employee.department,
             position: emp.employee.position || 'Співробітник'
           }))
+          console.log('✅ Setting employees:', empList.length)
           setEmployees(empList)
         }
       } else {
