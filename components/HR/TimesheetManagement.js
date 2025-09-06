@@ -224,6 +224,19 @@ export default function TimesheetManagement({ user }) {
         <div className="flex space-x-2">
           <Button 
             variant="outline" 
+            onClick={fetchTimesheetData}
+            disabled={isLoading}
+            className="text-blue-600 border-blue-600 hover:bg-blue-50"
+          >
+            {isLoading ? (
+              <Timer className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <Calculator className="w-4 h-4 mr-2" />
+            )}
+            {isLoading ? 'Завантаження...' : 'Оновити дані'}
+          </Button>
+          <Button 
+            variant="outline" 
             onClick={exportToExcel}
             className="text-green-600 border-green-600 hover:bg-green-50"
           >
