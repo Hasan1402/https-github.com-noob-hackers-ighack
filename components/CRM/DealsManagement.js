@@ -270,6 +270,7 @@ export default function DealsManagement({ user }) {
         tags: ['Healthcare', 'Lost', 'Licensing'],
         createdAt: '2024-11-05T11:20:00Z',
         updatedAt: '2024-11-30T17:00:00Z',
+        documents: [],
         products: []
       }
     ]
