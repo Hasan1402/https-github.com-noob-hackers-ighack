@@ -139,11 +139,13 @@ export default function App() {
   const loadMonthlyTimesheet = async () => {
     try {
       const response = await fetch(`/api/timesheet/monthly?month=${selectedMonth}&department=${selectedDepartment}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        credentials: 'include'  // Include cookies for session-based auth
       })
       const data = await response.json()
       if (response.ok) {
         setMonthlyTimesheet(data)
+      } else {
+        console.error('Failed to load timesheet:', data.error)
       }
     } catch (error) {
       console.error('Error loading monthly timesheet:', error)
