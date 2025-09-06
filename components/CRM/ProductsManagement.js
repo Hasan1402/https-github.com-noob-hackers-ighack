@@ -627,6 +627,63 @@ export default function ProductsManagement({ user }) {
         )}
       </div>
 
+      {/* Product Edit Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Редагувати товар/послугу</DialogTitle>
+          </DialogHeader>
+
+          <ProductForm
+            form={productForm}
+            setForm={setProductForm}
+            categories={categories}
+            onSubmit={async () => {
+              try {
+                setIsLoading(true)
+                
+                // Find category name
+                const category = categories.find(c => c.id === productForm.categoryId)
+                
+                const updatedProduct = {
+                  ...selectedProduct,
+                  ...productForm,
+                  categoryName: category?.name || '',
+                  updatedAt: new Date().toISOString()
+                }
+
+                setProducts(prev => prev.map(p => p.id === selectedProduct.id ? updatedProduct : p))
+                setShowEditDialog(false)
+                toast.success('Товар оновлено успішно')
+              } catch (error) {
+                console.error('Error updating product:', error)
+                toast.error('Помилка оновлення товару')
+              } finally {
+                setIsLoading(false)
+              }
+            }}
+            onCancel={() => {
+              setShowEditDialog(false)
+              resetProductForm()
+            }}
+            isLoading={isLoading}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Product Details Dialog */}
+      <Dialog open={showDetailsDialog} onOpenChange={setShowDetailsDialog}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Деталі товару/послуги</DialogTitle>
+          </DialogHeader>
+
+          {selectedProduct && (
+            <ProductDetails product={selectedProduct} getStockBadge={getStockBadge} />
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* Category Dialog */}
       <Dialog open={showCategoryDialog} onOpenChange={setShowCategoryDialog}>
         <DialogContent className="max-w-md">
