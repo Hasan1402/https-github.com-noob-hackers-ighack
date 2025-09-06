@@ -106,6 +106,20 @@ export default function DealsManagement({ user }) {
         tags: ['VIP', 'B2B', 'Регулярний'],
         createdAt: '2024-12-01T10:30:00Z',
         updatedAt: '2024-12-12T14:20:00Z',
+        documents: [
+          {
+            name: 'Комерційна пропозиція',
+            type: 'proposal',
+            uploadedAt: '2024-12-05T10:00:00Z',
+            uploadedBy: 'admin'
+          },
+          {
+            name: 'Технічне завдання',
+            type: 'other',
+            uploadedAt: '2024-12-08T14:30:00Z',
+            uploadedBy: 'admin'
+          }
+        ],
         products: [
           {
             productId: 'service-001',
