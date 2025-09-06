@@ -457,7 +457,7 @@ export default function DealsManagement({ user }) {
                 <p className="text-sm text-gray-600">Переговори</p>
                 <p className="text-2xl font-bold text-yellow-600">{stats.negotiation}</p>
               </div>
-              <Clock className="w-8 h-8 text-blue-500" />
+              <Users className="w-8 h-8 text-yellow-600" />
             </div>
           </CardContent>
         </Card>
