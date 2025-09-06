@@ -371,12 +371,12 @@ export default function DealsManagement({ user }) {
 
   const getStageBadge = (stage) => {
     const stageConfig = {
-      'negotiation': { color: 'bg-blue-100 text-blue-800', text: 'Перемовини' },
-      'proposal': { color: 'bg-yellow-100 text-yellow-800', text: 'Пропозиція' },
-      'invoice_sent': { color: 'bg-orange-100 text-orange-800', text: 'Рахунок відправлено' },
-      'payment_pending': { color: 'bg-purple-100 text-purple-800', text: 'Очікування оплати' },
-      'closed_won': { color: 'bg-green-100 text-green-800', text: 'Виграна' },
-      'closed_lost': { color: 'bg-red-100 text-red-800', text: 'Програна' }
+      'negotiation': { color: 'bg-yellow-100 text-yellow-800', text: 'Переговори' },
+      'proposal': { color: 'bg-blue-100 text-blue-800', text: 'Пропозиція' },
+      'invoice_sent': { color: 'bg-purple-100 text-purple-800', text: 'Рахунок відправлено' },
+      'payment_pending': { color: 'bg-orange-100 text-orange-800', text: 'Очікування оплати' },
+      'closed_won': { color: 'bg-green-100 text-green-800', text: 'Закрито (виграно)' },
+      'closed_lost': { color: 'bg-red-100 text-red-800', text: 'Закрито (програно)' }
     }
     
     const config = stageConfig[stage] || stageConfig.negotiation
