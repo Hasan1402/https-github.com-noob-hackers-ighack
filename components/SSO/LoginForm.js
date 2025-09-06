@@ -65,17 +65,17 @@ export default function LoginForm({ onLoginSuccess }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 p-3 bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center">
-            <Building className="w-8 h-8 text-blue-600" />
+          <div className="mx-auto mb-4 p-3 bg-red-100 rounded-full w-16 h-16 flex items-center justify-center">
+            <Building className="w-8 h-8 text-red-600" />
           </div>
           <CardTitle className="text-2xl font-bold text-gray-900">
-            Нова Пошта ERP
+            Nova KIC
           </CardTitle>
           <p className="text-gray-600 mt-2">
-            Корпоративна система управління
+            Комплексна інформаційна система для ефективного управління
           </p>
         </CardHeader>
 
