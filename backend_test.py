@@ -60,14 +60,24 @@ class CRMBackendTester:
             
             if sso_response.status_code == 200:
                 sso_data = sso_response.json()
-                if 'accessToken' in sso_data:
-                    self.auth_token = sso_data['accessToken']
-                    self.session.headers.update({
-                        'Authorization': f'Bearer {self.auth_token}',
-                        'Content-Type': 'application/json'
-                    })
-                    self.log_result("SSO Authentication", True, "Nova Poshta SSO login successful")
-                    return True
+                if 'success' in sso_data and sso_data['success']:
+                    # SSO uses cookies for authentication, extract from cookies
+                    cookies = sso_response.cookies
+                    if 'access_token' in cookies:
+                        self.auth_token = cookies['access_token']
+                        self.session.headers.update({
+                            'Authorization': f'Bearer {self.auth_token}',
+                            'Content-Type': 'application/json'
+                        })
+                        # Also set cookies for session
+                        self.session.cookies.update(cookies)
+                        self.log_result("SSO Authentication", True, "Nova Poshta SSO login successful")
+                        return True
+                    else:
+                        # If no access token in cookies, try to use session cookies directly
+                        self.session.cookies.update(cookies)
+                        self.log_result("SSO Authentication", True, "Nova Poshta SSO login successful (cookie-based)")
+                        return True
             
             # Fallback to regular auth
             auth_response = requests.post(
