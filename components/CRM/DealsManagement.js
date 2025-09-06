@@ -454,8 +454,8 @@ export default function DealsManagement({ user }) {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Перемовини</p>
-                <p className="text-2xl font-bold text-blue-500">{stats.negotiation}</p>
+                <p className="text-sm text-gray-600">Переговори</p>
+                <p className="text-2xl font-bold text-yellow-600">{stats.negotiation}</p>
               </div>
               <Clock className="w-8 h-8 text-blue-500" />
             </div>
