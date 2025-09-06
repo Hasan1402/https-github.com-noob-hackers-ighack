@@ -16,7 +16,7 @@ async function addTimesheetData() {
         lastName: 'Петренко',
         email: 'ivan.petrenko@novaposhta.ua',
         department: 'Логістика та доставка',
-        position: 'Кур'єр',
+        position: 'Курєр',
         employeeId: 'NP-001',
         phone: '+380501234567',
         isActive: true,
