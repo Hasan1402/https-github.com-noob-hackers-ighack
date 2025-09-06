@@ -466,10 +466,10 @@ export default function DealsManagement({ user }) {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Пропозиція</p>
-                <p className="text-2xl font-bold text-yellow-600">{stats.proposal}</p>
+                <p className="text-sm text-gray-600">Пропозиції</p>
+                <p className="text-2xl font-bold text-blue-600">{stats.proposal}</p>
               </div>
-              <Eye className="w-8 h-8 text-yellow-600" />
+              <BarChart3 className="w-8 h-8 text-blue-600" />
             </div>
           </CardContent>
         </Card>
