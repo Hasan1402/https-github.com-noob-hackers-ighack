@@ -138,33 +138,19 @@ export default function TimesheetManagement({ user }) {
             id: emp.employee.id,
             name: emp.employee.fullName,
             department: emp.employee.department,
-            position: emp.employee.position || 'Співrobітник'
+            position: emp.employee.position || 'Співробітник'
           }))
           setEmployees(empList)
         }
       } else {
         console.error('Failed to fetch timesheet data:', response.status)
-        // Fallback to basic structure
-        const monthStart = startOfMonth(currentDate)
-        const monthEnd = endOfMonth(currentDate)
-        const days = eachDayOfInterval({ start: monthStart, end: monthEnd })
-
-        const fallbackData = {}
-        days.forEach(day => {
-          const dayKey = format(day, 'yyyy-MM-dd')
-          
-          if (isWeekend(day)) {
-            fallbackData[dayKey] = { code: 'В', hours: 0, note: '' }
-          } else {
-            fallbackData[dayKey] = { code: 'Я', hours: 8, note: '' }
-          }
-        })
-
-        setTimesheetData(fallbackData)
+        // Create fallback empty data for current month
+        setTimesheetData({})
       }
     } catch (error) {
       console.error('Error fetching timesheet:', error)
       toast.error('Помилка завантаження табеля')
+      setTimesheetData({})
     } finally {
       setIsLoading(false)
     }
