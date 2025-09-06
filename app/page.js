@@ -1944,116 +1944,101 @@ export default function App() {
         </header>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            {/* Leads Card */}
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <Target className="w-6 h-6 text-blue-600" />
+          {/* Navigation Cards */}
+          {crmSubView === 'overview' && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              {/* Leads Card */}
+              <Card 
+                className="hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={() => setCrmSubView('leads')}
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-center">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <Target className="w-6 h-6 text-blue-600" />
+                    </div>
+                    <div className="ml-4">
+                      <h3 className="font-medium text-gray-900">Ліди</h3>
+                      <p className="text-sm text-gray-500">Потенційні клієнти</p>
+                    </div>
                   </div>
-                  <div className="ml-4">
-                    <h3 className="font-medium text-gray-900">Ліди</h3>
-                    <p className="text-sm text-gray-500">Потенційні клієнти</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
 
-            {/* Opportunities Card */}
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <div className="p-2 bg-green-100 rounded-lg">
-                    <TrendingUp className="w-6 h-6 text-green-600" />
+              {/* Deals Card */}
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer opacity-50">
+                <CardContent className="p-6">
+                  <div className="flex items-center">
+                    <div className="p-2 bg-green-100 rounded-lg">
+                      <TrendingUp className="w-6 h-6 text-green-600" />
+                    </div>
+                    <div className="ml-4">
+                      <h3 className="font-medium text-gray-900">Угоди</h3>
+                      <p className="text-sm text-gray-500">Продажні можливості</p>
+                      <p className="text-xs text-orange-600 mt-1">Незабаром</p>
+                    </div>
                   </div>
-                  <div className="ml-4">
-                    <h3 className="font-medium text-gray-900">Угоди</h3>
-                    <p className="text-sm text-gray-500">Продажні можливості</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
 
-            {/* Products Card */}
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-              <CardContent className="p-6">
-                <div className="flex items-center">
-                  <div className="p-2 bg-purple-100 rounded-lg">
-                    <Package className="w-6 h-6 text-purple-600" />
+              {/* Products Card */}
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer opacity-50">
+                <CardContent className="p-6">
+                  <div className="flex items-center">
+                    <div className="p-2 bg-purple-100 rounded-lg">
+                      <Package className="w-6 h-6 text-purple-600" />
+                    </div>
+                    <div className="ml-4">
+                      <h3 className="font-medium text-gray-900">Товари</h3>
+                      <p className="text-sm text-gray-500">Каталог продукції</p>
+                      <p className="text-xs text-orange-600 mt-1">Незабаром</p>
+                    </div>
                   </div>
-                  <div className="ml-4">
-                    <h3 className="font-medium text-gray-900">Товари</h3>
-                    <p className="text-sm text-gray-500">Каталог продукції</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
-          {/* Sales Pipeline */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          {/* CRM Module Content */}
+          {crmSubView === 'overview' && (
             <Card>
               <CardHeader>
-                <CardTitle>Воронка продажів</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
-                    <span className="font-medium">Нові ліди</span>
-                    <Badge>5</Badge>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
-                    <span className="font-medium">Кваліфікація</span>
-                    <Badge>3</Badge>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-orange-50 rounded-lg">
-                    <span className="font-medium">Пропозиція</span>
-                    <Badge>2</Badge>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
-                    <span className="font-medium">Закриті угоди</span>
-                    <Badge>1</Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Аналітика продажів</CardTitle>
+                <CardTitle>CRM та продажі - Основні функції</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-center py-8">
-                  <BarChart3 className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-                  <p className="text-gray-500">Аналітика продажів</p>
+                  <Users className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Система управління клієнтами</h3>
+                  <p className="text-gray-500 mb-6">
+                    Повнофункціональний CRM модуль для управління продажами:<br/>
+                    ✅ Управління лідами (потенційні клієнти)<br/>
+                    🔄 Угоди та воронка продажів (в розробці)<br/>
+                    🔄 Каталог товарів та послуг (в розробці)<br/>
+                    🔄 Звіти та аналітика (в розробці)
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    Оберіть розділ для роботи з клієнтами та продажами
+                  </p>
                 </div>
               </CardContent>
             </Card>
-          </div>
+          )}
 
-          {/* CRM Status */}
-          <Card>
-            <CardHeader>
-              <CardTitle>CRM модуль - Статус системи</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8">
-                <Users className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">CRM система активна</h3>
-                <p className="text-gray-500 mb-6">
-                  Backend APIs для CRM повністю функціональні:<br/>
-                  ✅ Управління лідами<br/>
-                  ✅ Створення угод (виправлено!)<br/>
-                  ✅ Каталог товарів (виправлено!)<br/>
-                  ✅ Інтеграція з фінансами
-                </p>
-                <p className="text-sm text-gray-400">
-                  Детальний UI для роботи з CRM даними буде додано в наступних ітераціях
-                </p>
+          {/* Leads Management */}
+          {crmSubView === 'leads' && (
+            <div>
+              <div className="mb-6">
+                <Button 
+                  variant="ghost" 
+                  onClick={() => setCrmSubView('overview')}
+                  className="text-gray-600 hover:text-gray-900"
+                >
+                  ← Назад до CRM
+                </Button>
               </div>
-            </CardContent>
-          </Card>
+              <LeadsManagement user={user} />
+            </div>
+          )}
         </div>
       </div>
     )
