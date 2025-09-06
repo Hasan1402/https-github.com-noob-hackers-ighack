@@ -521,7 +521,7 @@ export default function DealsManagement({ user }) {
                   {Math.round(stats.avgDealSize).toLocaleString()} ₴
                 </p>
               </div>
-              <BarChart3 className="w-8 h-8 text-indigo-600" />
+              <PieChart className="w-8 h-8 text-indigo-600" />
             </div>
           </CardContent>
         </Card>
