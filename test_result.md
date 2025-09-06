@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Завершити Financial Accounting UI компоненти JournalEntries та BankAccounts для Nova Poshta ERP. Створити повноцінний UI з українською локалізацією, консистентним дизайном та інтеграцією з існуючими Finance компонентами. Після завершення протестувати backend та frontend."
+user_problem_statement: "Завершити UI компоненти для CRM модуля - DealsManagement та ProductsManagement для Nova Poshta ERP. Створити повноцінний UI з українською локалізацією, консистентним дизайном та інтеграцією з існуючими CRM компонентами. Реалізувати поля: угоди (назва, клієнт, етап, сума, дата створення, відповідальний менеджер, документи, історія), товари (назва, категорія, артикул, опис, фото, ціна, залишки). Спочатку mock data, потім backend integration. Після завершення протестувати backend та frontend."
 
 backend:
   - task: "Nova Poshta SSO Authentication System"
