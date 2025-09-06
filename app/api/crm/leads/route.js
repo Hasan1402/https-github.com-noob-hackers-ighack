@@ -1,7 +1,50 @@
 import { NextResponse } from 'next/server'
 import connectDB from '../../../../lib/mongodb'
 import { Lead, Activity } from '../../../../lib/models/CRM'
-import { verifyToken } from '../../../../lib/ssoAuth'
+import jwt from 'jsonwebtoken'
+
+// Helper function to verify JWT token
+function verifyTokenFromRequest(request) {
+  const authHeader = request.headers.get('authorization')
+  let token = null
+  
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    token = authHeader.substring(7)
+  } else {
+    const cookieHeader = request.headers.get('cookie')
+    if (cookieHeader) {
+      const cookies = cookieHeader.split(';').reduce((acc, cookie) => {
+        const [key, value] = cookie.trim().split('=')
+        acc[key] = value
+        return acc
+      }, {})
+      token = cookies.accessToken || cookies.token || cookies.authToken || cookies.access_token
+    }
+  }
+  
+  if (!token) {
+    return null
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret')
+    if (decoded.sub && decoded.tenantId && decoded.type === 'access') {
+      return {
+        userId: decoded.sub,
+        email: decoded.email,
+        tenantId: decoded.tenantId,
+        tenantSlug: decoded.tenantSlug,
+        roles: decoded.roles,
+        accessLevel: decoded.accessLevel,
+        id: decoded.sub,
+        fullName: decoded.fullName || decoded.email
+      }
+    }
+    return decoded
+  } catch (error) {
+    return null
+  }
+}
 
 // GET /api/crm/leads - Отримати всі ліди
 export async function GET(request) {
