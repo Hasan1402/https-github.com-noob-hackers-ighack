@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import connectDB from '../../../../lib/mongodb'
 import { Lead, Activity } from '../../../../lib/models/CRM'
+import { verifyToken } from '../../../../lib/ssoAuth'
 import jwt from 'jsonwebtoken'
 
 // Helper function to verify JWT token
