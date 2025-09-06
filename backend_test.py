@@ -15,7 +15,7 @@ from datetime import datetime, timedelta
 import uuid
 
 # Configuration - use external URL for Nova Poshta ERP testing
-BASE_URL = "https://logistix-erp.preview.emergentagent.com/api"
+BASE_URL = "https://logistics-crm-app.preview.emergentagent.com/api"
 
 class TISKISBackendTester:
     def __init__(self):
