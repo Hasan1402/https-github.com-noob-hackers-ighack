@@ -52,7 +52,7 @@ export async function GET(request) {
   
   try {
     // Verify authentication
-    const authResult = await verifyJWT(request)
+    const authResult = await verifyToken(request)
     if (!authResult.success) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
