@@ -6,8 +6,8 @@ import { Toaster } from '@/components/ui/sonner'
 const inter = Inter({ subsets: ['latin', 'cyrillic'] })
 
 export const metadata = {
-  title: 'ТИС КІС - Інформаційна Система',
-  description: 'Комплексна інформаційна система для управління освітніми процесами',
+  title: 'Nova KIC - Інформаційна Система',
+  description: 'Комплексна інформаційна система для ефективного управління',
 }
 
 export default function RootLayout({ children }) {
