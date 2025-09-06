@@ -162,9 +162,9 @@ export async function PUT(request) {
   
   try {
     // Verify authentication
-    const authResult = await verifyJWT(request)
+    const authResult = await verifyToken(request)
     if (!authResult.success) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: 'Авторизація потрібна' }, { status: 401 })
     }
     
     const { user } = authResult
